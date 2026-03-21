@@ -22,10 +22,15 @@ class AuthenticationButton extends ConsumerWidget {
     }
 
     if (user == null) {
-      return IconButton(
-        icon: const Icon(Icons.login),
-        tooltip: 'Sign in',
+      return TextButton(
         onPressed: () => _showSignInDialog(context, ref),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.login, size: 24),
+            Text('Sign in'),
+          ],
+        ),
       );
     }
 
