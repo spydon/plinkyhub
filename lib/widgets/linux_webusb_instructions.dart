@@ -16,6 +16,7 @@ class LinuxWebusbInstructions extends StatelessWidget {
     return const Padding(
       padding: EdgeInsets.only(top: 8),
       child: ExpansionTile(
+        leading: Icon(Icons.info_outline),
         title: Text('Linux: WebUSB access denied?'),
         tilePadding: EdgeInsets.zero,
         childrenPadding: EdgeInsets.only(bottom: 8),
