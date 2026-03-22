@@ -6,6 +6,7 @@ import 'package:plinkyhub/state/plinky_state.dart';
 import 'package:plinkyhub/widgets/linux_webusb_instructions.dart';
 import 'package:plinkyhub/widgets/patch_controls.dart';
 import 'package:plinkyhub/widgets/patch_details.dart';
+import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class EditorPage extends ConsumerStatefulWidget {
   const EditorPage({super.key});
@@ -88,14 +89,15 @@ class _EditorPageState extends ConsumerState<EditorPage> {
               ),
             const LinuxWebusbInstructions(),
             const SizedBox(height: 8),
-            ElevatedButton(
+            PlinkyButton(
               onPressed: state.connectionState ==
                       PlinkyConnectionState.connecting
                   ? null
                   : () => ref
                       .read(plinkyProvider.notifier)
                       .connect(),
-              child: const Text('Connect'),
+              icon: Icons.usb,
+              label: 'Connect',
             ),
           ],
           if (isConnected) ...[

@@ -7,6 +7,7 @@ import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/state/saved_patches_notifier.dart';
 import 'package:plinkyhub/utils/compress.dart';
 import 'package:plinkyhub/widgets/parameter_tile.dart';
+import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/randomize_controls.dart';
 
 class PatchDetails extends ConsumerWidget {
@@ -42,10 +43,11 @@ class PatchDetails extends ConsumerWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            ElevatedButton(
+            PlinkyButton(
               onPressed: () =>
                   ref.read(plinkyProvider.notifier).clearPatch(),
-              child: const Text('Clear patch in browser memory'),
+              icon: Icons.delete_outline,
+              label: 'Clear patch in browser memory',
             ),
             const SizedBox(width: 8),
             _SaveToCloudButton(patch: patch),
@@ -173,12 +175,12 @@ class _SaveToCloudButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isSignedIn = ref.watch(authenticationProvider).user != null;
 
-    return ElevatedButton.icon(
+    return PlinkyButton(
       onPressed: isSignedIn
           ? () => _showSaveDialog(context, ref)
           : null,
-      icon: const Icon(Icons.cloud_upload, size: 18),
-      label: Text(isSignedIn ? 'Save to cloud' : 'Sign in to save'),
+      icon: Icons.cloud_upload,
+      label: isSignedIn ? 'Save to cloud' : 'Sign in to save',
     );
   }
 
@@ -218,11 +220,12 @@ class _SaveToCloudButton extends ConsumerWidget {
             ],
           ),
           actions: [
-            TextButton(
+            PlinkyButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              icon: Icons.close,
+              label: 'Cancel',
             ),
-            FilledButton(
+            PlinkyButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 ref.read(savedPatchesProvider.notifier).savePatch(
@@ -234,7 +237,8 @@ class _SaveToCloudButton extends ConsumerWidget {
                   const SnackBar(content: Text('Patch saved to cloud')),
                 );
               },
-              child: const Text('Save'),
+              icon: Icons.save,
+              label: 'Save',
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class AuthenticationButton extends ConsumerWidget {
   const AuthenticationButton({super.key});
@@ -146,36 +147,29 @@ class _SignInDialogState extends ConsumerState<SignInDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        PlinkyButton(
           onPressed: () {
             ref.read(authenticationProvider.notifier).clearError();
             setState(() => _isSignUp = !_isSignUp);
           },
-          child: Text(
-            _isSignUp
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Sign up",
-          ),
+          icon: Icons.swap_horiz,
+          label: _isSignUp
+              ? 'Already have an account? Sign in'
+              : "Don't have an account? Sign up",
         ),
-        TextButton(
+        PlinkyButton(
           onPressed: () {
             ref.read(authenticationProvider.notifier).clearError();
             Navigator.of(context).pop();
           },
-          child: const Text('Cancel'),
+          icon: Icons.close,
+          label: 'Cancel',
         ),
-        FilledButton(
+        PlinkyButton(
           onPressed:
               authenticationState.isLoading ? null : _submit,
-          child: authenticationState.isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                )
-              : Text(_isSignUp ? 'Sign up' : 'Sign in'),
+          icon: Icons.login,
+          label: _isSignUp ? 'Sign up' : 'Sign in',
         ),
       ],
     );

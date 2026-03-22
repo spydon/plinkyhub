@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
+import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class RandomizeControls extends ConsumerStatefulWidget {
   const RandomizeControls({super.key});
@@ -63,14 +64,16 @@ class _RandomizeControlsState
         const SizedBox(height: 8),
         Row(
           children: [
-            TextButton(
+            PlinkyButton(
               onPressed: _selectAll,
-              child: const Text('Select all'),
+              icon: Icons.select_all,
+              label: 'Select all',
             ),
-            const Text(' / '),
-            TextButton(
+            const SizedBox(width: 8),
+            PlinkyButton(
               onPressed: _clearAll,
-              child: const Text('Clear all'),
+              icon: Icons.deselect,
+              label: 'Clear all',
             ),
           ],
         ),
@@ -128,9 +131,10 @@ class _RandomizeControlsState
           ],
         ),
         const SizedBox(height: 8),
-        ElevatedButton(
+        PlinkyButton(
           onPressed: _randomize,
-          child: const Text('Randomize these parameters'),
+          icon: Icons.shuffle,
+          label: 'Randomize these parameters',
         ),
       ],
     );

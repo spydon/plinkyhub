@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/state/plinky_state.dart';
+import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class PatchControls extends ConsumerStatefulWidget {
   const PatchControls({super.key});
@@ -79,7 +80,7 @@ class _PatchControlsState extends ConsumerState<PatchControls> {
               ),
             ),
             const SizedBox(width: 8),
-            ElevatedButton(
+            PlinkyButton(
               onPressed: isLoading
                   ? null
                   : () {
@@ -88,10 +89,11 @@ class _PatchControlsState extends ConsumerState<PatchControls> {
                           .read(plinkyProvider.notifier)
                           .loadPatch();
                     },
-              child: const Text('Load patch'),
+              icon: Icons.download,
+              label: 'Load patch',
             ),
             const SizedBox(width: 8),
-            ElevatedButton(
+            PlinkyButton(
               onPressed: isLoading
                   ? null
                   : () {
@@ -100,7 +102,8 @@ class _PatchControlsState extends ConsumerState<PatchControls> {
                           .read(plinkyProvider.notifier)
                           .savePatch();
                     },
-              child: const Text('Save patch'),
+              icon: Icons.upload,
+              label: 'Save patch',
             ),
           ],
         ),

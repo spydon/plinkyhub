@@ -4,6 +4,7 @@ import 'package:plinkyhub/models/saved_patch.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_patches_notifier.dart';
 import 'package:plinkyhub/widgets/authentication_button.dart';
+import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class SavedPatchesPage extends ConsumerStatefulWidget {
   const SavedPatchesPage({super.key});
@@ -47,10 +48,10 @@ class _SavedPatchesPageState extends ConsumerState<SavedPatchesPage>
             const SizedBox(height: 16),
             const Text('Sign in to save and manage your patches'),
             const SizedBox(height: 16),
-            ElevatedButton.icon(
+            PlinkyButton(
               onPressed: () => showSignInDialog(context),
-              icon: const Icon(Icons.login),
-              label: const Text('Sign in'),
+              icon: Icons.login,
+              label: 'Sign in',
             ),
           ],
         ),
@@ -134,10 +135,10 @@ class _PatchList extends ConsumerWidget {
                   : 'No community patches yet',
             ),
             const SizedBox(height: 8),
-            TextButton.icon(
+            PlinkyButton(
               onPressed: onRefresh,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Refresh'),
+              icon: Icons.refresh,
+              label: 'Refresh',
             ),
           ],
         ),
@@ -236,7 +237,7 @@ class _PatchCard extends ConsumerWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                FilledButton.tonalIcon(
+                PlinkyButton(
                   onPressed: () {
                     ref
                         .read(savedPatchesProvider.notifier)
@@ -247,8 +248,8 @@ class _PatchCard extends ConsumerWidget {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.download, size: 18),
-                  label: const Text('Load into editor'),
+                  icon: Icons.download,
+                  label: 'Load into editor',
                 ),
                 const Spacer(),
                 if (isOwned) ...[
@@ -295,18 +296,20 @@ class _PatchCard extends ConsumerWidget {
           '"${patch.name.isEmpty ? '(unnamed)' : patch.name}"?',
         ),
         actions: [
-          TextButton(
+          PlinkyButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            icon: Icons.close,
+            label: 'Cancel',
           ),
-          FilledButton(
+          PlinkyButton(
             onPressed: () {
               Navigator.of(context).pop();
               ref
                   .read(savedPatchesProvider.notifier)
                   .deletePatch(patch.id);
             },
-            child: const Text('Delete'),
+            icon: Icons.delete,
+            label: 'Delete',
           ),
         ],
       ),
