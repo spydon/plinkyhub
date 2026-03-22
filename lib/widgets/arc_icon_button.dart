@@ -188,14 +188,16 @@ class _ArcPainter extends CustomPainter {
     );
 
     // Left arc: from bottom-left to top-left
-    final sweepAngle = pi - gapAngle;
+    final fullSweep = pi - gapAngle;
+    final sweepAngle = fullSweep * 0.85;
+    final offset = (fullSweep - sweepAngle) / 2;
     canvas.drawArc(
-      rect, pi / 2 + gapAngle / 2, sweepAngle, false, paint,
+      rect, pi / 2 + gapAngle / 2 + offset, sweepAngle, false, paint,
     );
 
     // Right arc: from top-right to bottom-right
     canvas.drawArc(
-      rect, -pi / 2 + gapAngle / 2, sweepAngle, false, paint,
+      rect, -pi / 2 + gapAngle / 2 + offset, sweepAngle, false, paint,
     );
 
     final glowCenter = Offset(size.width * 0.05, size.height * 0.05);
