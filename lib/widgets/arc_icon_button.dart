@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-class ArcIconButton extends StatelessWidget {
+class ArcIconButton extends StatefulWidget {
   const ArcIconButton({
     required this.icon,
     required this.label,
@@ -31,39 +31,80 @@ class ArcIconButton extends StatelessWidget {
   final double strokeWidth;
 
   @override
+  State<ArcIconButton> createState() => _ArcIconButtonState();
+}
+
+class _ArcIconButtonState extends State<ArcIconButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _hoverController;
+
+  @override
+  void initState() {
+    super.initState();
+    _hoverController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
+  void dispose() {
+    _hoverController.dispose();
+    super.dispose();
+  }
+
+  void _onHover(bool hovered) {
+    if (hovered) {
+      _hoverController.forward();
+    } else {
+      _hoverController.reverse();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = arcColor ??
-        (isSelected
+    final color = widget.arcColor ??
+        (widget.isSelected
             ? theme.colorScheme.primary
             : theme.colorScheme.onSurface.withValues(alpha: 0.4));
-    final foreground = iconColor ??
-        (isSelected
+    final foreground = widget.iconColor ??
+        (widget.isSelected
             ? theme.colorScheme.primary
             : theme.colorScheme.onSurface);
 
     return InkWell(
-      onTap: onPressed,
+      onTap: widget.onPressed,
+      onHover: _onHover,
       customBorder: const CircleBorder(),
       child: SizedBox(
-        width: size,
-        height: size,
-        child: CustomPaint(
-          painter: _ArcPainter(
-            color: color,
-            gapAngle: gapAngle,
-            strokeWidth: strokeWidth,
-            isSelected: isSelected,
+        width: widget.size,
+        height: widget.size,
+        child: AnimatedBuilder(
+          animation: _hoverController,
+          builder: (context, child) => CustomPaint(
+            painter: _ArcPainter(
+              color: color,
+              gapAngle: widget.gapAngle,
+              strokeWidth: widget.strokeWidth,
+              isSelected: widget.isSelected,
+              hoverProgress: _hoverController.value,
+            ),
+            child: child,
           ),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: foreground, size: size * 0.3),
+                Icon(
+                  widget.icon,
+                  color: foreground,
+                  size: widget.size * 0.3,
+                ),
                 const SizedBox(height: 2),
                 Text(
-                  label,
-                  style: textStyle ??
+                  widget.label,
+                  style: widget.textStyle ??
                       theme.textTheme.labelSmall?.copyWith(
                         color: foreground,
                       ),
@@ -78,18 +119,22 @@ class ArcIconButton extends StatelessWidget {
   }
 }
 
+double _lerp(double a, double b, double t) => a + (b - a) * t;
+
 class _ArcPainter extends CustomPainter {
   _ArcPainter({
     required this.color,
     required this.gapAngle,
     required this.strokeWidth,
     required this.isSelected,
+    required this.hoverProgress,
   });
 
   final Color color;
   final double gapAngle;
   final double strokeWidth;
   final bool isSelected;
+  final double hoverProgress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -108,22 +153,40 @@ class _ArcPainter extends CustomPainter {
 
     // Left arc: from bottom-left to top-left
     final sweepAngle = pi - gapAngle;
-    canvas.drawArc(rect, pi / 2 + gapAngle / 2, sweepAngle, false, paint);
+    canvas.drawArc(
+      rect, pi / 2 + gapAngle / 2, sweepAngle, false, paint,
+    );
 
     // Right arc: from top-right to bottom-right
-    canvas.drawArc(rect, -pi / 2 + gapAngle / 2, sweepAngle, false, paint);
+    canvas.drawArc(
+      rect, -pi / 2 + gapAngle / 2, sweepAngle, false, paint,
+    );
 
     final glowCenter = Offset(size.width * 0.05, size.height * 0.05);
     final glowRadius = size.width * 0.22;
+    final baseColor = isSelected
+        ? const Color(0xFF4488FF)
+        : const Color(0xFF888888);
+    final hoverColor =
+        isSelected ? const Color(0xFF4488FF) : Colors.white;
     final glowColor =
-        isSelected ? const Color(0xFF4488FF) : const Color(0xFF888888);
+        Color.lerp(baseColor, hoverColor, hoverProgress)!;
+
+    final baseInner = isSelected ? 0.7 : 0.4;
+    final hoverInner = isSelected ? 0.9 : 0.6;
+    final baseMid = isSelected ? 0.2 : 0.1;
+    final hoverMid = isSelected ? 0.3 : 0.15;
 
     // Outer soft glow
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          glowColor.withValues(alpha: isSelected ? 0.7 : 0.4),
-          glowColor.withValues(alpha: isSelected ? 0.2 : 0.1),
+          glowColor.withValues(
+            alpha: _lerp(baseInner, hoverInner, hoverProgress),
+          ),
+          glowColor.withValues(
+            alpha: _lerp(baseMid, hoverMid, hoverProgress),
+          ),
           glowColor.withValues(alpha: 0),
         ],
         stops: const [0, 0.5, 1],
@@ -133,9 +196,17 @@ class _ArcPainter extends CustomPainter {
     canvas.drawCircle(glowCenter, glowRadius, glowPaint);
 
     // Bright core
+    final baseCore = isSelected ? 0.9 : 0.5;
+    final hoverCore = isSelected ? 1.0 : 0.8;
+    final coreColor = Color.lerp(
+      isSelected ? Colors.white : const Color(0xFFAAAAAA),
+      Colors.white,
+      hoverProgress,
+    )!;
     final corePaint = Paint()
-      ..color = (isSelected ? Colors.white : const Color(0xFFAAAAAA))
-          .withValues(alpha: isSelected ? 0.9 : 0.5)
+      ..color = coreColor.withValues(
+        alpha: _lerp(baseCore, hoverCore, hoverProgress),
+      )
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
     canvas.drawCircle(glowCenter, 2, corePaint);
   }
@@ -145,5 +216,6 @@ class _ArcPainter extends CustomPainter {
       color != oldDelegate.color ||
       gapAngle != oldDelegate.gapAngle ||
       strokeWidth != oldDelegate.strokeWidth ||
-      isSelected != oldDelegate.isSelected;
+      isSelected != oldDelegate.isSelected ||
+      hoverProgress != oldDelegate.hoverProgress;
 }
