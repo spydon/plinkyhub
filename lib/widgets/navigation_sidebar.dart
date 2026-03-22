@@ -51,7 +51,7 @@ class NavigationSidebar extends StatelessWidget {
             const SizedBox(height: 8),
             ArcIconButton(
               icon: Icons.folder_copy,
-              label: 'Banks',
+              label: 'Packs',
               isSelected: selectedIndex == 2,
               onPressed: () => onDestinationSelected(2),
             ),

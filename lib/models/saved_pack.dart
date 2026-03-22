@@ -1,12 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:plinkyhub/models/bank_slot.dart';
+import 'package:plinkyhub/models/pack_slot.dart';
 
-part 'saved_bank.freezed.dart';
-part 'saved_bank.g.dart';
+part 'saved_pack.freezed.dart';
+part 'saved_pack.g.dart';
 
 @freezed
-abstract class SavedBank with _$SavedBank {
-  const factory SavedBank({
+abstract class SavedPack with _$SavedPack {
+  const factory SavedPack({
     required String id,
     @JsonKey(name: 'user_id') required String userId,
     required String name,
@@ -14,9 +14,9 @@ abstract class SavedBank with _$SavedBank {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
     @Default('') String description,
     @Default(false) @JsonKey(name: 'is_public') bool isPublic,
-    @Default([]) @JsonKey(name: 'bank_slots') List<BankSlot> slots,
-  }) = _SavedBank;
+    @Default([]) @JsonKey(name: 'pack_slots') List<PackSlot> slots,
+  }) = _SavedPack;
 
-  factory SavedBank.fromJson(Map<String, dynamic> json) =>
-      _$SavedBankFromJson(json);
+  factory SavedPack.fromJson(Map<String, dynamic> json) =>
+      _$SavedPackFromJson(json);
 }

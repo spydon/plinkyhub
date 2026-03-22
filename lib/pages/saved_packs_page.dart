@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_bank.dart';
+import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/models/saved_patch.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/saved_banks_notifier.dart';
+import 'package:plinkyhub/state/saved_packs_notifier.dart';
 import 'package:plinkyhub/state/saved_patches_notifier.dart';
 import 'package:plinkyhub/state/saved_samples_notifier.dart';
 import 'package:plinkyhub/widgets/authentication_button.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
-class SavedBanksPage extends ConsumerStatefulWidget {
-  const SavedBanksPage({super.key});
+class SavedPacksPage extends ConsumerStatefulWidget {
+  const SavedPacksPage({super.key});
 
   @override
-  ConsumerState<SavedBanksPage> createState() => _SavedBanksPageState();
+  ConsumerState<SavedPacksPage> createState() => _SavedPacksPageState();
 }
 
-class _SavedBanksPageState extends ConsumerState<SavedBanksPage>
+class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
@@ -30,7 +30,7 @@ class _SavedBanksPageState extends ConsumerState<SavedBanksPage>
     );
     _tabController.addListener(() {
       if (_tabController.index == 2 && !_tabController.indexIsChanging) {
-        ref.read(savedBanksProvider.notifier).fetchPublicBanks();
+        ref.read(savedPacksProvider.notifier).fetchPublicPacks();
       }
     });
   }
@@ -44,7 +44,7 @@ class _SavedBanksPageState extends ConsumerState<SavedBanksPage>
   @override
   Widget build(BuildContext context) {
     final authenticationState = ref.watch(authenticationProvider);
-    final savedBanksState = ref.watch(savedBanksProvider);
+    final savedPacksState = ref.watch(savedPacksProvider);
     final isSignedIn = authenticationState.user != null;
 
     return Column(
@@ -52,16 +52,16 @@ class _SavedBanksPageState extends ConsumerState<SavedBanksPage>
         TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'My Banks'),
-            Tab(text: 'Create Bank'),
-            Tab(text: 'Community Banks'),
+            Tab(text: 'My Packs'),
+            Tab(text: 'Create Pack'),
+            Tab(text: 'Community Packs'),
           ],
         ),
-        if (savedBanksState.errorMessage != null)
+        if (savedPacksState.errorMessage != null)
           Padding(
             padding: const EdgeInsets.all(8),
             child: Text(
-              savedBanksState.errorMessage!,
+              savedPacksState.errorMessage!,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
               ),
@@ -72,29 +72,29 @@ class _SavedBanksPageState extends ConsumerState<SavedBanksPage>
             controller: _tabController,
             children: [
               if (isSignedIn)
-                _BankList(
-                  banks: savedBanksState.userBanks,
-                  isLoading: savedBanksState.isLoading,
+                _PackList(
+                  packs: savedPacksState.userPacks,
+                  isLoading: savedPacksState.isLoading,
                   isOwned: true,
                   onRefresh: () =>
-                      ref.read(savedBanksProvider.notifier).fetchUserBanks(),
+                      ref.read(savedPacksProvider.notifier).fetchUserPacks(),
                 )
               else
                 const _SignInPrompt(
-                  message: 'Sign in to save and manage your banks',
+                  message: 'Sign in to save and manage your packs',
                 ),
               if (isSignedIn)
-                const _CreateBankTab()
+                const _CreatePackTab()
               else
                 const _SignInPrompt(
-                  message: 'Sign in to create banks',
+                  message: 'Sign in to create packs',
                 ),
-              _BankList(
-                banks: savedBanksState.publicBanks,
-                isLoading: savedBanksState.isLoading,
+              _PackList(
+                packs: savedPacksState.publicPacks,
+                isLoading: savedPacksState.isLoading,
                 isOwned: false,
                 onRefresh: () =>
-                    ref.read(savedBanksProvider.notifier).fetchPublicBanks(),
+                    ref.read(savedPacksProvider.notifier).fetchPublicPacks(),
               ),
             ],
           ),
@@ -130,32 +130,32 @@ class _SignInPrompt extends StatelessWidget {
   }
 }
 
-class _BankList extends ConsumerWidget {
-  const _BankList({
-    required this.banks,
+class _PackList extends ConsumerWidget {
+  const _PackList({
+    required this.packs,
     required this.isLoading,
     required this.isOwned,
     required this.onRefresh,
   });
 
-  final List<SavedBank> banks;
+  final List<SavedPack> packs;
   final bool isLoading;
   final bool isOwned;
   final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (isLoading && banks.isEmpty) {
+    if (isLoading && packs.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (banks.isEmpty) {
+    if (packs.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              isOwned ? 'No saved banks yet' : 'No community banks yet',
+              isOwned ? 'No saved packs yet' : 'No community packs yet',
             ),
             const SizedBox(height: 8),
             PlinkyButton(
@@ -172,7 +172,7 @@ class _BankList extends ConsumerWidget {
       onRefresh: () async => onRefresh(),
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: banks.length + 1,
+        itemCount: packs.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {
             return Padding(
@@ -180,7 +180,7 @@ class _BankList extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    '${banks.length} bank${banks.length == 1 ? '' : 's'}',
+                    '${packs.length} pack${packs.length == 1 ? '' : 's'}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const Spacer(),
@@ -194,27 +194,27 @@ class _BankList extends ConsumerWidget {
             );
           }
 
-          final bank = banks[index - 1];
-          return _BankCard(bank: bank, isOwned: isOwned);
+          final pack = packs[index - 1];
+          return _PackCard(pack: pack, isOwned: isOwned);
         },
       ),
     );
   }
 }
 
-class _BankCard extends ConsumerWidget {
-  const _BankCard({
-    required this.bank,
+class _PackCard extends ConsumerWidget {
+  const _PackCard({
+    required this.pack,
     required this.isOwned,
   });
 
-  final SavedBank bank;
+  final SavedPack pack;
   final bool isOwned;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final filledSlots = bank.slots.length;
+    final filledSlots = pack.slots.length;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -227,7 +227,7 @@ class _BankCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    bank.name.isEmpty ? '(unnamed)' : bank.name,
+                    pack.name.isEmpty ? '(unnamed)' : pack.name,
                     style: theme.textTheme.titleMedium,
                   ),
                 ),
@@ -240,16 +240,16 @@ class _BankCard extends ConsumerWidget {
                 ),
               ],
             ),
-            if (bank.description.isNotEmpty) ...[
+            if (pack.description.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                bank.description,
+                pack.description,
                 style: theme.textTheme.bodyMedium,
               ),
             ],
             const SizedBox(height: 4),
             Text(
-              _formatDate(bank.updatedAt),
+              _formatDate(pack.updatedAt),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -261,20 +261,20 @@ class _BankCard extends ConsumerWidget {
                   const Spacer(),
                   IconButton(
                     icon: Icon(
-                      bank.isPublic ? Icons.public : Icons.public_off,
+                      pack.isPublic ? Icons.public : Icons.public_off,
                       size: 20,
                     ),
-                    tooltip: bank.isPublic ? 'Make private' : 'Make public',
+                    tooltip: pack.isPublic ? 'Make private' : 'Make public',
                     onPressed: () {
-                      ref.read(savedBanksProvider.notifier).updateBank(
-                            bank.id,
-                            isPublic: !bank.isPublic,
+                      ref.read(savedPacksProvider.notifier).updatePack(
+                            pack.id,
+                            isPublic: !pack.isPublic,
                           );
                     },
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 20),
-                    tooltip: 'Delete bank',
+                    tooltip: 'Delete pack',
                     onPressed: () => _confirmDelete(context, ref),
                   ),
                 ],
@@ -290,10 +290,10 @@ class _BankCard extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete bank?'),
+        title: const Text('Delete pack?'),
         content: Text(
           'Are you sure you want to delete '
-          '"${bank.name.isEmpty ? '(unnamed)' : bank.name}"?',
+          '"${pack.name.isEmpty ? '(unnamed)' : pack.name}"?',
         ),
         actions: [
           PlinkyButton(
@@ -304,7 +304,7 @@ class _BankCard extends ConsumerWidget {
           PlinkyButton(
             onPressed: () {
               Navigator.of(context).pop();
-              ref.read(savedBanksProvider.notifier).deleteBank(bank.id);
+              ref.read(savedPacksProvider.notifier).deletePack(pack.id);
             },
             icon: Icons.delete,
             label: 'Delete',
@@ -320,14 +320,14 @@ class _BankCard extends ConsumerWidget {
   }
 }
 
-class _CreateBankTab extends ConsumerStatefulWidget {
-  const _CreateBankTab();
+class _CreatePackTab extends ConsumerStatefulWidget {
+  const _CreatePackTab();
 
   @override
-  ConsumerState<_CreateBankTab> createState() => _CreateBankTabState();
+  ConsumerState<_CreatePackTab> createState() => _CreatePackTabState();
 }
 
-class _CreateBankTabState extends ConsumerState<_CreateBankTab> {
+class _CreatePackTabState extends ConsumerState<_CreatePackTab> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   bool _isPublic = false;
@@ -343,7 +343,7 @@ class _CreateBankTabState extends ConsumerState<_CreateBankTab> {
 
   @override
   Widget build(BuildContext context) {
-    final savedBanksState = ref.watch(savedBanksProvider);
+    final savedPacksState = ref.watch(savedPacksProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -353,7 +353,7 @@ class _CreateBankTabState extends ConsumerState<_CreateBankTab> {
           TextField(
             controller: _nameController,
             decoration: const InputDecoration(
-              labelText: 'Bank name',
+              labelText: 'Pack name',
               border: OutlineInputBorder(),
             ),
           ),
@@ -393,7 +393,7 @@ class _CreateBankTabState extends ConsumerState<_CreateBankTab> {
               final row = index ~/ 4;
               final column = index % 4;
               final slotIndex = column * 8 + row;
-              return _BankSlotTile(
+              return _PackSlotTile(
                 slotNumber: slotIndex,
                 patchId: _slots[slotIndex].patchId,
                 sampleId: _slots[slotIndex].sampleId,
@@ -421,9 +421,9 @@ class _CreateBankTabState extends ConsumerState<_CreateBankTab> {
           const SizedBox(height: 16),
           Center(
             child: PlinkyButton(
-              onPressed: savedBanksState.isLoading ? null : _saveBank,
+              onPressed: savedPacksState.isLoading ? null : _savePack,
               icon: Icons.save,
-              label: 'Save Bank',
+              label: 'Save Pack',
             ),
           ),
           const SizedBox(height: 16),
@@ -432,7 +432,7 @@ class _CreateBankTabState extends ConsumerState<_CreateBankTab> {
     );
   }
 
-  void _saveBank() {
+  void _savePack() {
     final slots = <({int slotNumber, String? patchId, String? sampleId})>[];
     for (var i = 0; i < 32; i++) {
       slots.add((
@@ -442,7 +442,7 @@ class _CreateBankTabState extends ConsumerState<_CreateBankTab> {
       ));
     }
 
-    ref.read(savedBanksProvider.notifier).saveBank(
+    ref.read(savedPacksProvider.notifier).savePack(
           _nameController.text,
           description: _descriptionController.text,
           isPublic: _isPublic,
@@ -450,7 +450,7 @@ class _CreateBankTabState extends ConsumerState<_CreateBankTab> {
         );
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Bank saved')),
+      const SnackBar(content: Text('Pack saved')),
     );
 
     _nameController.clear();
@@ -492,7 +492,7 @@ class _SamplesSection extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              'A bank can use at most 8 samples. '
+              'A pack can use at most 8 samples. '
               'Currently using ${uniqueSampleIds.length}.',
               style: TextStyle(color: theme.colorScheme.error),
             ),
@@ -541,8 +541,8 @@ class _SamplesSection extends ConsumerWidget {
   }
 }
 
-class _BankSlotTile extends ConsumerWidget {
-  const _BankSlotTile({
+class _PackSlotTile extends ConsumerWidget {
+  const _PackSlotTile({
     required this.slotNumber,
     required this.patchId,
     required this.sampleId,

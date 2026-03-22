@@ -1,27 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_bank.dart';
+import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/saved_banks_state.dart';
+import 'package:plinkyhub/state/saved_packs_state.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final savedBanksProvider =
-    NotifierProvider<SavedBanksNotifier, SavedBanksState>(
-  SavedBanksNotifier.new,
+final savedPacksProvider =
+    NotifierProvider<SavedPacksNotifier, SavedPacksState>(
+  SavedPacksNotifier.new,
 );
 
-class SavedBanksNotifier extends Notifier<SavedBanksState> {
+class SavedPacksNotifier extends Notifier<SavedPacksState> {
   SupabaseClient get _supabase => Supabase.instance.client;
 
   @override
-  SavedBanksState build() {
+  SavedPacksState build() {
     final authenticationState = ref.watch(authenticationProvider);
     if (authenticationState.user != null) {
-      Future.microtask(fetchUserBanks);
+      Future.microtask(fetchUserPacks);
     }
-    return const SavedBanksState();
+    return const SavedPacksState();
   }
 
-  Future<void> fetchUserBanks() async {
+  Future<void> fetchUserPacks() async {
     final userId = ref.read(authenticationProvider).user?.id;
     if (userId == null) {
       return;
@@ -30,16 +30,16 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final response = await _supabase
-          .from('banks')
-          .select('*, bank_slots(*)')
+          .from('packs')
+          .select('*, pack_slots(*)')
           .eq('user_id', userId)
           .order('updated_at', ascending: false);
 
-      final banks = (response as List).map((row) {
-        return SavedBank.fromJson(row as Map<String, dynamic>);
+      final packs = (response as List).map((row) {
+        return SavedPack.fromJson(row as Map<String, dynamic>);
       }).toList();
 
-      state = state.copyWith(userBanks: banks, isLoading: false);
+      state = state.copyWith(userPacks: packs, isLoading: false);
     } on Exception catch (error) {
       state = state.copyWith(
         isLoading: false,
@@ -48,13 +48,13 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
     }
   }
 
-  Future<void> fetchPublicBanks() async {
+  Future<void> fetchPublicPacks() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final userId = ref.read(authenticationProvider).user?.id;
       var query = _supabase
-          .from('banks')
-          .select('*, bank_slots(*)')
+          .from('packs')
+          .select('*, pack_slots(*)')
           .eq('is_public', true);
 
       if (userId != null) {
@@ -63,11 +63,11 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
 
       final response = await query.order('updated_at', ascending: false);
 
-      final banks = (response as List).map((row) {
-        return SavedBank.fromJson(row as Map<String, dynamic>);
+      final packs = (response as List).map((row) {
+        return SavedPack.fromJson(row as Map<String, dynamic>);
       }).toList();
 
-      state = state.copyWith(publicBanks: banks, isLoading: false);
+      state = state.copyWith(publicPacks: packs, isLoading: false);
     } on Exception catch (error) {
       state = state.copyWith(
         isLoading: false,
@@ -76,7 +76,7 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
     }
   }
 
-  Future<void> saveBank(
+  Future<void> savePack(
     String name, {
     required List<({int slotNumber, String? patchId, String? sampleId})> slots,
     String description = '',
@@ -89,8 +89,8 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
 
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final bankResponse = await _supabase
-          .from('banks')
+      final packResponse = await _supabase
+          .from('packs')
           .insert({
             'user_id': userId,
             'name': name,
@@ -100,12 +100,12 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
           .select('id')
           .single();
 
-      final bankId = bankResponse['id'] as String;
+      final packId = packResponse['id'] as String;
 
       final slotRows = slots
           .where((slot) => slot.patchId != null || slot.sampleId != null)
           .map((slot) => {
-                'bank_id': bankId,
+                'pack_id': packId,
                 'slot_number': slot.slotNumber,
                 'patch_id': slot.patchId,
                 'sample_id': slot.sampleId,
@@ -113,10 +113,10 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
           .toList();
 
       if (slotRows.isNotEmpty) {
-        await _supabase.from('bank_slots').insert(slotRows);
+        await _supabase.from('pack_slots').insert(slotRows);
       }
 
-      await fetchUserBanks();
+      await fetchUserPacks();
     } on Exception catch (error) {
       state = state.copyWith(
         isLoading: false,
@@ -125,7 +125,7 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
     }
   }
 
-  Future<void> updateBank(
+  Future<void> updatePack(
     String id, {
     String? name,
     String? description,
@@ -146,8 +146,8 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
         updates['is_public'] = isPublic;
       }
 
-      await _supabase.from('banks').update(updates).eq('id', id);
-      await fetchUserBanks();
+      await _supabase.from('packs').update(updates).eq('id', id);
+      await fetchUserPacks();
     } on Exception catch (error) {
       state = state.copyWith(
         isLoading: false,
@@ -156,11 +156,11 @@ class SavedBanksNotifier extends Notifier<SavedBanksState> {
     }
   }
 
-  Future<void> deleteBank(String id) async {
+  Future<void> deletePack(String id) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      await _supabase.from('banks').delete().eq('id', id);
-      await fetchUserBanks();
+      await _supabase.from('packs').delete().eq('id', id);
+      await fetchUserPacks();
     } on Exception catch (error) {
       state = state.copyWith(
         isLoading: false,

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:plinkyhub/pages/about_page.dart';
 import 'package:plinkyhub/pages/editor_page.dart';
-import 'package:plinkyhub/pages/saved_banks_page.dart';
+import 'package:plinkyhub/pages/saved_packs_page.dart';
 import 'package:plinkyhub/pages/saved_patches_page.dart';
 import 'package:plinkyhub/pages/saved_samples_page.dart';
 import 'package:plinkyhub/widgets/navigation_sidebar.dart';
@@ -86,7 +86,7 @@ class _PlinkyHubShellState extends ConsumerState<PlinkyHubShell> {
   static const _pages = <Widget>[
     EditorPage(),
     SavedPatchesPage(),
-    SavedBanksPage(),
+    SavedPacksPage(),
     SavedSamplesPage(),
     AboutPage(),
   ];
