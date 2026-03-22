@@ -114,13 +114,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
                     ),
                   ),
                 ),
-            ] else
-              SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: const SliverToBoxAdapter(
-                  child: Text('No patch in browser memory'),
-                ),
-              ),
+            ],
           ],
         );
       },

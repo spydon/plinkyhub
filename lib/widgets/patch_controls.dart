@@ -100,6 +100,15 @@ class _PatchControlsState extends ConsumerState<PatchControls> {
               icon: Icons.upload,
               label: 'Save patch',
             ),
+            const SizedBox(width: 8),
+            PlinkyButton(
+              onPressed: isLoading || state.patch == null
+                  ? null
+                  : () =>
+                      ref.read(plinkyProvider.notifier).clearPatch(),
+              icon: Icons.delete_outline,
+              label: 'Clear loaded patch',
+            ),
           ],
         ),
       ],

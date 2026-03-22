@@ -5,8 +5,8 @@ import 'package:plinkyhub/models/patch.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/state/saved_patches_notifier.dart';
+import 'package:plinkyhub/models/category.dart' show RandomizeGroup;
 import 'package:plinkyhub/widgets/plinky_button.dart';
-import 'package:plinkyhub/widgets/randomize_controls.dart';
 
 class PatchDetailsHeader extends ConsumerWidget {
   const PatchDetailsHeader({required this.patch, super.key});
@@ -18,20 +18,8 @@ class PatchDetailsHeader extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'This is the patch that has been loaded into '
-          'browser memory.',
-        ),
-        const SizedBox(height: 8),
         Row(
           children: [
-            PlinkyButton(
-              onPressed: () =>
-                  ref.read(plinkyProvider.notifier).clearPatch(),
-              icon: Icons.delete_outline,
-              label: 'Clear patch in browser memory',
-            ),
-            const SizedBox(width: 8),
             _SaveToCloudButton(patch: patch),
           ],
         ),
@@ -95,8 +83,15 @@ class PatchDetailsHeader extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        const RandomizeControls(),
+        const SizedBox(height: 8),
+        PlinkyButton(
+          onPressed: () => showDialog<void>(
+            context: context,
+            builder: (context) => const _RandomizeDialog(),
+          ),
+          icon: Icons.shuffle,
+          label: 'Randomize patch',
+        ),
         const SizedBox(height: 16),
         Text(
           'Parameters',
@@ -191,6 +186,208 @@ class _SaveToCloudButton extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RandomizeDialog extends ConsumerStatefulWidget {
+  const _RandomizeDialog();
+
+  @override
+  ConsumerState<_RandomizeDialog> createState() =>
+      _RandomizeDialogState();
+}
+
+class _RandomizeDialogState extends ConsumerState<_RandomizeDialog> {
+  final Set<RandomizeGroup> _selectedGroups =
+      Set.of(RandomizeGroup.values);
+
+  void _selectAll() {
+    setState(() {
+      _selectedGroups.addAll(RandomizeGroup.values);
+    });
+  }
+
+  void _clearAll() {
+    setState(_selectedGroups.clear);
+  }
+
+  void _onGroupToggled({
+    required RandomizeGroup group,
+    required bool selected,
+  }) {
+    setState(() {
+      if (selected) {
+        _selectedGroups.add(group);
+      } else {
+        _selectedGroups.remove(group);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Randomize patch'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Select which parameter groups to randomize. '
+              'To transfer to Plinky, press "Save patch".',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                PlinkyButton(
+                  onPressed: _selectAll,
+                  icon: Icons.select_all,
+                  label: 'Select all',
+                ),
+                const SizedBox(width: 8),
+                PlinkyButton(
+                  onPressed: _clearAll,
+                  icon: Icons.deselect,
+                  label: 'Clear all',
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 24,
+              runSpacing: 16,
+              children: [
+                _RandomizeGroupSection(
+                  title: 'Synth',
+                  groups: const [RandomizeGroup.synth],
+                  selected: _selectedGroups,
+                  onChanged: _onGroupToggled,
+                ),
+                _RandomizeGroupSection(
+                  title: 'Envelope',
+                  groups: const [
+                    RandomizeGroup.envelope1,
+                    RandomizeGroup.envelope2,
+                  ],
+                  selected: _selectedGroups,
+                  onChanged: _onGroupToggled,
+                ),
+                _RandomizeGroupSection(
+                  title: 'Effects',
+                  groups: const [RandomizeGroup.effects],
+                  selected: _selectedGroups,
+                  onChanged: _onGroupToggled,
+                ),
+                _RandomizeGroupSection(
+                  title: 'Arp / Seq',
+                  groups: const [
+                    RandomizeGroup.arpeggiator,
+                    RandomizeGroup.sequencer,
+                  ],
+                  selected: _selectedGroups,
+                  onChanged: _onGroupToggled,
+                ),
+                _RandomizeGroupSection(
+                  title: 'Sampler',
+                  groups: const [RandomizeGroup.sampler],
+                  selected: _selectedGroups,
+                  onChanged: _onGroupToggled,
+                ),
+                _RandomizeGroupSection(
+                  title: 'Modulation',
+                  groups: const [
+                    RandomizeGroup.modA,
+                    RandomizeGroup.modB,
+                    RandomizeGroup.modX,
+                    RandomizeGroup.modY,
+                  ],
+                  selected: _selectedGroups,
+                  onChanged: _onGroupToggled,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        PlinkyButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: Icons.close,
+          label: 'Cancel',
+        ),
+        PlinkyButton(
+          onPressed: _selectedGroups.isEmpty
+              ? null
+              : () {
+                  ref
+                      .read(plinkyProvider.notifier)
+                      .randomizePatch(_selectedGroups.toList());
+                  Navigator.of(context).pop();
+                },
+          icon: Icons.shuffle,
+          label: 'Randomize',
+        ),
+      ],
+    );
+  }
+}
+
+class _RandomizeGroupSection extends StatelessWidget {
+  const _RandomizeGroupSection({
+    required this.title,
+    required this.groups,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final String title;
+  final List<RandomizeGroup> groups;
+  final Set<RandomizeGroup> selected;
+  final void Function({
+    required RandomizeGroup group,
+    required bool selected,
+  }) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        ...groups.map((group) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    value: selected.contains(group),
+                    onChanged: (value) => onChanged(
+                      group: group,
+                      selected: value ?? false,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(group.displayName),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 }
