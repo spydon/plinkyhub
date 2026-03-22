@@ -195,18 +195,42 @@ class _SignInDialogState extends ConsumerState<SignInDialog> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final username = _usernameController.text.trim();
-    if (email.isEmpty || password.isEmpty) {
-      return;
-    }
-    if (_isSignUp && username.isEmpty) {
+    final notifier = ref.read(authenticationProvider.notifier);
+
+    final validationError = _validate(email, password, username);
+    if (validationError != null) {
+      notifier.setError(validationError);
       return;
     }
 
-    final notifier = ref.read(authenticationProvider.notifier);
     if (_isSignUp) {
       notifier.signUp(email, password, username);
     } else {
       notifier.signIn(email, password);
     }
+  }
+
+  String? _validate(String email, String password, String username) {
+    if (email.isEmpty) {
+      return 'Please enter your email address.';
+    }
+    if (!email.contains('@') || !email.contains('.')) {
+      return 'Please enter a valid email address.';
+    }
+    if (password.isEmpty) {
+      return 'Please enter your password.';
+    }
+    if (_isSignUp) {
+      if (username.isEmpty) {
+        return 'Please choose a username.';
+      }
+      if (username.length < 3) {
+        return 'Username must be at least 3 characters.';
+      }
+      if (password.length < 6) {
+        return 'Password must be at least 6 characters.';
+      }
+    }
+    return null;
   }
 }

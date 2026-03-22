@@ -68,7 +68,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
     } on AuthException catch (error) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: error.message,
+        errorMessage: _friendlyAuthError(error.message),
       );
     }
   }
@@ -79,13 +79,8 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
       final response = await _supabase.auth.signUp(
         email: email,
         password: password,
+        data: {'username': username},
       );
-      if (response.user != null) {
-        await _supabase.from('profiles').insert({
-          'id': response.user!.id,
-          'username': username,
-        });
-      }
       state = state.copyWith(
         user: response.user,
         username: username,
@@ -94,12 +89,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
     } on AuthException catch (error) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: error.message,
-      );
-    } on PostgrestException catch (error) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: error.message,
+        errorMessage: _friendlyAuthError(error.message),
       );
     }
   }
@@ -112,12 +102,60 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
     } on AuthException catch (error) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: error.message,
+        errorMessage: _friendlyAuthError(error.message),
       );
     }
   }
 
   void clearError() {
     state = state.copyWith(errorMessage: null);
+  }
+
+  void setError(String message) {
+    state = state.copyWith(errorMessage: message);
+  }
+
+  static String _friendlyAuthError(String message) {
+    final lower = message.toLowerCase();
+    if (lower.contains('invalid login credentials')) {
+      return 'Incorrect email or password. Please try again.';
+    }
+    if (lower.contains('email not confirmed')) {
+      return 'Please check your inbox and confirm your email '
+          'before signing in.';
+    }
+    if (lower.contains('user already registered')) {
+      return 'An account with this email already exists. '
+          'Try signing in instead.';
+    }
+    if (lower.contains('signup is disabled')) {
+      return 'Sign-up is currently disabled. '
+          'Please contact the administrator.';
+    }
+    if (lower.contains('email rate limit exceeded') ||
+        lower.contains('rate limit')) {
+      return 'Too many attempts. Please wait a moment and try again.';
+    }
+    if (lower.contains('password') &&
+        lower.contains('at least')) {
+      return 'Password is too short. '
+          'Please use at least 6 characters.';
+    }
+    if (lower.contains('unique') || lower.contains('duplicate')) {
+      return 'That username is already taken. '
+          'Please choose a different one.';
+    }
+    if (lower.contains('row-level security') ||
+        lower.contains('row level security')) {
+      return 'Unable to create your profile. '
+          'Please try again.';
+    }
+    if (lower.contains('network') ||
+        lower.contains('socket') ||
+        lower.contains('connection')) {
+      return 'Unable to connect. '
+          'Please check your internet connection.';
+    }
+    return message;
   }
 }
