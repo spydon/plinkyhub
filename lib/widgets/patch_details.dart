@@ -4,8 +4,8 @@ import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/patch.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
+import 'package:plinkyhub/state/plinky_state.dart';
 import 'package:plinkyhub/state/saved_patches_notifier.dart';
-import 'package:plinkyhub/utils/compress.dart';
 import 'package:plinkyhub/widgets/parameter_tile.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/randomize_controls.dart';
@@ -18,20 +18,22 @@ class PatchDetails extends ConsumerWidget {
     final state = ref.watch(plinkyProvider);
     final patch = state.patch;
 
+    final isLoading =
+        state.connectionState == PlinkyConnectionState.loadingPatch;
+
+    if (isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (patch == null) {
       return const Padding(
         padding: EdgeInsets.all(16),
         child: Text('No patch in browser memory'),
       );
     }
-
-    final linkUrl = Uri.base
-        .replace(
-          queryParameters: {
-            'p': bytecompress(patch.buffer.asUint8List()),
-          },
-        )
-        .toString();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,22 +55,7 @@ class PatchDetails extends ConsumerWidget {
             _SaveToCloudButton(patch: patch),
           ],
         ),
-        const SizedBox(height: 16),
-        Text(
-          'Link to patch',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 4),
-        SelectableText(
-          linkUrl,
-          style: const TextStyle(fontSize: 12),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Patch name and category',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Row(
           children: [
             SizedBox(
@@ -94,25 +81,37 @@ class PatchDetails extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 8),
-            DropdownButton<PatchCategory>(
-              value: patch.category,
-              items: PatchCategory.values.map((category) {
-                return DropdownMenuItem<PatchCategory>(
-                  value: category,
-                  child: Text(
-                    category.label.isEmpty
-                        ? '(none)'
-                        : category.label,
+            SizedBox(
+              width: 160,
+              child: DropdownButtonFormField<PatchCategory>(
+                value: patch.category,
+                isDense: true,
+                decoration: const InputDecoration(
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
                   ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  ref
-                      .read(plinkyProvider.notifier)
-                      .patchCategory = value;
-                }
-              },
+                  border: OutlineInputBorder(),
+                ),
+                items: PatchCategory.values.map((category) {
+                  return DropdownMenuItem<PatchCategory>(
+                    value: category,
+                    child: Text(
+                      category.label.isEmpty
+                          ? '(none)'
+                          : category.label,
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    ref
+                        .read(plinkyProvider.notifier)
+                        .patchCategory = value;
+                  }
+                },
+              ),
             ),
           ],
         ),

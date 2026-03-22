@@ -77,9 +77,10 @@ class _RandomizeControlsState
             ),
           ],
         ),
+        const SizedBox(height: 8),
         Wrap(
-          spacing: 16,
-          runSpacing: 8,
+          spacing: 24,
+          runSpacing: 16,
           children: [
             _RandomizeGroupSection(
               title: 'Synth',
@@ -130,7 +131,7 @@ class _RandomizeControlsState
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         PlinkyButton(
           onPressed: _randomize,
           icon: Icons.shuffle,
@@ -162,25 +163,36 @@ class _RandomizeGroupSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         ...groups.map((group) {
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Checkbox(
-                value: selected.contains(group),
-                onChanged: (value) => onChanged(
-                  group: group,
-                  selected: value ?? false,
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    value: selected.contains(group),
+                    onChanged: (value) => onChanged(
+                      group: group,
+                      selected: value ?? false,
+                    ),
+                  ),
                 ),
-              ),
-              Text(group.displayName),
-            ],
+                const SizedBox(width: 8),
+                Text(group.displayName),
+              ],
+            ),
           );
         }),
       ],

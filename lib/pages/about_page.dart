@@ -32,6 +32,26 @@ class AboutPage extends StatelessWidget {
             'Based on the original Plinky WebUSB editor by '
             'Orangetronic, miunau and wraybowling.',
           ),
+          const SizedBox(height: 8),
+          Wrap(
+            children: [
+              const Text('Parameter icons by '),
+              GestureDetector(
+                onTap: () => web.window.open(
+                  'https://x.com/mmalex',
+                  '_blank',
+                ),
+                child: Text(
+                  '@mmalex',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+              const Text('.'),
+            ],
+          ),
           const SizedBox(height: 24),
           Text(
             'Disclaimer',

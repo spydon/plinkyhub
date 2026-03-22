@@ -52,14 +52,37 @@ class _EditorPageState extends ConsumerState<EditorPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Patch Editor',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Current state: ${state.connectionState.name}',
-            style: Theme.of(context).textTheme.titleMedium,
+          Row(
+            children: [
+              Text(
+                'Patch Editor',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(width: 8),
+              Tooltip(
+                message: state.connectionState.name,
+                child: Icon(
+                  switch (state.connectionState) {
+                    PlinkyConnectionState.connected => Icons.usb,
+                    PlinkyConnectionState.connecting => Icons.sync,
+                    PlinkyConnectionState.loadingPatch => Icons.download,
+                    PlinkyConnectionState.savingPatch => Icons.upload,
+                    PlinkyConnectionState.error => Icons.error_outline,
+                    PlinkyConnectionState.disconnected => Icons.usb_off,
+                  },
+                  color: switch (state.connectionState) {
+                    PlinkyConnectionState.connected ||
+                    PlinkyConnectionState.loadingPatch ||
+                    PlinkyConnectionState.savingPatch =>
+                      Colors.green,
+                    PlinkyConnectionState.connecting => Colors.orange,
+                    PlinkyConnectionState.error => Colors.red,
+                    PlinkyConnectionState.disconnected =>
+                      Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                  },
+                ),
+              ),
+            ],
           ),
           if (isError && state.errorMessage != null) ...[
             const SizedBox(height: 8),
@@ -105,11 +128,6 @@ class _EditorPageState extends ConsumerState<EditorPage> {
             const PatchControls(),
           ],
           const SizedBox(height: 16),
-          Text(
-            'Current patch',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
           const PatchDetails(),
         ],
       ),
