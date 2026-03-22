@@ -21,11 +21,7 @@ access the USB device.
 
 3. **Create a udev rule:**
    ```bash
-   sudo nano /etc/udev/rules.d/99-plinky.rules
-   ```
-   Add the following line:
-   ```
-   SUBSYSTEM=="usb", ATTRS{idVendor}=="cafe", MODE="0660", GROUP="plugdev"
+   echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="cafe", MODE="0660", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/99-plinky.rules
    ```
 
 4. **Reload udev rules:**
