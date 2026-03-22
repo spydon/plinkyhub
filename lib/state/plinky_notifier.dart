@@ -250,6 +250,8 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
       return;
     }
     patch.randomize(groups);
+    // Force a state change since Patch is mutated in place.
+    state = state.copyWith(patch: null);
     state = state.copyWith(patch: patch);
   }
 

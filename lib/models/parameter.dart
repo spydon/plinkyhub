@@ -104,9 +104,10 @@ class Parameter {
   }
 
   void randomize() {
-    final range = maximum - minimum;
-    final randomValue = Random().nextDouble() * range;
-    final newValue = minimum + randomValue;
-    value = newValue.toInt();
+    final rangeMinimum = minimum < 0 ? -1024 : 0;
+    const rangeMaximum = 1024;
+    value =
+        (rangeMinimum + Random().nextDouble() * (rangeMaximum - rangeMinimum))
+            .toInt();
   }
 }

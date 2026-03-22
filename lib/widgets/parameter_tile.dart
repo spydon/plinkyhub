@@ -50,6 +50,12 @@ class _ParameterTileState extends State<ParameterTile> {
   }
 
   @override
+  void didUpdateWidget(ParameterTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _updateControllerTexts();
+  }
+
+  @override
   void dispose() {
     _valueController.dispose();
     for (final controller in _modulationControllers.values) {
