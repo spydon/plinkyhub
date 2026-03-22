@@ -52,7 +52,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Plinky WebUSB Editor',
+            'Patch Editor',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 8),

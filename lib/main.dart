@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:plinkyhub/pages/about_page.dart';
 import 'package:plinkyhub/pages/editor_page.dart';
 import 'package:plinkyhub/pages/saved_patches_page.dart';
-import 'package:plinkyhub/widgets/authentication_button.dart';
+import 'package:plinkyhub/widgets/navigation_sidebar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -88,54 +88,12 @@ class _PlinkyHubShellState extends ConsumerState<PlinkyHubShell> {
         children: [
           Row(
             children: [
-              NavigationRail(
-            leading: Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(text: 'Plinky\n'),
-                    TextSpan(text: 'Hub'),
-                  ],
-                ),
-                style: GoogleFonts.fingerPaint(
-                  textStyle: Theme.of(context).textTheme.titleLarge,
-                ),
-                textAlign: TextAlign.center,
+              NavigationSidebar(
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: (index) {
+                  setState(() => _selectedIndex = index);
+                },
               ),
-            ),
-            trailing: const Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 16),
-                  child: AuthenticationButton(),
-                ),
-              ),
-            ),
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (index) {
-              setState(() => _selectedIndex = index);
-            },
-            labelType: NavigationRailLabelType.all,
-            destinations: const [
-              NavigationRailDestination(
-                icon: Icon(Icons.piano_outlined),
-                selectedIcon: Icon(Icons.piano),
-                label: Text('Editor'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.cloud_outlined),
-                selectedIcon: Icon(Icons.cloud),
-                label: Text('My Patches'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.info_outline),
-                selectedIcon: Icon(Icons.info),
-                label: Text('About'),
-              ),
-            ],
-          ),
               const VerticalDivider(thickness: 1, width: 1),
               Expanded(child: _pages[_selectedIndex]),
             ],
