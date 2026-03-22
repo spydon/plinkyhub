@@ -31,11 +31,10 @@ class LinuxWebusbInstructions extends StatelessWidget {
           _InstructionStep(
             number: '2',
             title: 'Create a udev rule:',
-            code: 'sudo nano /etc/udev/rules.d/99-plinky.rules',
-            detail:
-                'Add the following line:\n'
-                'SUBSYSTEM=="usb", ATTRS{idVendor}=="cafe", '
-                'MODE="0660", GROUP="plugdev"',
+            code:
+                'echo \'SUBSYSTEM=="usb", ATTRS{idVendor}=="cafe", '
+                'MODE="0660", GROUP="plugdev"\' '
+                '| sudo tee /etc/udev/rules.d/99-plinky.rules',
           ),
           _InstructionStep(
             number: '3',
