@@ -32,7 +32,30 @@ class AboutPage extends StatelessWidget {
             'Based on the original Plinky WebUSB editor by '
             'Orangetronic, miunau and wraybowling.',
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
+          Text(
+            'Disclaimer',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'PlinkyHub is an independent community project and is not '
+            'affiliated with, endorsed by, or officially connected to '
+            'Plinky, plinkysynth.com, or any of its creators. '
+            'All product names, trademarks, and registered trademarks '
+            'are the property of their respective owners.',
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'PlinkyHub is open source and provided as-is, without any '
+            'warranty. Use at your own risk.',
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Links',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
           TextButton.icon(
             onPressed: () => web.window.open(
               'https://plinkysynth.com',
