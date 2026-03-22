@@ -62,7 +62,7 @@ class Parameter {
   int get value => _array[0];
   set value(int newValue) => _array[0] = newValue;
 
-  String get icon => paramIconMap[id] ?? 'blank.svg';
+  String get icon => paramIconMap[id] ?? 'blank.png';
 
   String get displayValue {
     final option = getActiveSelectOption();

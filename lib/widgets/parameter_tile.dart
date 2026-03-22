@@ -87,17 +87,17 @@ class _ParameterTileState extends State<ParameterTile> {
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
             color: colorScheme.primaryContainer,
             child: Row(
               children: [
-                Image.network(
-                  'icons/${parameter.icon}',
+                Image.asset(
+                  'assets/icons/${parameter.icon}',
                   width: 40,
                   height: 40,
                   color: colorScheme.onPrimaryContainer,
                   errorBuilder: (context, error, stackTrace) =>
-                      const SizedBox(width: 40, height: 40),
+                      const SizedBox(width: 32, height: 32),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -140,7 +140,7 @@ class _ParameterTileState extends State<ParameterTile> {
           ),
           // Body
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             color: colorScheme.surfaceContainerHighest,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -167,7 +167,6 @@ class _ParameterTileState extends State<ParameterTile> {
                     max: rangeMaximum,
                     onChanged: _onSliderChanged,
                   ),
-                const SizedBox(height: 8),
                 // Modulation matrix
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,24 +249,24 @@ class _ModulationColumn extends StatelessWidget {
     return Column(
       children: entries.entries.map((entry) {
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 60,
-                child: entry.key == 'Random'
-                    ? const Icon(Icons.shuffle, size: 16)
+          padding: const EdgeInsets.symmetric(vertical: 1),
+          child: SizedBox(
+            height: 30,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                entry.key == 'Random'
+                    ? const Icon(Icons.shuffle, size: 18)
                     : Text(
                         entry.key,
-                        style: const TextStyle(fontSize: 13),
+                        style: const TextStyle(fontSize: 14),
                       ),
-              ),
-              Expanded(
-                child: SizedBox(
-                  height: 28,
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 64,
                   child: TextField(
                     controller: TextEditingController(text: entry.value),
-                    style: const TextStyle(fontSize: 13),
+                    style: const TextStyle(fontSize: 14),
                     decoration: const InputDecoration(
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(
@@ -279,8 +278,8 @@ class _ModulationColumn extends StatelessWidget {
                     onSubmitted: (value) => onChanged(entry.key, value),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       }).toList(),
