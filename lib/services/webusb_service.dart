@@ -132,7 +132,15 @@ class WebUsbService {
     final options = USBDeviceRequestOptions(
       filters: filters.toJS,
     );
-    _device = await usb.requestDevice(options).toDart;
+    try {
+      _device = await usb.requestDevice(options).toDart;
+    } on Error catch (error) {
+      if (error.toString().contains('No device selected')) {
+        // User cancelled the device picker dialog.
+        return;
+      }
+      rethrow;
+    }
 
     await _device!.open().toDart;
 

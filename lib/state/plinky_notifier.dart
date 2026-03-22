@@ -31,6 +31,12 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
       _webUsbService.onDataReceived = _onDataReceived;
       _webUsbService.onError = _onError;
       await _webUsbService.connect();
+      if (!_webUsbService.isConnected) {
+        state = state.copyWith(
+          connectionState: PlinkyConnectionState.disconnected,
+        );
+        return;
+      }
       state = state.copyWith(
         connectionState: PlinkyConnectionState.connected,
       );
