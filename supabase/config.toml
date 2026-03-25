@@ -10,7 +10,7 @@ port = 54322
 major_version = 15
 
 [auth.email.template.confirmation]
-content_path = "./templates/confirmation.html"
+content_path = "./supabase/templates/confirmation.html"
 subject = "Confirm your PlinkyHub account"
 
 [studio]
