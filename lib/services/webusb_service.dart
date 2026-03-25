@@ -133,7 +133,12 @@ class WebUsbService {
       rethrow;
     }
 
-    await _device!.open().toDart;
+    try {
+      await _device!.open().toDart;
+    } on Object catch (error) {
+      _device = null;
+      throw Exception('Failed to open USB device: $error');
+    }
 
     final configuration = _device!.configuration;
     if (configuration == null) {

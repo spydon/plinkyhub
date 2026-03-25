@@ -4,8 +4,29 @@ import 'package:web/web.dart' as web;
 bool get _isLinux =>
     web.window.navigator.userAgent.toLowerCase().contains('linux');
 
-class LinuxWebusbInstructions extends StatelessWidget {
-  const LinuxWebusbInstructions({super.key});
+class LinuxWebusbInstructions extends StatefulWidget {
+  const LinuxWebusbInstructions({
+    super.key,
+    this.expanded = false,
+  });
+
+  final bool expanded;
+
+  @override
+  State<LinuxWebusbInstructions> createState() =>
+      _LinuxWebusbInstructionsState();
+}
+
+class _LinuxWebusbInstructionsState extends State<LinuxWebusbInstructions> {
+  final _controller = ExpansibleController();
+
+  @override
+  void didUpdateWidget(LinuxWebusbInstructions oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.expanded && !oldWidget.expanded) {
+      _controller.expand();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,15 +34,16 @@ class LinuxWebusbInstructions extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return const Padding(
-      padding: EdgeInsets.only(top: 8),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
       child: ExpansionTile(
-        leading: Icon(Icons.info_outline),
-        title: Text('Linux: WebUSB access denied?'),
+        controller: _controller,
+        leading: const Icon(Icons.info_outline),
+        title: const Text('Linux: WebUSB access denied?'),
         tilePadding: EdgeInsets.zero,
-        childrenPadding: EdgeInsets.only(bottom: 8),
+        childrenPadding: const EdgeInsets.only(bottom: 8),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: const [
           _InstructionStep(
             number: '1',
             title: 'Add your user to the plugdev group:',
@@ -45,6 +67,14 @@ class LinuxWebusbInstructions extends StatelessWidget {
             number: '4',
             title: 'Reconnect Plinky',
             detail: 'Unplug and replug the USB cable.',
+          ),
+          _InstructionStep(
+            number: '5',
+            title: 'If your browser is installed via snap, '
+                'grant USB access:',
+            code: 'sudo snap connect chromium:raw-usb',
+            detail: 'Replace "chromium" with your browser\'s '
+                'snap name if different.',
           ),
         ],
       ),

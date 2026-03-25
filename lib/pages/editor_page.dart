@@ -162,13 +162,6 @@ class _EditorHeader extends StatelessWidget {
             ),
           ],
         ),
-        if (isError && state.errorMessage != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            state.errorMessage!,
-            style: const TextStyle(color: Colors.red),
-          ),
-        ],
         if (!isConnected) ...[
           const SizedBox(height: 8),
           const Text(
@@ -188,7 +181,17 @@ class _EditorHeader extends StatelessWidget {
                 ),
               ),
             ),
-          const LinuxWebusbInstructions(),
+          LinuxWebusbInstructions(
+            expanded: isError &&
+                (state.errorMessage?.contains('Access denied') ?? false),
+          ),
+          if (isError && state.errorMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              state.errorMessage!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ],
           const SizedBox(height: 8),
           _ConnectButton(),
         ],
