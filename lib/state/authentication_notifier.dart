@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/state/authentication_state.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -50,7 +51,8 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
           .eq('id', userId)
           .maybeSingle();
       return response?['username'] as String?;
-    } on PostgrestException catch (_) {
+    } on PostgrestException catch (error) {
+      debugPrint('$error');
       return null;
     }
   }
@@ -67,6 +69,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
         isLoading: false,
       );
     } on AuthException catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: _friendlyAuthError(error.message),
@@ -88,11 +91,13 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
         isLoading: false,
       );
     } on AuthException catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: _friendlyAuthError(error.message),
       );
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: _friendlyAuthError(error.toString()),
@@ -106,6 +111,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
       await _supabase.auth.signOut();
       state = const AuthenticationState();
     } on AuthException catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: _friendlyAuthError(error.message),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
@@ -41,6 +42,7 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
 
       state = state.copyWith(userPacks: packs, isLoading: false);
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -69,6 +71,7 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
 
       state = state.copyWith(publicPacks: packs, isLoading: false);
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -120,6 +123,7 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
 
       await fetchUserPacks();
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -151,6 +155,7 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
       await _supabase.from('packs').update(updates).eq('id', id);
       await fetchUserPacks();
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -164,6 +169,7 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
       await _supabase.from('packs').delete().eq('id', id);
       await fetchUserPacks();
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),

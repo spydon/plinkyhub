@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/patch.dart';
 import 'package:plinkyhub/models/saved_patch.dart';
@@ -67,6 +68,7 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
       final patches = await _parsePatchRows(response as List);
       state = state.copyWith(userPatches: patches, isLoading: false);
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -93,6 +95,7 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
       final patches = await _parsePatchRows(response as List);
       state = state.copyWith(publicPatches: patches, isLoading: false);
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -124,6 +127,7 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
 
       await fetchUserPatches();
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -151,6 +155,7 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
       await _supabase.from('patches').update(updates).eq('id', id);
       await fetchUserPatches();
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -164,6 +169,7 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
       await _supabase.from('patches').delete().eq('id', id);
       await fetchUserPatches();
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -208,6 +214,7 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
         ),
       );
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(errorMessage: error.toString());
     }
   }

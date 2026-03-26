@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
@@ -43,6 +44,7 @@ class SavedSamplesNotifier extends Notifier<SavedSamplesState> {
 
       state = state.copyWith(userSamples: samples, isLoading: false);
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -71,6 +73,7 @@ class SavedSamplesNotifier extends Notifier<SavedSamplesState> {
 
       state = state.copyWith(publicSamples: samples, isLoading: false);
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -92,23 +95,26 @@ class SavedSamplesNotifier extends Notifier<SavedSamplesState> {
     try {
       await _supabase.storage
           .from('samples')
-          .uploadBinary(sample.filePath, wavBytes);
+          .uploadBinary(sample.filePath, wavBytes, fileOptions: const FileOptions(upsert: true));
       await _supabase.storage
           .from('samples')
-          .uploadBinary(sample.pcmFilePath, pcmBytes);
+          .uploadBinary(sample.pcmFilePath, pcmBytes, fileOptions: const FileOptions(upsert: true));
 
       final json = sample.toJson()
         ..remove('id')
         ..remove('created_at')
-        ..remove('updated_at');
+        ..remove('updated_at')
+        ..remove('username');
       await _supabase.from('samples').insert(json);
 
       await fetchUserSamples();
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
       );
+      rethrow;
     }
   }
 
@@ -126,6 +132,7 @@ class SavedSamplesNotifier extends Notifier<SavedSamplesState> {
       await _supabase.from('samples').update(json).eq('id', sample.id);
       await fetchUserSamples();
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
@@ -150,6 +157,7 @@ class SavedSamplesNotifier extends Notifier<SavedSamplesState> {
       await _supabase.from('samples').delete().eq('id', id);
       await fetchUserSamples();
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),

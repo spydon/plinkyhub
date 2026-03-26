@@ -24,7 +24,7 @@ class _UploadSampleDialogState
     extends ConsumerState<UploadSampleDialog> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  bool _isPublic = false;
+  bool _isPublic = true;
   Uint8List? _fileBytes;
   String? _fileName;
   bool _isUploading = false;
@@ -147,11 +147,12 @@ class _UploadSampleDialogState
           const SnackBar(content: Text('Sample uploaded')),
         );
       }
-    } on FormatException catch (e) {
+    } on Exception catch (e) {
+      debugPrint('Failed to upload sample: $e');
       setState(() => _isUploading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
+          SnackBar(content: Text(e.toString())),
         );
       }
     }

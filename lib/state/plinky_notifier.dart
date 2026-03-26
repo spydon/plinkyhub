@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/patch.dart';
@@ -42,6 +43,7 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
         connectionState: PlinkyConnectionState.connected,
       );
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         connectionState: PlinkyConnectionState.error,
         errorMessage: error.toString(),
@@ -128,6 +130,7 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
         patch: patch,
       );
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         connectionState: PlinkyConnectionState.error,
         errorMessage: error.toString(),
@@ -212,6 +215,7 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
         connectionState: PlinkyConnectionState.connected,
       );
     } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         connectionState: PlinkyConnectionState.error,
         errorMessage: error.toString(),
@@ -230,7 +234,8 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
       );
       final patch = Patch(decodedPatch.buffer);
       state = state.copyWith(patch: patch);
-    } on Exception {
+    } on Exception catch (error) {
+      debugPrint('$error');
       state = state.copyWith(
         errorMessage: 'Failed to parse patch from URL',
       );
