@@ -178,6 +178,18 @@ class PatchDetailsHeader extends ConsumerWidget {
                 ),
               ],
             ),
+            if (patch.usesSample)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.audio_file, size: 20),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Sample #${patch.sampleSlot}',
+                    style: const TextStyle(fontSize: 15),
+                  ),
+                ],
+              ),
           ],
         ),
       ],

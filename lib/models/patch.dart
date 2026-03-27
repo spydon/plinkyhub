@@ -146,6 +146,18 @@ class Patch {
     return (octaveParameter.value / 256).round().clamp(-4, 4);
   }
 
+  /// Sample slot number (0-127) used by this patch.
+  int get sampleSlot {
+    final sampleParameter = parameterById('P_SAMPLE');
+    if (sampleParameter == null) {
+      return 0;
+    }
+    return (sampleParameter.value / 1024 * 127).round().clamp(0, 127);
+  }
+
+  /// Whether this patch uses a sample (sample slot > 0).
+  bool get usesSample => sampleSlot > 0;
+
   /// Fine pitch offset in semitones (fractional, ±12).
   double get pitchOffset {
     final pitchParameter = parameterById('P_PITCH');
