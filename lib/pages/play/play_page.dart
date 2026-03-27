@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/play/patch_picker_dialog.dart';
 import 'package:plinkyhub/pages/play/play_pad.dart';
 import 'package:plinkyhub/pages/play/sample_picker_dialog.dart';
+import 'package:plinkyhub/state/midi_notifier.dart';
 import 'package:plinkyhub/state/play_notifier.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/waveform_visualizer.dart';
 
 /// Icon grid matching the physical Plinky pad layout.
 /// Column 0 is always blank (shift strip on hardware).
@@ -65,6 +67,7 @@ class PlayPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final playState = ref.watch(playProvider);
     final plinkyState = ref.watch(plinkyProvider);
+    final midiState = ref.watch(midiProvider);
     final patchName = plinkyState.patch?.name ?? '';
 
     return Padding(
@@ -100,7 +103,29 @@ class PlayPage extends ConsumerWidget {
                     ? 'Load Sample'
                     : playState.sampleName,
               ),
+              const SizedBox(width: 16),
+              PlinkyButton(
+                onPressed: midiState.isConnected
+                    ? null
+                    : () => ref
+                          .read(midiProvider.notifier)
+                          .connect(),
+                icon: midiState.isConnected
+                    ? Icons.music_note
+                    : Icons.music_off,
+                label: midiState.isConnected
+                    ? 'MIDI Connected'
+                    : 'Connect MIDI',
+              ),
             ],
+          ),
+          const SizedBox(height: 16),
+          // Waveform visualizer
+          SizedBox(
+            height: 120,
+            child: WaveformVisualizer(
+              activeNotes: midiState.activeNotes,
+            ),
           ),
           const SizedBox(height: 16),
           // 8x8 grid
