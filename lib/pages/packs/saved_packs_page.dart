@@ -25,12 +25,7 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
       length: 3,
       vsync: this,
     );
-    _tabController.addListener(() {
-      if (_tabController.index == 2 &&
-          !_tabController.indexIsChanging) {
-        ref.read(savedPacksProvider.notifier).fetchPublicPacks();
-      }
-    });
+    ref.read(savedPacksProvider.notifier).fetchPublicPacks();
   }
 
   @override

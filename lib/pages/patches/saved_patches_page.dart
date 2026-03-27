@@ -24,12 +24,7 @@ class _SavedPatchesPageState extends ConsumerState<SavedPatchesPage>
       length: 2,
       vsync: this,
     );
-    _tabController.addListener(() {
-      if (_tabController.index == 1 &&
-          !_tabController.indexIsChanging) {
-        ref.read(savedPatchesProvider.notifier).fetchPublicPatches();
-      }
-    });
+    ref.read(savedPatchesProvider.notifier).fetchPublicPatches();
   }
 
   @override

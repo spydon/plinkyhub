@@ -25,12 +25,7 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
       length: 2,
       vsync: this,
     );
-    _tabController.addListener(() {
-      if (_tabController.index == 1 &&
-          !_tabController.indexIsChanging) {
-        ref.read(savedSamplesProvider.notifier).fetchPublicSamples();
-      }
-    });
+    ref.read(savedSamplesProvider.notifier).fetchPublicSamples();
   }
 
   @override
