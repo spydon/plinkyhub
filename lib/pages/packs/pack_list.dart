@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
+import 'package:plinkyhub/models/sort_order.dart';
 import 'package:plinkyhub/pages/packs/pack_card.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/sort_order_button.dart';
 
 class PackList extends ConsumerStatefulWidget {
   const PackList({
@@ -25,6 +27,7 @@ class PackList extends ConsumerStatefulWidget {
 class _PackListState extends ConsumerState<PackList> {
   final _searchController = TextEditingController();
   String _query = '';
+  SortOrder _sortOrder = SortOrder.stars;
 
   @override
   void dispose() {
@@ -33,25 +36,46 @@ class _PackListState extends ConsumerState<PackList> {
   }
 
   List<SavedPack> get _filteredPacks {
-    final packs = widget.packs;
-    if (_query.isEmpty) {
-      return packs;
+    var packs = widget.packs.toList();
+
+    if (_query.isNotEmpty) {
+      final lower = _query.toLowerCase();
+      packs = packs
+          .where(
+            (pack) =>
+                pack.name.toLowerCase().contains(lower) ||
+                pack.username.toLowerCase().contains(lower) ||
+                pack.description.toLowerCase().contains(lower),
+          )
+          .toList();
     }
-    final lower = _query.toLowerCase();
-    final filtered = packs
-        .where(
-          (pack) =>
-              pack.name.toLowerCase().contains(lower) ||
-              pack.username.toLowerCase().contains(lower) ||
-              pack.description.toLowerCase().contains(lower),
-        )
-        .toList();
-    filtered.sort((a, b) {
-      final aExact = a.name.toLowerCase() == lower ? 0 : 1;
-      final bExact = b.name.toLowerCase() == lower ? 0 : 1;
-      return aExact.compareTo(bExact);
+
+    packs.sort((a, b) {
+      if (_query.isNotEmpty) {
+        final lower = _query.toLowerCase();
+        final aExact = a.name.toLowerCase() == lower ? 0 : 1;
+        final bExact = b.name.toLowerCase() == lower ? 0 : 1;
+        final exactCmp = aExact.compareTo(bExact);
+        if (exactCmp != 0) {
+          return exactCmp;
+        }
+      }
+      return switch (_sortOrder) {
+        SortOrder.stars => _compareByStarsThenName(a, b),
+        SortOrder.name =>
+          a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        SortOrder.newest => b.updatedAt.compareTo(a.updatedAt),
+      };
     });
-    return filtered;
+    return packs;
+  }
+
+  int _compareByStarsThenName(SavedPack a, SavedPack b) {
+    final starCmp = b.starCount.compareTo(a.starCount);
+    if (starCmp != 0) {
+      return starCmp;
+    }
+    return a.name.toLowerCase().compareTo(b.name.toLowerCase());
   }
 
   @override
@@ -118,6 +142,11 @@ class _PackListState extends ConsumerState<PackList> {
                               Theme.of(context).textTheme.bodySmall,
                         ),
                         const Spacer(),
+                        SortOrderButton(
+                          value: _sortOrder,
+                          onChanged: (order) =>
+                              setState(() => _sortOrder = order),
+                        ),
                         IconButton(
                           icon:
                               const Icon(Icons.refresh, size: 20),

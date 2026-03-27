@@ -81,8 +81,7 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
       final response = await _supabase
           .from('patches')
           .select('*, profiles(username), patch_stars(count)')
-          .eq('is_public', true)
-          .order('updated_at', ascending: false);
+          .eq('is_public', true);
 
       final patches = await _parsePatchRows(response as List);
       state = state.copyWith(publicPatches: patches, isLoading: false);

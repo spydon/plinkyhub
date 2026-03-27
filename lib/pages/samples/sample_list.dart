@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
+import 'package:plinkyhub/models/sort_order.dart';
 import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/pages/samples/upload_sample_dialog.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/sort_order_button.dart';
 
 class SampleList extends ConsumerStatefulWidget {
   const SampleList({
@@ -26,6 +28,7 @@ class SampleList extends ConsumerStatefulWidget {
 class _SampleListState extends ConsumerState<SampleList> {
   final _searchController = TextEditingController();
   String _query = '';
+  SortOrder _sortOrder = SortOrder.stars;
 
   @override
   void dispose() {
@@ -34,25 +37,46 @@ class _SampleListState extends ConsumerState<SampleList> {
   }
 
   List<SavedSample> get _filteredSamples {
-    final samples = widget.samples;
-    if (_query.isEmpty) {
-      return samples;
+    var samples = widget.samples.toList();
+
+    if (_query.isNotEmpty) {
+      final lower = _query.toLowerCase();
+      samples = samples
+          .where(
+            (sample) =>
+                sample.name.toLowerCase().contains(lower) ||
+                sample.username.toLowerCase().contains(lower) ||
+                sample.description.toLowerCase().contains(lower),
+          )
+          .toList();
     }
-    final lower = _query.toLowerCase();
-    final filtered = samples
-        .where(
-          (sample) =>
-              sample.name.toLowerCase().contains(lower) ||
-              sample.username.toLowerCase().contains(lower) ||
-              sample.description.toLowerCase().contains(lower),
-        )
-        .toList();
-    filtered.sort((a, b) {
-      final aExact = a.name.toLowerCase() == lower ? 0 : 1;
-      final bExact = b.name.toLowerCase() == lower ? 0 : 1;
-      return aExact.compareTo(bExact);
+
+    samples.sort((a, b) {
+      if (_query.isNotEmpty) {
+        final lower = _query.toLowerCase();
+        final aExact = a.name.toLowerCase() == lower ? 0 : 1;
+        final bExact = b.name.toLowerCase() == lower ? 0 : 1;
+        final exactCmp = aExact.compareTo(bExact);
+        if (exactCmp != 0) {
+          return exactCmp;
+        }
+      }
+      return switch (_sortOrder) {
+        SortOrder.stars => _compareByStarsThenName(a, b),
+        SortOrder.name =>
+          a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        SortOrder.newest => b.updatedAt.compareTo(a.updatedAt),
+      };
     });
-    return filtered;
+    return samples;
+  }
+
+  int _compareByStarsThenName(SavedSample a, SavedSample b) {
+    final starCmp = b.starCount.compareTo(a.starCount);
+    if (starCmp != 0) {
+      return starCmp;
+    }
+    return a.name.toLowerCase().compareTo(b.name.toLowerCase());
   }
 
   @override
@@ -135,6 +159,11 @@ class _SampleListState extends ConsumerState<SampleList> {
                               Theme.of(context).textTheme.bodySmall,
                         ),
                         const Spacer(),
+                        SortOrderButton(
+                          value: _sortOrder,
+                          onChanged: (order) =>
+                              setState(() => _sortOrder = order),
+                        ),
                         if (widget.isOwned)
                           IconButton(
                             icon: const Icon(

@@ -83,12 +83,10 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
       final response = await _supabase
           .from('packs')
           .select('*, pack_slots(*), profiles(username), pack_stars(count)')
-          .eq('is_public', true)
-          .order('updated_at', ascending: false);
+          .eq('is_public', true);
 
       final starredIds = await _fetchStarredPackIds();
       final packs = _applyStarred(response as List, starredIds);
-
       state = state.copyWith(publicPacks: packs, isLoading: false);
     } on Exception catch (error) {
       debugPrint('$error');

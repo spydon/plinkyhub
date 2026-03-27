@@ -83,12 +83,10 @@ class SavedSamplesNotifier extends Notifier<SavedSamplesState> {
       final response = await _supabase
           .from('samples')
           .select('*, profiles(username), sample_stars(count)')
-          .eq('is_public', true)
-          .order('updated_at', ascending: false);
+          .eq('is_public', true);
 
       final starredIds = await _fetchStarredSampleIds();
       final samples = _applyStarred(response as List, starredIds);
-
       state = state.copyWith(publicSamples: samples, isLoading: false);
     } on Exception catch (error) {
       debugPrint('$error');

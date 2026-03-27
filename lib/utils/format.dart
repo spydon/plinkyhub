@@ -1,3 +1,8 @@
+extension StringCapitalize on String {
+  String get capitalize =>
+      isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
+}
+
 double normalize(int x) => x / 1024 * 100;
 
 double denormalize(double x) => x / 100 * 1024;
