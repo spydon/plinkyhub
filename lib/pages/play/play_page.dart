@@ -69,6 +69,8 @@ class PlayPage extends ConsumerWidget {
     final plinkyState = ref.watch(plinkyProvider);
     final midiState = ref.watch(midiProvider);
     final patchName = plinkyState.patch?.name ?? '';
+    final canPlay = plinkyState.patch != null ||
+        playState.sampleWavBytes != null;
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -138,8 +140,7 @@ class PlayPage extends ConsumerWidget {
                     return _PadGrid(
                       size: constraints.maxWidth,
                       activePads: playState.activePads,
-                      hasSample:
-                          playState.sampleWavBytes != null,
+                      canPlay: canPlay,
                     );
                   },
                 ),
@@ -156,12 +157,12 @@ class _PadGrid extends ConsumerWidget {
   const _PadGrid({
     required this.size,
     required this.activePads,
-    required this.hasSample,
+    required this.canPlay,
   });
 
   final double size;
   final Set<int> activePads;
-  final bool hasSample;
+  final bool canPlay;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -187,7 +188,7 @@ class _PadGrid extends ConsumerWidget {
                   child: PlayPad(
                     iconAsset: icon,
                     isActive: activePads.contains(padIndex),
-                    onPressStart: hasSample
+                    onPressStart: canPlay
                         ? () => ref
                             .read(playProvider.notifier)
                             .playPad(row, col)

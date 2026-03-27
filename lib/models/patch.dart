@@ -100,6 +100,62 @@ class Patch {
     }
   }
 
+  /// Returns the parameter with the given [id], or null if not found.
+  Parameter? parameterById(String id) {
+    for (final parameter in parameters) {
+      if (parameter.id == id) {
+        return parameter;
+      }
+    }
+    return null;
+  }
+
+  /// Scale index (0-25) for the selected musical scale.
+  int get scaleIndex {
+    final scaleParameter = parameterById('P_SCALE');
+    if (scaleParameter == null) {
+      return 25; // chromatic
+    }
+    final options = scaleParameter.getSelectOptions();
+    if (options == null) {
+      return 25;
+    }
+    final width = 1024 / options.length;
+    return (scaleParameter.value / width)
+        .floor()
+        .clamp(0, options.length - 1);
+  }
+
+  /// Stride in semitones between columns (default 7 = perfect fifth).
+  int get stride {
+    final strideParameter = parameterById('P_STRIDE');
+    if (strideParameter == null) {
+      return 7;
+    }
+    // Raw value 0-1024 maps to 0-127 semitones.
+    return (strideParameter.value / 1024 * 127).round().clamp(0, 127);
+  }
+
+  /// Octave offset (-4 to +4).
+  int get octaveOffset {
+    final octaveParameter = parameterById('P_OCT');
+    if (octaveParameter == null) {
+      return 0;
+    }
+    // Raw value -1024..1024 maps to -4..+4 octaves.
+    return (octaveParameter.value / 256).round().clamp(-4, 4);
+  }
+
+  /// Fine pitch offset in semitones (fractional, ±12).
+  double get pitchOffset {
+    final pitchParameter = parameterById('P_PITCH');
+    if (pitchParameter == null) {
+      return 0;
+    }
+    // Raw value -1024..1024 maps to ±12 semitones (1 octave).
+    return pitchParameter.value / 1024 * 12;
+  }
+
   void randomize(List<RandomizeGroup> groups) {
     final parameterIdsToRandomize = <String>{};
     for (final group in groups) {

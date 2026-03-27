@@ -1,8 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:plinkyhub/models/patch.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/state/play_state.dart';
+import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/utils/pitch.dart';
 
 final playProvider = NotifierProvider<PlayNotifier, PlayState>(
@@ -11,12 +15,39 @@ final playProvider = NotifierProvider<PlayNotifier, PlayState>(
 
 class PlayNotifier extends Notifier<PlayState> {
   AudioSource? _audioSource;
+  AudioSource? _waveformSource;
 
   /// One voice per column (8 columns max), matching Plinky polyphony.
   final _activeHandles = <int, SoundHandle>{};
 
   @override
   PlayState build() => const PlayState();
+
+  Future<void> _ensureSoLoud() async {
+    final soloud = SoLoud.instance;
+    if (!soloud.isInitialized) {
+      debugPrint('Initializing SoLoud...');
+      await soloud.init();
+      debugPrint('SoLoud initialized');
+    }
+  }
+
+  /// Ensure a waveform source exists for synth playback.
+  Future<AudioSource> _ensureWaveform() async {
+    if (_waveformSource != null) {
+      return _waveformSource!;
+    }
+    await _ensureSoLoud();
+    // Default to a superWave saw — close to Plinky's default
+    // "4 sawtooths per voice" at PWM=0.
+    _waveformSource = await SoLoud.instance.loadWaveform(
+      WaveForm.fSaw,
+      true, // superWave
+      0.5, // scale
+      0.2, // detune
+    );
+    return _waveformSource!;
+  }
 
   /// Load a WAV sample for playback with its slice configuration.
   Future<void> loadSample(
@@ -29,22 +60,17 @@ class PlayNotifier extends Notifier<PlayState> {
   }) async {
     state = state.copyWith(isLoadingSample: true);
     try {
-      final soloud = SoLoud.instance;
-      if (!soloud.isInitialized) {
-        debugPrint('Initializing SoLoud...');
-        await soloud.init();
-        debugPrint('SoLoud initialized');
-      }
+      await _ensureSoLoud();
 
       // Dispose previous source if any.
       final oldSource = _audioSource;
       if (oldSource != null) {
         _stopAll();
-        soloud.disposeSource(oldSource);
+        SoLoud.instance.disposeSource(oldSource);
       }
 
       debugPrint('Loading sample (${wavBytes.length} bytes)...');
-      _audioSource = await soloud.loadMem('sample.wav', wavBytes);
+      _audioSource = await SoLoud.instance.loadMem('sample.wav', wavBytes);
       debugPrint('Sample loaded');
       state = state.copyWith(
         sampleWavBytes: wavBytes,
@@ -61,14 +87,21 @@ class PlayNotifier extends Notifier<PlayState> {
     }
   }
 
-  /// Start playing the slice for the pad at [row], [col].
+  /// Read the current patch from the plinky state.
+  Patch? get _patch => ref.read(plinkyProvider).patch;
+
+  /// Start playing the pad at [row], [col].
   ///
-  /// Each row (0-7) corresponds to a slice of the sample.
-  /// Row 0 (top) = slice 0, row 7 (bottom) = slice 7.
-  /// Columns provide polyphony — one voice per column.
+  /// Uses patch parameters (scale, stride, octave) to determine the
+  /// MIDI note, just like the Plinky hardware. If a sample is loaded
+  /// it is played pitched to match the note; otherwise a waveform
+  /// synth is used.
   Future<void> playPad(int row, int col) async {
-    final source = _audioSource;
-    if (source == null) {
+    final hasSample = _audioSource != null;
+    final patch = _patch;
+
+    // Need at least a patch to determine notes.
+    if (patch == null && !hasSample) {
       return;
     }
 
@@ -83,6 +116,50 @@ class PlayNotifier extends Notifier<PlayState> {
       } on Exception catch (_) {}
     }
 
+    // Calculate the MIDI note for this pad position using patch params.
+    final scaleIndex = patch?.scaleIndex ?? 25; // chromatic
+    final stride = patch?.stride ?? 7;
+    final octaveOffset = patch?.octaveOffset ?? 0;
+    final pitchOffset = patch?.pitchOffset ?? 0.0;
+
+    final midiNote = midiNoteForPad(
+      row: row,
+      col: col,
+      scaleIndex: scaleIndex,
+      stride: stride,
+      octaveOffset: octaveOffset,
+      pitchOffset: pitchOffset,
+    );
+
+    try {
+      SoundHandle handle;
+
+      if (hasSample) {
+        handle = await _playSampleNote(
+          midiNote: midiNote,
+          row: row,
+        );
+      } else {
+        handle = await _playWaveformNote(midiNote: midiNote);
+      }
+
+      _activeHandles[col] = handle;
+      state = state.copyWith(
+        activePads: {...state.activePads, padIndex},
+      );
+    } on Exception catch (error) {
+      debugPrint('Failed to play pad: $error');
+    }
+  }
+
+  /// Play a sample slice pitched to [midiNote].
+  Future<SoundHandle> _playSampleNote({
+    required int midiNote,
+    required int row,
+  }) async {
+    final source = _audioSource!;
+    final soloud = SoLoud.instance;
+
     // Determine slice boundaries.
     final sliceIndex = row.clamp(0, 7);
     final slicePoints = state.slicePoints;
@@ -95,46 +172,42 @@ class PlayNotifier extends Notifier<PlayState> {
     final sliceDuration =
         totalDuration * (endFraction - startFraction);
 
-    // Calculate pitch shift.
     // The slice note is the intended pitch for this slice.
-    // Speed = 1.0 means play at the sample's original pitch.
-    final sliceNote = state.sliceNotes.length > sliceIndex
-        ? state.sliceNotes[sliceIndex]
-        : 60;
     // On Plinky, slice notes are in Plinky note format (48 = C4).
     // Convert to MIDI: plinkyNote + 12 = midiNote.
+    final sliceNote = state.sliceNotes.length > sliceIndex
+        ? state.sliceNotes[sliceIndex]
+        : 48;
     final sliceMidi = sliceNote + 12;
-    final speed = playbackSpeedForMidi(sliceMidi, state.sampleBaseMidi);
 
-    try {
-      final handle = await soloud.play(source, paused: true);
-      soloud.seek(handle, startTime);
-      soloud.setRelativePlaySpeed(handle, speed);
-      soloud.setPause(handle, false);
+    // Playback speed shifts the sample pitch from sliceMidi to our
+    // target midiNote.
+    final speed = playbackSpeedForMidi(midiNote, sliceMidi);
 
-      // Schedule stop at the end of the slice (adjusted for speed).
-      if (sliceDuration > Duration.zero) {
-        final adjustedDuration = sliceDuration * (1.0 / speed);
-        soloud.scheduleStop(handle, adjustedDuration);
-      }
+    final handle = await soloud.play(source, paused: true);
+    soloud.seek(handle, startTime);
+    soloud.setRelativePlaySpeed(handle, speed);
+    soloud.setPause(handle, false);
 
-      _activeHandles[col] = handle;
-      state = state.copyWith(
-        activePads: {...state.activePads, padIndex},
-      );
-
-      // Clear active state when the slice finishes.
-      final waitDuration = sliceDuration * (1.0 / speed);
-      await Future<void>.delayed(waitDuration);
-      if (state.activePads.contains(padIndex)) {
-        _activeHandles.remove(col);
-        state = state.copyWith(
-          activePads: {...state.activePads}..remove(padIndex),
-        );
-      }
-    } on Exception catch (error) {
-      debugPrint('Failed to play pad: $error');
+    // Schedule stop at the end of the slice (adjusted for speed).
+    if (sliceDuration > Duration.zero) {
+      final adjustedDuration = sliceDuration * (1.0 / speed);
+      soloud.scheduleStop(handle, adjustedDuration);
     }
+
+    return handle;
+  }
+
+  /// Play a waveform tone at [midiNote].
+  Future<SoundHandle> _playWaveformNote({required int midiNote}) async {
+    final source = await _ensureWaveform();
+    final soloud = SoLoud.instance;
+
+    // Convert MIDI note to frequency: f = 440 * 2^((note - 69) / 12).
+    final frequency = 440.0 * pow(2, (midiNote - 69) / 12);
+    soloud.setWaveformFreq(source, frequency);
+
+    return soloud.play(source);
   }
 
   /// Stop the note for the pad at [row], [col].
