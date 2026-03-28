@@ -49,8 +49,16 @@ class PatternGridEditor extends StatefulWidget {
 }
 
 class _PatternGridEditorState extends State<PatternGridEditor> {
+  final _scrollController = ScrollController();
+
   /// Tracks whether the current drag gesture is painting or erasing cells.
   bool? _dragPaintValue;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   void _toggleCell(int step, int row) {
     if (!widget.enabled) {
@@ -92,105 +100,118 @@ class _PatternGridEditorState extends State<PatternGridEditor> {
     const gridHeight = 20.0 + cellWithMargin * 8;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Pattern Grid', style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
         SizedBox(
           height: gridHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Row labels (note names)
-              SizedBox(
-                width: labelWidth,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    for (var row = 0; row < 8; row++)
-                      SizedBox(
-                        height: cellWithMargin,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 4),
-                            child: Text(
-                              _midiNoteName(
-                                midiNoteForPad(
-                                  row: row,
-                                  col: 0,
-                                  scale: widget.scale,
-                                ),
-                              ),
-                              style: theme.textTheme.bodySmall,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              // Scrollable grid
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Row labels (note names)
+                SizedBox(
+                  width: labelWidth,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Step numbers header
-                      Row(
-                        children: [
-                          for (var step = 0; step < widget.stepCount; step++)
-                            SizedBox(
-                              width: cellWithMargin,
-                              height: 20,
-                              child: Center(
-                                child: Text(
-                                  '${step + 1}',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
+                      const SizedBox(height: 20),
+                      for (var row = 0; row < 8; row++)
+                        SizedBox(
+                          height: cellWithMargin,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Text(
+                                _midiNoteName(
+                                  midiNoteForPad(
+                                    row: row,
+                                    col: 0,
+                                    scale: widget.scale,
                                   ),
                                 ),
+                                style: theme.textTheme.bodySmall,
                               ),
                             ),
-                        ],
-                      ),
-                      // Grid cells
-                      for (var row = 0; row < 8; row++)
-                        Row(
-                          children: [
-                            for (var step = 0;
-                                step < widget.stepCount;
-                                step++)
-                              _GridCell(
-                                isActive: widget.grid[step][row],
-                                isDownbeat: step % 4 == 0,
-                                cellSize: cellSize,
-                                colorScheme: colorScheme,
-                                onTap: () => _toggleCell(step, row),
-                                onDragStart: () {
-                                  _dragPaintValue =
-                                      !widget.grid[step][row];
-                                  _toggleCell(step, row);
-                                },
-                                onDragEnter: () {
-                                  if (_dragPaintValue != null) {
-                                    _setCellValue(
-                                      step,
-                                      row,
-                                      value: _dragPaintValue!,
-                                    );
-                                  }
-                                },
-                                onDragEnd: () => _dragPaintValue = null,
-                              ),
-                          ],
+                          ),
                         ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                // Scrollable grid
+                Flexible(
+                  child: Scrollbar(
+                    controller: _scrollController,
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Step numbers header
+                          Row(
+                            children: [
+                              for (
+                                var step = 0;
+                                step < widget.stepCount;
+                                step++
+                              )
+                                SizedBox(
+                                  width: cellWithMargin,
+                                  height: 20,
+                                  child: Center(
+                                    child: Text(
+                                      '${step + 1}',
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: colorScheme.onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          // Grid cells
+                          for (var row = 0; row < 8; row++)
+                            Row(
+                              children: [
+                                for (
+                                  var step = 0;
+                                  step < widget.stepCount;
+                                  step++
+                                )
+                                  _GridCell(
+                                    isActive: widget.grid[step][row],
+                                    isDownbeat: step % 4 == 0,
+                                    cellSize: cellSize,
+                                    colorScheme: colorScheme,
+                                    onTap: () => _toggleCell(step, row),
+                                    onDragStart: () {
+                                      _dragPaintValue = !widget.grid[step][row];
+                                      _toggleCell(step, row);
+                                    },
+                                    onDragEnter: () {
+                                      if (_dragPaintValue != null) {
+                                        _setCellValue(
+                                          step,
+                                          row,
+                                          value: _dragPaintValue!,
+                                        );
+                                      }
+                                    },
+                                    onDragEnd: () => _dragPaintValue = null,
+                                  ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -198,7 +219,7 @@ class _PatternGridEditorState extends State<PatternGridEditor> {
   }
 }
 
-class _GridCell extends StatelessWidget {
+class _GridCell extends StatefulWidget {
   const _GridCell({
     required this.isActive,
     required this.isDownbeat,
@@ -220,33 +241,57 @@ class _GridCell extends StatelessWidget {
   final VoidCallback onDragEnd;
 
   @override
-  Widget build(BuildContext context) {
-    final fillColor = isActive
-        ? colorScheme.primary
-        : isDownbeat
-            ? colorScheme.surfaceContainerHighest
-            : colorScheme.surfaceContainerLow;
-    final borderColor = colorScheme.outlineVariant;
+  State<_GridCell> createState() => _GridCellState();
+}
 
-    return GestureDetector(
-      onTap: onTap,
-      onPanStart: (_) => onDragStart(),
-      onPanEnd: (_) => onDragEnd(),
-      onPanCancel: onDragEnd,
-      child: DragTarget<Object>(
-        onWillAcceptWithDetails: (_) {
-          onDragEnter();
-          return false;
-        },
-        builder: (context, _, __) => Container(
-          width: cellSize,
-          height: cellSize,
-          decoration: BoxDecoration(
-            color: fillColor,
-            border: Border.all(color: borderColor, width: 0.5),
-            borderRadius: BorderRadius.circular(4),
+class _GridCellState extends State<_GridCell> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = widget.isActive
+        ? widget.colorScheme.primary
+        : widget.isDownbeat
+        ? widget.colorScheme.surfaceContainerHighest
+        : widget.colorScheme.surfaceContainerLow;
+    final fillColor = _isHovered
+        ? Color.lerp(
+            baseColor,
+            widget.colorScheme.onSurface,
+            0.15,
+          )!
+        : baseColor;
+    final borderColor = _isHovered
+        ? widget.colorScheme.outline
+        : widget.colorScheme.outlineVariant;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onPanStart: (_) => widget.onDragStart(),
+        onPanEnd: (_) => widget.onDragEnd(),
+        onPanCancel: widget.onDragEnd,
+        child: DragTarget<Object>(
+          onWillAcceptWithDetails: (_) {
+            widget.onDragEnter();
+            return false;
+          },
+          builder: (context, _, __) => Container(
+            width: widget.cellSize,
+            height: widget.cellSize,
+            decoration: BoxDecoration(
+              color: fillColor,
+              border: Border.all(
+                color: borderColor,
+                width: 0.5,
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            margin: const EdgeInsets.all(1),
           ),
-          margin: const EdgeInsets.all(1),
         ),
       ),
     );
