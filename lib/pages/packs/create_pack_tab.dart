@@ -66,7 +66,7 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
     final editingPack = savedPacksState.editingPack;
     if (editingPack != null && _editingPackId != editingPack.id) {
       _loadPack(editingPack);
-      ref.read(savedPacksProvider.notifier).stopEditing();
+      Future(ref.read(savedPacksProvider.notifier).stopEditing);
     }
 
     return SingleChildScrollView(
