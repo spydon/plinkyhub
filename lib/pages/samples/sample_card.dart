@@ -9,6 +9,7 @@ import 'package:plinkyhub/state/saved_samples_notifier.dart';
 import 'package:plinkyhub/utils/note_names.dart';
 import 'package:plinkyhub/utils/wav.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/share_link_button.dart';
 import 'package:plinkyhub/widgets/star_button.dart';
 import 'package:plinkyhub/widgets/username_date_line.dart';
 
@@ -190,6 +191,12 @@ class _SampleCardState extends ConsumerState<SampleCard> {
                       .read(savedSamplesProvider.notifier)
                       .toggleStar(sample),
                 ),
+                if (sample.username.isNotEmpty)
+                  ShareLinkButton(
+                    username: sample.username,
+                    itemType: 'sample',
+                    itemName: sample.name,
+                  ),
                 const Spacer(),
                 if (isOwned) ...[
                   IconButton(

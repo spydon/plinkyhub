@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_pattern.dart';
 import 'package:plinkyhub/state/saved_patterns_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/share_link_button.dart';
 import 'package:plinkyhub/widgets/star_button.dart';
 import 'package:plinkyhub/widgets/username_date_line.dart';
 
@@ -54,6 +55,12 @@ class PatternCard extends ConsumerWidget {
                       .read(savedPatternsProvider.notifier)
                       .toggleStar(pattern),
                 ),
+                if (pattern.username.isNotEmpty)
+                  ShareLinkButton(
+                    username: pattern.username,
+                    itemType: 'pattern',
+                    itemName: pattern.name,
+                  ),
                 const Spacer(),
                 if (isOwned) ...[
                   IconButton(

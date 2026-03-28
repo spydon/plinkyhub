@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/deep_link_notifier.dart';
 import 'package:plinkyhub/state/saved_presets_notifier.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
@@ -27,16 +26,7 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(savedPresetsProvider.notifier).fetchPublicPresets();
-      _handleDeepLink();
     });
-  }
-
-  void _handleDeepLink() {
-    final target = ref.read(deepLinkTargetProvider);
-    if (target != null && target.type == 'preset') {
-      _tabController.animateTo(1);
-      ref.read(deepLinkTargetProvider.notifier).clear();
-    }
   }
 
   @override

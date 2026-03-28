@@ -4,6 +4,7 @@ import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/pages/presets/star_button.dart';
 import 'package:plinkyhub/state/saved_presets_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/share_link_button.dart';
 import 'package:plinkyhub/widgets/username_date_line.dart';
 
 class PresetCard extends ConsumerWidget {
@@ -72,6 +73,12 @@ class PresetCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 PresetStarButton(preset: preset),
+                if (preset.username.isNotEmpty)
+                  ShareLinkButton(
+                    username: preset.username,
+                    itemType: 'preset',
+                    itemName: preset.name,
+                  ),
                 const Spacer(),
                 if (isOwned) ...[
                   IconButton(

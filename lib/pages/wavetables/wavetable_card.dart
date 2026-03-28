@@ -4,6 +4,7 @@ import 'package:plinkyhub/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/save_wavetable_to_plinky_dialog.dart';
 import 'package:plinkyhub/state/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/share_link_button.dart';
 import 'package:plinkyhub/widgets/star_button.dart';
 import 'package:plinkyhub/widgets/username_date_line.dart';
 
@@ -55,6 +56,12 @@ class WavetableCard extends ConsumerWidget {
                       .read(savedWavetablesProvider.notifier)
                       .toggleStar(wavetable),
                 ),
+                if (wavetable.username.isNotEmpty)
+                  ShareLinkButton(
+                    username: wavetable.username,
+                    itemType: 'wavetable',
+                    itemName: wavetable.name,
+                  ),
                 IconButton(
                   icon: const Icon(Icons.usb, size: 20),
                   tooltip: 'Save to Plinky',

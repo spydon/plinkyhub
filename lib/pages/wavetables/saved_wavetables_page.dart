@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/wavetables/upload_wavetable_tab.dart';
 import 'package:plinkyhub/pages/wavetables/wavetable_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/deep_link_notifier.dart';
 import 'package:plinkyhub/state/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
@@ -29,16 +28,7 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(savedWavetablesProvider.notifier).fetchPublicWavetables();
-      _handleDeepLink();
     });
-  }
-
-  void _handleDeepLink() {
-    final target = ref.read(deepLinkTargetProvider);
-    if (target != null && target.type == 'wavetable') {
-      _tabController.animateTo(1);
-      ref.read(deepLinkTargetProvider.notifier).clear();
-    }
   }
 
   @override

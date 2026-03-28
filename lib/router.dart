@@ -4,14 +4,19 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/main.dart';
 import 'package:plinkyhub/pages/about_page.dart';
 import 'package:plinkyhub/pages/editor/editor_page.dart';
+import 'package:plinkyhub/pages/packs/pack_page.dart';
 import 'package:plinkyhub/pages/packs/saved_packs_page.dart';
+import 'package:plinkyhub/pages/patterns/pattern_page.dart';
 import 'package:plinkyhub/pages/patterns/saved_patterns_page.dart';
+import 'package:plinkyhub/pages/presets/preset_page.dart';
 import 'package:plinkyhub/pages/presets/saved_presets_page.dart';
+import 'package:plinkyhub/pages/samples/sample_page.dart';
 import 'package:plinkyhub/pages/samples/saved_samples_page.dart';
 import 'package:plinkyhub/pages/user_profile_page.dart';
 import 'package:plinkyhub/pages/wavetables/saved_wavetables_page.dart';
-import 'package:plinkyhub/state/deep_link_notifier.dart';
+import 'package:plinkyhub/pages/wavetables/wavetable_page.dart';
 import 'package:plinkyhub/state/user_profile_notifier.dart';
+import 'package:plinkyhub/widgets/navigation_sidebar.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -102,46 +107,65 @@ GoRouter createRouter(ProviderContainer container) {
         ],
       ),
 
-      // Item deep links — must be after the shell so static
-      // paths like /presets match the shell branches first.
+      // Item detail pages — displayed within the shell via
+      // parentNavigatorKey so they show the sidebar.
       GoRoute(
         path: '/:username/preset/:name',
-        redirect: (context, state) {
-          _setDeepLinkTarget(container, state, 'preset');
-          return '/presets';
-        },
+        builder: (context, state) => _ItemPageShell(
+          child: PresetPage(
+            username: state.pathParameters['username']!,
+            presetName: Uri.decodeComponent(
+              state.pathParameters['name']!,
+            ),
+          ),
+        ),
       ),
       GoRoute(
         path: '/:username/pack/:name',
-        redirect: (context, state) {
-          _setDeepLinkTarget(container, state, 'pack');
-          return '/packs';
-        },
+        builder: (context, state) => _ItemPageShell(
+          child: PackPage(
+            username: state.pathParameters['username']!,
+            packName: Uri.decodeComponent(
+              state.pathParameters['name']!,
+            ),
+          ),
+        ),
       ),
       GoRoute(
         path: '/:username/sample/:name',
-        redirect: (context, state) {
-          _setDeepLinkTarget(container, state, 'sample');
-          return '/samples';
-        },
+        builder: (context, state) => _ItemPageShell(
+          child: SamplePage(
+            username: state.pathParameters['username']!,
+            sampleName: Uri.decodeComponent(
+              state.pathParameters['name']!,
+            ),
+          ),
+        ),
       ),
       GoRoute(
         path: '/:username/wavetable/:name',
-        redirect: (context, state) {
-          _setDeepLinkTarget(container, state, 'wavetable');
-          return '/wavetables';
-        },
+        builder: (context, state) => _ItemPageShell(
+          child: WavetablePage(
+            username: state.pathParameters['username']!,
+            wavetableName: Uri.decodeComponent(
+              state.pathParameters['name']!,
+            ),
+          ),
+        ),
       ),
       GoRoute(
         path: '/:username/pattern/:name',
-        redirect: (context, state) {
-          _setDeepLinkTarget(container, state, 'pattern');
-          return '/patterns';
-        },
+        builder: (context, state) => _ItemPageShell(
+          child: PatternPage(
+            username: state.pathParameters['username']!,
+            patternName: Uri.decodeComponent(
+              state.pathParameters['name']!,
+            ),
+          ),
+        ),
       ),
 
       // User profile deep link — catch-all for /<username>.
-      // Placed last so all static and item routes match first.
       GoRoute(
         path: '/:username',
         redirect: (context, state) {
@@ -156,16 +180,57 @@ GoRouter createRouter(ProviderContainer container) {
   );
 }
 
-void _setDeepLinkTarget(
-  ProviderContainer container,
-  GoRouterState state,
-  String type,
-) {
-  final username = state.pathParameters['username']!;
-  final name = state.pathParameters['name']!;
-  container.read(deepLinkTargetProvider.notifier).target = DeepLinkTarget(
-    username: username,
-    type: type,
-    name: Uri.decodeComponent(name),
-  );
+class _ItemPageShell extends ConsumerWidget {
+  const _ItemPageShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
+    return Scaffold(
+      body: Stack(
+        children: [
+          Row(
+            children: [
+              NavigationSidebar(
+                selectedIndex: -1,
+                onDestinationSelected: (index) {
+                  final paths = [
+                    '/editor',
+                    '/presets',
+                    '/packs',
+                    '/samples',
+                    '/wavetables',
+                    '/patterns',
+                    '/profile',
+                    '/about',
+                  ];
+                  if (index >= 0 && index < paths.length) {
+                    context.go(paths[index]);
+                  }
+                },
+              ),
+              const VerticalDivider(thickness: 1, width: 1),
+              Expanded(child: child),
+            ],
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: IconButton(
+              icon: Icon(
+                isDark ? Icons.light_mode : Icons.dark_mode,
+              ),
+              tooltip: isDark ? 'Switch to light mode' : 'Switch to dark mode',
+              onPressed: () {
+                ref.read(themeModeProvider.notifier).toggle();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

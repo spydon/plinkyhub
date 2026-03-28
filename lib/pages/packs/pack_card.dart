@@ -6,6 +6,7 @@ import 'package:plinkyhub/pages/packs/save_to_plinky_dialog.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_packs_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/share_link_button.dart';
 import 'package:plinkyhub/widgets/star_button.dart';
 import 'package:plinkyhub/widgets/username_date_line.dart';
 
@@ -72,6 +73,12 @@ class PackCard extends ConsumerWidget {
                   onToggle: () =>
                       ref.read(savedPacksProvider.notifier).toggleStar(pack),
                 ),
+                if (pack.username.isNotEmpty)
+                  ShareLinkButton(
+                    username: pack.username,
+                    itemType: 'pack',
+                    itemName: pack.name,
+                  ),
                 IconButton(
                   icon: const Icon(Icons.usb, size: 20),
                   tooltip: 'Save to Plinky',

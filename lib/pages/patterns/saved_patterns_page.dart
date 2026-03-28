@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/patterns/create_pattern_tab.dart';
 import 'package:plinkyhub/pages/patterns/pattern_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/deep_link_notifier.dart';
 import 'package:plinkyhub/state/saved_patterns_notifier.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
@@ -28,16 +27,7 @@ class _SavedPatternsPageState extends ConsumerState<SavedPatternsPage>
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(savedPatternsProvider.notifier).fetchPublicPatterns();
-      _handleDeepLink();
     });
-  }
-
-  void _handleDeepLink() {
-    final target = ref.read(deepLinkTargetProvider);
-    if (target != null && target.type == 'pattern') {
-      _tabController.animateTo(1);
-      ref.read(deepLinkTargetProvider.notifier).clear();
-    }
   }
 
   @override
