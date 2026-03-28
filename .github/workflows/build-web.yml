@@ -35,11 +35,10 @@ jobs:
 
       - name: Deploy to web branch
         run: |
+          cd build/web
+          git init -b web
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          cd build/web
-          git init
-          git checkout -b web
           git add .
           git commit -m "Update web build from ${GITHUB_SHA::7}"
           git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
