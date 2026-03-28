@@ -1,44 +1,49 @@
 import 'dart:math';
 
-/// Scale interval tables matching Plinky firmware's 27 built-in scales.
-/// Each list contains semitone offsets for one octave of the scale.
-const plinkyScales = <List<int>>[
-  [0, 2, 4, 5, 7, 9, 11], // Major
-  [0, 2, 3, 5, 7, 8, 10], // Minor
-  [0, 2, 3, 5, 7, 8, 11], // Harmonic Min
-  [0, 2, 4, 7, 9], // Penta Maj
-  [0, 3, 5, 7, 10], // Penta Min
-  [0, 2, 3, 7, 8], // Hirajoshi
-  [0, 1, 5, 7, 10], // Insen
-  [0, 1, 5, 6, 10], // Iwato
-  [0, 4, 5, 7, 11], // Minyo
-  [0, 7], // Fifths
-  [0, 4, 7], // Triad Maj
-  [0, 3, 7], // Triad Min
-  [0, 2, 3, 5, 7, 9, 10], // Dorian
-  [0, 1, 3, 5, 7, 8, 10], // Phrygian
-  [0, 2, 4, 6, 7, 9, 11], // Lydian
-  [0, 2, 4, 5, 7, 9, 10], // Mixolydian
-  [0, 2, 3, 5, 7, 8, 10], // Aeolian
-  [0, 1, 3, 5, 6, 8, 10], // Locrian
-  [0, 3, 5, 6, 7, 10], // Blues Min
-  [0, 2, 3, 4, 7, 9], // Blues Maj
-  [0, 2, 3, 6, 7, 9, 10], // Romanian
-  [0, 2, 4, 6, 8, 10], // Wholetone
-  [0, 12, 19, 24, 28, 31], // Harmonics (approx)
-  [0, 3, 5, 7, 9, 11], // Hexany (approx)
-  [0, 2, 4, 5, 7, 9, 11], // Just (approx, mapped to ET)
-  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], // Chromatic
-];
+/// Plinky firmware's 27 built-in scales with semitone intervals.
+enum PlinkyScale {
+  major('Major', [0, 2, 4, 5, 7, 9, 11]),
+  minor('Minor', [0, 2, 3, 5, 7, 8, 10]),
+  harmonicMinor('Harmonic Min', [0, 2, 3, 5, 7, 8, 11]),
+  pentatonicMajor('Penta Maj', [0, 2, 4, 7, 9]),
+  pentatonicMinor('Penta Min', [0, 3, 5, 7, 10]),
+  hirajoshi('Hirajoshi', [0, 2, 3, 7, 8]),
+  insen('Insen', [0, 1, 5, 7, 10]),
+  iwato('Iwato', [0, 1, 5, 6, 10]),
+  minyo('Minyo', [0, 4, 5, 7, 11]),
+  fifths('Fifths', [0, 7]),
+  triadMajor('Triad Maj', [0, 4, 7]),
+  triadMinor('Triad Min', [0, 3, 7]),
+  dorian('Dorian', [0, 2, 3, 5, 7, 9, 10]),
+  phrygian('Phrygian', [0, 1, 3, 5, 7, 8, 10]),
+  lydian('Lydian', [0, 2, 4, 6, 7, 9, 11]),
+  mixolydian('Mixolydian', [0, 2, 4, 5, 7, 9, 10]),
+  aeolian('Aeolian', [0, 2, 3, 5, 7, 8, 10]),
+  locrian('Locrian', [0, 1, 3, 5, 6, 8, 10]),
+  bluesMinor('Blues Min', [0, 3, 5, 6, 7, 10]),
+  bluesMajor('Blues Maj', [0, 2, 3, 4, 7, 9]),
+  romanian('Romanian', [0, 2, 3, 6, 7, 9, 10]),
+  wholetone('Wholetone', [0, 2, 4, 6, 8, 10]),
+  harmonics('Harmonics', [0, 12, 19, 24, 28, 31]),
+  hexany('Hexany', [0, 3, 5, 7, 9, 11]),
+  just('Just', [0, 2, 4, 5, 7, 9, 11]),
+  chromatic('Chromatic', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+
+  const PlinkyScale(this.displayName, this.intervals);
+
+  final String displayName;
+
+  /// Semitone offsets for one octave of the scale.
+  final List<int> intervals;
+}
 
 /// Converts a row position (0-7, top to bottom) to a semitone offset
 /// using the given scale. Wraps into higher octaves as needed.
-int _scaleDegreeSemitones(int row, int scaleIndex) {
+int _scaleDegreeSemitones(int row, PlinkyScale scale) {
   // Row 0 is the top of the grid (highest pitch), row 7 is the bottom
   // (lowest pitch). Invert so that pressing higher rows gives higher notes.
   final degree = 7 - row;
-  final scale = scaleIndex.clamp(0, plinkyScales.length - 1);
-  final intervals = plinkyScales[scale];
+  final intervals = scale.intervals;
   final octave = degree ~/ intervals.length;
   final step = degree % intervals.length;
   return octave * 12 + intervals[step];
@@ -46,21 +51,21 @@ int _scaleDegreeSemitones(int row, int scaleIndex) {
 
 /// Computes the MIDI note number for a pad at [row], [col] in the 8x8 grid.
 ///
-/// [scaleIndex] selects the scale (0-26).
+/// [scale] selects the musical scale.
 /// [stride] is the semitone interval between columns (typically 7 = fifth).
 /// [octaveOffset] shifts the base by octaves (-4 to +4 mapped from param).
 /// [pitchOffset] is a fine-tune in semitones (fractional).
 int midiNoteForPad({
   required int row,
   required int col,
-  int scaleIndex = 26, // chromatic
+  PlinkyScale scale = PlinkyScale.chromatic,
   int stride = 7,
   int octaveOffset = 0,
   double pitchOffset = 0,
 }) {
   const baseMidi = 48; // C3
   final colOffset = col * stride;
-  final rowOffset = _scaleDegreeSemitones(row, scaleIndex);
+  final rowOffset = _scaleDegreeSemitones(row, scale);
   return baseMidi +
       octaveOffset * 12 +
       colOffset +
