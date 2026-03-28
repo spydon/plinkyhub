@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/pack_slot_write.dart';
 import 'package:plinkyhub/models/pack_write.dart';
 import 'package:plinkyhub/models/preset.dart';
@@ -44,28 +45,40 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
 
   // User-editable names and sharing toggles.
   final _packNameController = TextEditingController(
-    text: 'Loaded from Plinky',
+    text: '',
   );
-  bool _packIsPublic = false;
+  final _packDescriptionController =
+      TextEditingController();
+  bool _packIsPublic = true;
   final _presetNames = <int, TextEditingController>{};
+  final _presetDescriptions = <int, TextEditingController>{};
+  final _presetCategories = <int, PresetCategory>{};
   final _presetIsPublic = <int, bool>{};
   final _sampleNames = <int, TextEditingController>{};
+  final _sampleDescriptions = <int, TextEditingController>{};
   final _sampleIsPublic = <int, bool>{};
   final _wavetableNameController = TextEditingController(
     text: 'Wavetable',
   );
-  bool _wavetableIsPublic = false;
+  bool _wavetableIsPublic = true;
 
   SupabaseClient get _supabase => Supabase.instance.client;
 
   @override
   void dispose() {
     _packNameController.dispose();
+    _packDescriptionController.dispose();
     _wavetableNameController.dispose();
     for (final controller in _presetNames.values) {
       controller.dispose();
     }
+    for (final controller in _presetDescriptions.values) {
+      controller.dispose();
+    }
     for (final controller in _sampleNames.values) {
+      controller.dispose();
+    }
+    for (final controller in _sampleDescriptions.values) {
       controller.dispose();
     }
     super.dispose();
@@ -75,7 +88,13 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     for (final controller in _presetNames.values) {
       controller.dispose();
     }
+    for (final controller in _presetDescriptions.values) {
+      controller.dispose();
+    }
     for (final controller in _sampleNames.values) {
+      controller.dispose();
+    }
+    for (final controller in _sampleDescriptions.values) {
       controller.dispose();
     }
     setState(() {
@@ -86,14 +105,18 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       _sampleInfos = [];
       _samplePcmData = {};
       _wavetableUf2Bytes = null;
-      _packNameController.text = 'Loaded from Plinky';
-      _packIsPublic = false;
+      _packNameController.text = '';
+      _packDescriptionController.clear();
+      _packIsPublic = true;
       _presetNames.clear();
+      _presetDescriptions.clear();
+      _presetCategories.clear();
       _presetIsPublic.clear();
       _sampleNames.clear();
+      _sampleDescriptions.clear();
       _sampleIsPublic.clear();
       _wavetableNameController.text = 'Wavetable';
-      _wavetableIsPublic = false;
+      _wavetableIsPublic = true;
     });
   }
 
@@ -139,7 +162,8 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
             sampleBytes.isNotEmpty) {
           try {
             final pcmData = uf2ToData(sampleBytes);
-            if (pcmData.isNotEmpty) {
+            if (pcmData.isNotEmpty &&
+                !pcmData.every((byte) => byte == 0)) {
               _samplePcmData[i] = pcmData;
             }
           } on FormatException {
@@ -156,6 +180,8 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
 
       // Build editable names from parsed data.
       _presetNames.clear();
+      _presetDescriptions.clear();
+      _presetCategories.clear();
       _presetIsPublic.clear();
       for (var i = 0; i < presetCount; i++) {
         final presetBytes = _presetDataList[i];
@@ -168,22 +194,28 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
             : 'Preset ${i + 1}';
         _presetNames[i] =
             TextEditingController(text: name);
-        _presetIsPublic[i] = false;
+        _presetDescriptions[i] =
+            TextEditingController();
+        _presetCategories[i] = preset.category;
+        _presetIsPublic[i] = true;
       }
 
       _sampleNames.clear();
+      _sampleDescriptions.clear();
       _sampleIsPublic.clear();
       for (final slotIndex in _samplePcmData.keys) {
         _sampleNames[slotIndex] = TextEditingController(
           text: 'Sample $slotIndex',
         );
-        _sampleIsPublic[slotIndex] = false;
+        _sampleDescriptions[slotIndex] =
+            TextEditingController();
+        _sampleIsPublic[slotIndex] = true;
       }
 
       if (_wavetableUf2Bytes != null &&
           _wavetableUf2Bytes!.isNotEmpty) {
         _wavetableNameController.text = 'Wavetable';
-        _wavetableIsPublic = false;
+        _wavetableIsPublic = true;
       }
 
       setState(() {
@@ -258,11 +290,16 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
             ? _sampleInfos[slotIndex]
             : null;
 
+        final description =
+            _sampleDescriptions[slotIndex]?.text.trim() ??
+                '';
+
         final sampleWrite = SampleWrite(
           userId: userId,
           name: name,
           filePath: wavPath,
           pcmFilePath: pcmPath,
+          description: description,
           isPublic: isPublic,
           slicePoints: info?.slicePoints ??
               List.of(defaultSlicePoints),
@@ -339,12 +376,19 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
         });
 
         final preset = Preset(presetBytes.buffer);
+        final description =
+            _presetDescriptions[slotIndex]?.text.trim() ??
+                '';
+        final category =
+            _presetCategories[slotIndex] ??
+                preset.category;
 
         final presetWrite = PresetWrite(
           userId: userId,
           name: name.isNotEmpty ? name : preset.name,
-          category: preset.category.name,
+          category: category.name,
           presetData: base64Encode(presetBytes),
+          description: description,
           isPublic: isPublic,
         );
 
@@ -365,6 +409,8 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       final packWrite = PackWrite(
         userId: userId,
         name: _packNameController.text.trim(),
+        description:
+            _packDescriptionController.text.trim(),
         isPublic: _packIsPublic,
         wavetableId: wavetableId,
       );
@@ -461,10 +507,15 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
               ),
             _LoadStep.review => _LoadReviewStep(
                 presetNames: _presetNames,
+                presetDescriptions: _presetDescriptions,
+                presetCategories: _presetCategories,
                 presetIsPublic: _presetIsPublic,
                 sampleNames: _sampleNames,
+                sampleDescriptions: _sampleDescriptions,
                 sampleIsPublic: _sampleIsPublic,
                 packNameController: _packNameController,
+                packDescriptionController:
+                    _packDescriptionController,
                 packIsPublic: _packIsPublic,
                 onPackIsPublicChanged: (value) =>
                     setState(() => _packIsPublic = value),
@@ -549,10 +600,14 @@ class _LoadSelectStep extends StatelessWidget {
 class _LoadReviewStep extends StatelessWidget {
   const _LoadReviewStep({
     required this.presetNames,
+    required this.presetDescriptions,
+    required this.presetCategories,
     required this.presetIsPublic,
     required this.sampleNames,
+    required this.sampleDescriptions,
     required this.sampleIsPublic,
     required this.packNameController,
+    required this.packDescriptionController,
     required this.packIsPublic,
     required this.onPackIsPublicChanged,
     required this.wavetableNameController,
@@ -565,10 +620,14 @@ class _LoadReviewStep extends StatelessWidget {
   });
 
   final Map<int, TextEditingController> presetNames;
+  final Map<int, TextEditingController> presetDescriptions;
+  final Map<int, PresetCategory> presetCategories;
   final Map<int, bool> presetIsPublic;
   final Map<int, TextEditingController> sampleNames;
+  final Map<int, TextEditingController> sampleDescriptions;
   final Map<int, bool> sampleIsPublic;
   final TextEditingController packNameController;
+  final TextEditingController packDescriptionController;
   final bool packIsPublic;
   final ValueChanged<bool> onPackIsPublicChanged;
   final TextEditingController wavetableNameController;
@@ -588,7 +647,8 @@ class _LoadReviewStep extends StatelessWidget {
           'Found ${presetNames.length} presets, '
           '${sampleNames.length} samples'
           '${hasWavetable ? ', and a wavetable' : ''} '
-          'on the Plinky. Review the names and sharing '
+          'on the Plinky.\n\n'
+          'Review the names and sharing '
           'settings below, then save.',
           style: Theme.of(context)
               .textTheme
@@ -612,6 +672,15 @@ class _LoadReviewStep extends StatelessWidget {
             labelText: 'Pack name',
             border: OutlineInputBorder(),
           ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: packDescriptionController,
+          decoration: const InputDecoration(
+            labelText: 'Description',
+            border: OutlineInputBorder(),
+          ),
+          maxLines: 3,
         ),
         SwitchListTile(
           title: const Text('Share with community'),
@@ -640,6 +709,10 @@ class _LoadReviewStep extends StatelessWidget {
                         false);
                 onChanged();
               },
+              onEdit: () => _showSampleEditDialog(
+                context,
+                slotIndex,
+              ),
             ),
         ],
         if (hasWavetable) ...[
@@ -672,63 +745,91 @@ class _LoadReviewStep extends StatelessWidget {
           const SizedBox(height: 8),
           for (final slotIndex
               in presetNames.keys.toList()..sort())
-            Padding(
-              padding:
-                  const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 32,
-                    child: Text(
-                      '${slotIndex + 1}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
-                    ),
-                  ),
-                  Expanded(
-                    child: _NamedItemRow(
-                      controller:
-                          presetNames[slotIndex]!,
-                      label:
-                          'Preset ${slotIndex + 1}',
-                      isPublic:
-                          presetIsPublic[slotIndex] ??
-                              false,
-                      onPublicToggled: () {
-                        presetIsPublic[slotIndex] =
-                            !(presetIsPublic[
-                                    slotIndex] ??
-                                false);
-                        onChanged();
-                      },
-                    ),
-                  ),
-                ],
+            _NamedItemRow(
+              controller:
+                  presetNames[slotIndex]!,
+              label:
+                  'Preset ${slotIndex + 1}',
+              isPublic:
+                  presetIsPublic[slotIndex] ??
+                      false,
+              onPublicToggled: () {
+                presetIsPublic[slotIndex] =
+                    !(presetIsPublic[slotIndex] ??
+                        false);
+                onChanged();
+              },
+              onEdit: () => _showPresetEditDialog(
+                context,
+                slotIndex,
               ),
             ),
         ],
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: PlinkyButton(
+        Center(
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              PlinkyButton(
                 onPressed: onBack,
                 icon: Icons.arrow_back,
                 label: 'Back',
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: PlinkyButton(
+              PlinkyButton(
                 onPressed: onSave,
                 icon: Icons.cloud_upload,
                 label: 'Save',
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
+    );
+  }
+
+  void _showSampleEditDialog(
+    BuildContext context,
+    int slotIndex,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => _SampleEditDialog(
+        nameController: sampleNames[slotIndex]!,
+        descriptionController:
+            sampleDescriptions[slotIndex]!,
+        isPublic: sampleIsPublic[slotIndex] ?? true,
+        onIsPublicChanged: (value) {
+          sampleIsPublic[slotIndex] = value;
+          onChanged();
+        },
+      ),
+    );
+  }
+
+  void _showPresetEditDialog(
+    BuildContext context,
+    int slotIndex,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => _PresetEditDialog(
+        nameController: presetNames[slotIndex]!,
+        descriptionController:
+            presetDescriptions[slotIndex]!,
+        category: presetCategories[slotIndex] ??
+            PresetCategory.none,
+        onCategoryChanged: (value) {
+          presetCategories[slotIndex] = value;
+          onChanged();
+        },
+        isPublic: presetIsPublic[slotIndex] ?? true,
+        onIsPublicChanged: (value) {
+          presetIsPublic[slotIndex] = value;
+          onChanged();
+        },
+      ),
     );
   }
 }
@@ -739,12 +840,14 @@ class _NamedItemRow extends StatelessWidget {
     required this.label,
     required this.isPublic,
     required this.onPublicToggled,
+    this.onEdit,
   });
 
   final TextEditingController controller;
   final String label;
   final bool isPublic;
   final VoidCallback onPublicToggled;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -774,8 +877,186 @@ class _NamedItemRow extends StatelessWidget {
               onPressed: onPublicToggled,
             ),
           ),
+          if (onEdit != null)
+            Tooltip(
+              message: 'Edit details',
+              child: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: onEdit,
+              ),
+            ),
         ],
       ),
+    );
+  }
+}
+
+class _SampleEditDialog extends StatelessWidget {
+  const _SampleEditDialog({
+    required this.nameController,
+    required this.descriptionController,
+    required this.isPublic,
+    required this.onIsPublicChanged,
+  });
+
+  final TextEditingController nameController;
+  final TextEditingController descriptionController;
+  final bool isPublic;
+  final ValueChanged<bool> onIsPublicChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit Sample'),
+      content: SizedBox(
+        width: 400,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: descriptionController,
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 8),
+            StatefulBuilder(
+              builder: (context, setDialogState) {
+                return SwitchListTile(
+                  title: const Text(
+                    'Share with community',
+                  ),
+                  value: isPublic,
+                  onChanged: (value) {
+                    onIsPublicChanged(value);
+                    setDialogState(() {});
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        PlinkyButton(
+          onPressed: () =>
+              Navigator.of(context).pop(),
+          icon: Icons.check,
+          label: 'Done',
+        ),
+      ],
+    );
+  }
+}
+
+class _PresetEditDialog extends StatelessWidget {
+  const _PresetEditDialog({
+    required this.nameController,
+    required this.descriptionController,
+    required this.category,
+    required this.onCategoryChanged,
+    required this.isPublic,
+    required this.onIsPublicChanged,
+  });
+
+  final TextEditingController nameController;
+  final TextEditingController descriptionController;
+  final PresetCategory category;
+  final ValueChanged<PresetCategory> onCategoryChanged;
+  final bool isPublic;
+  final ValueChanged<bool> onIsPublicChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit Preset'),
+      content: SizedBox(
+        width: 400,
+        child: StatefulBuilder(
+          builder: (context, setDialogState) {
+            var currentCategory = category;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<
+                    PresetCategory>(
+                  initialValue: currentCategory,
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: PresetCategory.values
+                      .map(
+                        (category) =>
+                            DropdownMenuItem(
+                          value: category,
+                          child: Text(
+                            category.label.isEmpty
+                                ? 'None'
+                                : category.label,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      currentCategory = value;
+                      onCategoryChanged(value);
+                      setDialogState(() {});
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  title: const Text(
+                    'Share with community',
+                  ),
+                  value: isPublic,
+                  onChanged: (value) {
+                    onIsPublicChanged(value);
+                    setDialogState(() {});
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+      actions: [
+        PlinkyButton(
+          onPressed: () =>
+              Navigator.of(context).pop(),
+          icon: Icons.check,
+          label: 'Done',
+        ),
+      ],
     );
   }
 }
