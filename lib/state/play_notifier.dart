@@ -117,7 +117,7 @@ class PlayNotifier extends Notifier<PlayState> {
     }
 
     // Calculate the MIDI note for this pad position using preset params.
-    final scaleIndex = preset?.scaleIndex ?? 25; // chromatic
+    final scale = preset?.scale ?? PlinkyScale.chromatic;
     final stride = preset?.stride ?? 7;
     final octaveOffset = preset?.octaveOffset ?? 0;
     final pitchOffset = preset?.pitchOffset ?? 0.0;
@@ -125,7 +125,7 @@ class PlayNotifier extends Notifier<PlayState> {
     final midiNote = midiNoteForPad(
       row: row,
       col: col,
-      scaleIndex: scaleIndex,
+      scale: scale,
       stride: stride,
       octaveOffset: octaveOffset,
       pitchOffset: pitchOffset,

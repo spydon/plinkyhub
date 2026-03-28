@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/parameter.dart';
 import 'package:plinkyhub/models/plinky_params.dart';
+import 'package:plinkyhub/utils/pitch.dart';
 
 /// Represents a single Plinky synthesizer preset stored as
 /// a 1552-byte binary buffer.
@@ -110,18 +111,20 @@ class Preset {
     return null;
   }
 
-  /// Scale index (0-25) for the selected musical scale.
-  int get scaleIndex {
+  /// The selected musical scale.
+  PlinkyScale get scale {
     final scaleParameter = parameterById('P_SCALE');
     if (scaleParameter == null) {
-      return 25; // chromatic
+      return PlinkyScale.chromatic;
     }
     final options = scaleParameter.getSelectOptions();
     if (options == null) {
-      return 25;
+      return PlinkyScale.chromatic;
     }
     final width = 1024 / options.length;
-    return (scaleParameter.value / width).floor().clamp(0, options.length - 1);
+    final index =
+        (scaleParameter.value / width).floor().clamp(0, options.length - 1);
+    return PlinkyScale.values[index.clamp(0, PlinkyScale.values.length - 1)];
   }
 
   /// Stride in semitones between columns (default 7 = perfect fifth).

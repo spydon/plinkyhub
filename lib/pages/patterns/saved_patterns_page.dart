@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/pages/patterns/create_pattern_tab.dart';
 import 'package:plinkyhub/pages/patterns/pattern_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_patterns_notifier.dart';
@@ -21,7 +22,7 @@ class _SavedPatternsPageState extends ConsumerState<SavedPatternsPage>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 2,
+      length: 3,
       vsync: this,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -48,6 +49,7 @@ class _SavedPatternsPageState extends ConsumerState<SavedPatternsPage>
           tabs: const [
             Tab(text: 'My Patterns'),
             Tab(text: 'Community Patterns'),
+            Tab(text: 'Create Pattern'),
           ],
         ),
         if (savedPatternsState.errorMessage != null)
@@ -96,6 +98,14 @@ class _SavedPatternsPageState extends ConsumerState<SavedPatternsPage>
                 ),
                 itemLabel: 'pattern',
               ),
+              if (isSignedIn)
+                CreatePatternTab(
+                  onCreated: () => _tabController.animateTo(0),
+                )
+              else
+                const SignInPrompt(
+                  message: 'Sign in to create and share patterns',
+                ),
             ],
           ),
         ),
