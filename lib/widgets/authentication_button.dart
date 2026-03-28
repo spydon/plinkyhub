@@ -4,6 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
+const reservedUsernames = {
+  'editor',
+  'presets',
+  'packs',
+  'samples',
+  'wavetables',
+  'patterns',
+  'profile',
+  'about',
+};
+
 class AuthenticationButton extends ConsumerWidget {
   const AuthenticationButton({super.key});
 
@@ -233,6 +244,9 @@ class _SignInDialogState extends ConsumerState<SignInDialog> {
       }
       if (username.length < 3) {
         return 'Username must be at least 3 characters.';
+      }
+      if (reservedUsernames.contains(username.toLowerCase())) {
+        return 'That username is reserved. Please choose another.';
       }
       if (password.length < 6) {
         return 'Password must be at least 6 characters.';
