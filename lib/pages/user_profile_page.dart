@@ -5,16 +5,67 @@ import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/user_profile_notifier.dart';
+import 'package:plinkyhub/state/user_profile_state.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 
-class UserProfilePage extends ConsumerStatefulWidget {
-  const UserProfilePage({super.key});
+class UserProfilePage extends ConsumerWidget {
+  const UserProfilePage({this.username, super.key});
+
+  final String? username;
 
   @override
-  ConsumerState<UserProfilePage> createState() => _UserProfilePageState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final username = this.username;
+    if (username != null) {
+      final asyncProfile = ref.watch(
+        userProfileByUsernameProvider(username),
+      );
+      return asyncProfile.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(child: Text('$error')),
+        data: (profileState) => UserProfileContent(
+          profileState: profileState,
+          onRefresh: () => ref.refresh(
+            userProfileByUsernameProvider(username).future,
+          ),
+        ),
+      );
+    }
+
+    final profileState = ref.watch(userProfileProvider);
+    if (profileState.userId.isEmpty) {
+      return const Center(
+        child: Text('Select a user to view their profile'),
+      );
+    }
+
+    return UserProfileContent(
+      profileState: profileState,
+      onRefresh: () => ref
+          .read(userProfileProvider.notifier)
+          .loadUserProfile(
+            profileState.userId,
+            profileState.username,
+          ),
+    );
+  }
 }
 
-class _UserProfilePageState extends ConsumerState<UserProfilePage>
+class UserProfileContent extends ConsumerStatefulWidget {
+  const UserProfileContent({
+    required this.profileState,
+    required this.onRefresh,
+    super.key,
+  });
+
+  final UserProfileState profileState;
+  final Future<void> Function() onRefresh;
+
+  @override
+  ConsumerState<UserProfileContent> createState() => _UserProfileContentState();
+}
+
+class _UserProfileContentState extends ConsumerState<UserProfileContent>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
@@ -32,24 +83,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
 
   @override
   Widget build(BuildContext context) {
-    final profileState = ref.watch(userProfileProvider);
+    final profileState = widget.profileState;
     final currentUserId = ref.watch(authenticationProvider).user?.id;
     final isOwnProfile = profileState.userId == currentUserId;
-
-    if (profileState.userId.isEmpty) {
-      return const Center(
-        child: Text('Select a user to view their profile'),
-      );
-    }
-
-    void refreshProfile() {
-      ref
-          .read(userProfileProvider.notifier)
-          .loadUserProfile(
-            profileState.userId,
-            profileState.username,
-          );
-    }
 
     return Column(
       children: [
@@ -82,7 +118,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
             Tab(
               text: 'Presets (${profileState.presets.length})',
             ),
-            Tab(text: 'Packs (${profileState.packs.length})'),
+            Tab(
+              text: 'Packs (${profileState.packs.length})',
+            ),
             Tab(
               text: 'Samples (${profileState.samples.length})',
             ),
@@ -106,7 +144,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                 items: profileState.presets,
                 isLoading: profileState.isLoading,
                 isOwned: isOwnProfile,
-                onRefresh: refreshProfile,
+                onRefresh: widget.onRefresh,
                 itemBuilder: (preset) => PresetCard(
                   preset: preset,
                   isOwned: isOwnProfile,
@@ -117,7 +155,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                 items: profileState.packs,
                 isLoading: profileState.isLoading,
                 isOwned: false,
-                onRefresh: refreshProfile,
+                onRefresh: widget.onRefresh,
                 itemBuilder: (pack) => PackCard(
                   pack: pack,
                   isOwned: false,
@@ -128,7 +166,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                 items: profileState.samples,
                 isLoading: profileState.isLoading,
                 isOwned: false,
-                onRefresh: refreshProfile,
+                onRefresh: widget.onRefresh,
                 itemBuilder: (sample) => SampleCard(
                   sample: sample,
                   isOwned: false,

@@ -15,7 +15,6 @@ import 'package:plinkyhub/pages/samples/saved_samples_page.dart';
 import 'package:plinkyhub/pages/user_profile_page.dart';
 import 'package:plinkyhub/pages/wavetables/saved_wavetables_page.dart';
 import 'package:plinkyhub/pages/wavetables/wavetable_page.dart';
-import 'package:plinkyhub/state/user_profile_notifier.dart';
 import 'package:plinkyhub/widgets/navigation_sidebar.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -168,12 +167,11 @@ GoRouter createRouter(ProviderContainer container) {
       // User profile deep link — catch-all for /<username>.
       GoRoute(
         path: '/:username',
-        redirect: (context, state) {
+        builder: (context, state) {
           final username = state.pathParameters['username']!;
-          container
-              .read(userProfileProvider.notifier)
-              .loadUserProfileByUsername(username);
-          return '/profile';
+          return _ItemPageShell(
+            child: UserProfilePage(username: username),
+          );
         },
       ),
     ],

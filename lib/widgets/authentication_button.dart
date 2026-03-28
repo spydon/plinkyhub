@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
@@ -41,7 +42,9 @@ class AuthenticationButton extends ConsumerWidget {
     return PopupMenuButton<String>(
       tooltip: displayName,
       onSelected: (value) {
-        if (value == 'sign_out') {
+        if (value == 'view_profile' && username != null) {
+          context.go('/$username');
+        } else if (value == 'sign_out') {
           ref.read(authenticationProvider.notifier).signOut();
         }
       },
@@ -54,6 +57,11 @@ class AuthenticationButton extends ConsumerWidget {
           ),
         ),
         const PopupMenuDivider(),
+        if (username != null)
+          const PopupMenuItem<String>(
+            value: 'view_profile',
+            child: Text('View profile'),
+          ),
         const PopupMenuItem<String>(
           value: 'sign_out',
           child: Text('Sign out'),

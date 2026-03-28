@@ -122,8 +122,10 @@ class Preset {
       return PlinkyScale.chromatic;
     }
     final width = 1024 / options.length;
-    final index =
-        (scaleParameter.value / width).floor().clamp(0, options.length - 1);
+    final index = (scaleParameter.value / width).floor().clamp(
+      0,
+      options.length - 1,
+    );
     return PlinkyScale.values[index.clamp(0, PlinkyScale.values.length - 1)];
   }
 

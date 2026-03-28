@@ -211,16 +211,64 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
   @override
   Widget build(BuildContext context) {
     return switch (_step) {
-      _LoadStep.instructions => _buildInstructionsView(),
-      _LoadStep.reading => _buildReadingView(),
-      _LoadStep.review => _buildReviewView(),
-      _LoadStep.uploading => _buildUploadingView(),
-      _LoadStep.done => _buildDoneView(),
-      _LoadStep.error => _buildErrorView(),
+      _LoadStep.instructions => _LoadInstructionsView(
+        selectedSlot: _selectedSlot,
+        onSlotChanged: (value) => setState(() => _selectedSlot = value),
+        onReadFromPlinky: _readFromPlinky,
+      ),
+      _LoadStep.reading => Center(
+        child: SaveProgressView(statusMessage: _statusMessage),
+      ),
+      _LoadStep.review => _LoadReviewView(
+        nameController: _nameController,
+        descriptionController: _descriptionController,
+        pitched: _pitched,
+        onPitchedChanged: (value) => setState(() => _pitched = value),
+        baseNote: _baseNote,
+        onBaseNoteChanged: (value) => setState(() => _baseNote = value),
+        fineTune: _fineTune,
+        onFineTuneChanged: (value) => setState(() => _fineTune = value),
+        slicePoints: _slicePoints,
+        onSlicePointsChanged: (points) => setState(() => _slicePoints = points),
+        sliceNotes: _sliceNotes,
+        onSliceNotesChanged: (notes) => setState(() => _sliceNotes = notes),
+        wavBytes: _wavBytes,
+        pcmFrameCount: _pcmFrameCount,
+        isPublic: _isPublic,
+        onIsPublicChanged: (value) => setState(() => _isPublic = value),
+        onBack: _reset,
+        onUpload: _upload,
+      ),
+      _LoadStep.uploading => Center(
+        child: SaveProgressView(statusMessage: _statusMessage),
+      ),
+      _LoadStep.done => _LoadDoneView(
+        onDone: () {
+          _reset();
+          widget.onLoaded?.call();
+        },
+      ),
+      _LoadStep.error => _LoadErrorView(
+        errorMessage: _errorMessage,
+        onRetry: _reset,
+      ),
     };
   }
+}
 
-  Widget _buildInstructionsView() {
+class _LoadInstructionsView extends StatelessWidget {
+  const _LoadInstructionsView({
+    required this.selectedSlot,
+    required this.onSlotChanged,
+    required this.onReadFromPlinky,
+  });
+
+  final int selectedSlot;
+  final ValueChanged<int> onSlotChanged;
+  final VoidCallback onReadFromPlinky;
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Center(
@@ -235,7 +283,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
-                initialValue: _selectedSlot,
+                initialValue: selectedSlot,
                 decoration: const InputDecoration(
                   labelText: 'Sample slot',
                   border: OutlineInputBorder(),
@@ -249,13 +297,13 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
                 ),
                 onChanged: (value) {
                   if (value != null) {
-                    setState(() => _selectedSlot = value);
+                    onSlotChanged(value);
                   }
                 },
               ),
               const SizedBox(height: 16),
               PlinkyButton(
-                onPressed: _readFromPlinky,
+                onPressed: onReadFromPlinky,
                 icon: Icons.usb,
                 label: 'Select Plinky drive',
               ),
@@ -265,14 +313,51 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
       ),
     );
   }
+}
 
-  Widget _buildReadingView() {
-    return Center(
-      child: SaveProgressView(statusMessage: _statusMessage),
-    );
-  }
+class _LoadReviewView extends StatelessWidget {
+  const _LoadReviewView({
+    required this.nameController,
+    required this.descriptionController,
+    required this.pitched,
+    required this.onPitchedChanged,
+    required this.baseNote,
+    required this.onBaseNoteChanged,
+    required this.fineTune,
+    required this.onFineTuneChanged,
+    required this.slicePoints,
+    required this.onSlicePointsChanged,
+    required this.sliceNotes,
+    required this.onSliceNotesChanged,
+    required this.wavBytes,
+    required this.pcmFrameCount,
+    required this.isPublic,
+    required this.onIsPublicChanged,
+    required this.onBack,
+    required this.onUpload,
+  });
 
-  Widget _buildReviewView() {
+  final TextEditingController nameController;
+  final TextEditingController descriptionController;
+  final bool pitched;
+  final ValueChanged<bool> onPitchedChanged;
+  final int baseNote;
+  final ValueChanged<int> onBaseNoteChanged;
+  final int fineTune;
+  final ValueChanged<int> onFineTuneChanged;
+  final List<double> slicePoints;
+  final ValueChanged<List<double>> onSlicePointsChanged;
+  final List<int> sliceNotes;
+  final ValueChanged<List<int>> onSliceNotesChanged;
+  final Uint8List? wavBytes;
+  final int? pcmFrameCount;
+  final bool isPublic;
+  final ValueChanged<bool> onIsPublicChanged;
+  final VoidCallback onBack;
+  final VoidCallback onUpload;
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Center(
@@ -282,7 +367,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextField(
-                controller: _nameController,
+                controller: nameController,
                 decoration: const InputDecoration(
                   labelText: 'Name',
                   border: OutlineInputBorder(),
@@ -290,7 +375,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: _descriptionController,
+                controller: descriptionController,
                 decoration: const InputDecoration(
                   labelText: 'Description',
                   border: OutlineInputBorder(),
@@ -299,45 +384,42 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
               ),
               const SizedBox(height: 16),
               SampleModeSelector(
-                pitched: _pitched,
+                pitched: pitched,
                 enabled: true,
-                onChanged: (value) => setState(() => _pitched = value),
+                onChanged: onPitchedChanged,
               ),
               const SizedBox(height: 16),
-              if (!_pitched)
+              if (!pitched)
                 BaseNoteSelector(
-                  baseNote: _baseNote,
-                  fineTune: _fineTune,
+                  baseNote: baseNote,
+                  fineTune: fineTune,
                   enabled: true,
-                  onBaseNoteChanged: (value) =>
-                      setState(() => _baseNote = value),
-                  onFineTuneChanged: (value) =>
-                      setState(() => _fineTune = value),
+                  onBaseNoteChanged: onBaseNoteChanged,
+                  onFineTuneChanged: onFineTuneChanged,
                 ),
-              if (!_pitched) const SizedBox(height: 16),
+              if (!pitched) const SizedBox(height: 16),
               SlicePointsEditor(
-                slicePoints: _slicePoints,
-                wavBytes: _wavBytes,
-                pcmFrameCount: _pcmFrameCount,
+                slicePoints: slicePoints,
+                wavBytes: wavBytes,
+                pcmFrameCount: pcmFrameCount,
                 enabled: true,
-                onChanged: (points) => setState(() => _slicePoints = points),
-                pitched: _pitched,
-                sliceNotes: _sliceNotes,
-                onSliceNotesChanged: (notes) =>
-                    setState(() => _sliceNotes = notes),
+                onChanged: onSlicePointsChanged,
+                pitched: pitched,
+                sliceNotes: sliceNotes,
+                onSliceNotesChanged: onSliceNotesChanged,
               ),
               const SizedBox(height: 8),
               SwitchListTile(
                 title: const Text('Share with community'),
-                value: _isPublic,
-                onChanged: (value) => setState(() => _isPublic = value),
+                value: isPublic,
+                onChanged: onIsPublicChanged,
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: PlinkyButton(
-                      onPressed: _reset,
+                      onPressed: onBack,
                       icon: Icons.arrow_back,
                       label: 'Back',
                     ),
@@ -345,7 +427,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: PlinkyButton(
-                      onPressed: _upload,
+                      onPressed: onUpload,
                       icon: Icons.upload,
                       label: 'Upload',
                     ),
@@ -358,14 +440,15 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
       ),
     );
   }
+}
 
-  Widget _buildUploadingView() {
-    return Center(
-      child: SaveProgressView(statusMessage: _statusMessage),
-    );
-  }
+class _LoadDoneView extends StatelessWidget {
+  const _LoadDoneView({required this.onDone});
 
-  Widget _buildDoneView() {
+  final VoidCallback onDone;
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -373,10 +456,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
           const SaveDoneView(itemType: 'sample'),
           const SizedBox(height: 16),
           PlinkyButton(
-            onPressed: () {
-              _reset();
-              widget.onLoaded?.call();
-            },
+            onPressed: onDone,
             icon: Icons.check,
             label: 'Done',
           ),
@@ -384,16 +464,27 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
       ),
     );
   }
+}
 
-  Widget _buildErrorView() {
+class _LoadErrorView extends StatelessWidget {
+  const _LoadErrorView({
+    required this.errorMessage,
+    required this.onRetry,
+  });
+
+  final String? errorMessage;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SaveErrorView(errorMessage: _errorMessage),
+          SaveErrorView(errorMessage: errorMessage),
           const SizedBox(height: 16),
           PlinkyButton(
-            onPressed: _reset,
+            onPressed: onRetry,
             icon: Icons.refresh,
             label: 'Try again',
           ),

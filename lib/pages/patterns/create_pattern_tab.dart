@@ -186,8 +186,7 @@ class _CreatePatternTabState extends ConsumerState<CreatePatternTab> {
         stepCount: _stepCount,
         scaleIndex: _scale.index,
         grid: [
-          for (final step in _grid)
-            [for (final cell in step) cell ? 1 : 0],
+          for (final step in _grid) [for (final cell in step) cell ? 1 : 0],
         ],
       );
 
@@ -366,8 +365,7 @@ class _CreatePatternTabState extends ConsumerState<CreatePatternTab> {
                 ),
                 const SizedBox(height: 16),
                 PlinkyButton(
-                  onPressed:
-                      _isSaving || !_hasActiveSteps ? null : _save,
+                  onPressed: _isSaving || !_hasActiveSteps ? null : _save,
                   icon: _isSaving ? Icons.hourglass_empty : Icons.save,
                   label: _isSaving ? 'Saving...' : 'Save Pattern',
                 ),

@@ -12,6 +12,104 @@ final userProfileProvider =
       UserProfileNotifier.new,
     );
 
+final userProfileByUsernameProvider = FutureProvider.autoDispose
+    .family<UserProfileState, String>((ref, username) async {
+      final supabase = Supabase.instance.client;
+      final currentUserId = ref.read(authenticationProvider).user?.id;
+
+      final profileResponse = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('username', username)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        throw Exception('User "$username" not found');
+      }
+
+      final userId = profileResponse['id'] as String;
+      final isOwnProfile = currentUserId == userId;
+
+      Future<Set<String>> fetchStarredIds(String table, String idColumn) async {
+        if (currentUserId == null) {
+          return {};
+        }
+        final stars = await supabase
+            .from(table)
+            .select(idColumn)
+            .eq('user_id', currentUserId);
+        return {
+          for (final row in stars as List)
+            (row as Map<String, dynamic>)[idColumn] as String,
+        };
+      }
+
+      var presetsQuery = supabase
+          .from('presets')
+          .select('*, profiles(username), preset_stars(count)')
+          .eq('user_id', userId);
+      if (!isOwnProfile) {
+        presetsQuery = presetsQuery.eq('is_public', true);
+      }
+
+      var packsQuery = supabase
+          .from('packs')
+          .select('*, pack_slots(*), profiles(username), pack_stars(count)')
+          .eq('user_id', userId);
+      if (!isOwnProfile) {
+        packsQuery = packsQuery.eq('is_public', true);
+      }
+
+      var samplesQuery = supabase
+          .from('samples')
+          .select('*, profiles(username), sample_stars(count)')
+          .eq('user_id', userId);
+      if (!isOwnProfile) {
+        samplesQuery = samplesQuery.eq('is_public', true);
+      }
+
+      final queryResults = await Future.wait([
+        presetsQuery.order('updated_at', ascending: false),
+        packsQuery.order('updated_at', ascending: false),
+        samplesQuery.order('updated_at', ascending: false),
+      ]);
+      final starredResults = await Future.wait([
+        fetchStarredIds('preset_stars', 'preset_id'),
+        fetchStarredIds('pack_stars', 'pack_id'),
+        fetchStarredIds('sample_stars', 'sample_id'),
+      ]);
+
+      final presetsResponse = queryResults[0];
+      final packsResponse = queryResults[1];
+      final samplesResponse = queryResults[2];
+      final starredPresetIds = starredResults[0];
+      final starredPackIds = starredResults[1];
+      final starredSampleIds = starredResults[2];
+
+      return UserProfileState(
+        userId: userId,
+        username: username,
+        presets: presetsResponse.map((map) {
+          return SavedPreset.fromJson({
+            ...map,
+            'is_starred': starredPresetIds.contains(map['id']),
+          });
+        }).toList(),
+        packs: packsResponse.map((map) {
+          return SavedPack.fromJson({
+            ...map,
+            'is_starred': starredPackIds.contains(map['id']),
+          });
+        }).toList(),
+        samples: samplesResponse.map((map) {
+          return SavedSample.fromJson({
+            ...map,
+            'is_starred': starredSampleIds.contains(map['id']),
+          });
+        }).toList(),
+      );
+    });
+
 class UserProfileNotifier extends Notifier<UserProfileState> {
   SupabaseClient get _supabase => Supabase.instance.client;
 

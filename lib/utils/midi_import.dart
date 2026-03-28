@@ -95,9 +95,11 @@ MidiImportResult importMidiToGrid({
   final ticksPerStep = ticksPerBeat ~/ 4;
 
   // Find the total duration in steps.
-  final maxTick = noteOns.map((n) => n.tick).reduce(
-    (a, b) => a > b ? a : b,
-  );
+  final maxTick = noteOns
+      .map((n) => n.tick)
+      .reduce(
+        (a, b) => a > b ? a : b,
+      );
   final rawStepCount = (maxTick / ticksPerStep).ceil() + 1;
 
   // Snap to nearest valid step count.
