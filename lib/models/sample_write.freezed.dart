@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SampleWrite {
 
- String get userId; String get name; String get filePath; String get pcmFilePath; String get description; bool get isPublic; List<double> get slicePoints; int get baseNote; int get fineTune; bool get pitched; List<int> get sliceNotes; DateTime? get updatedAt;
+ String get userId; String get name; String get filePath; String get pcmFilePath; String get description; bool get isPublic; List<double> get slicePoints; int get baseNote; int get fineTune; bool get pitched; List<int> get sliceNotes;
 /// Create a copy of SampleWrite
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SampleWriteCopyWith<SampleWrite> get copyWith => _$SampleWriteCopyWithImpl<Samp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SampleWrite&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other.slicePoints, slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other.sliceNotes, sliceNotes)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SampleWrite&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other.slicePoints, slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other.sliceNotes, sliceNotes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,name,filePath,pcmFilePath,description,isPublic,const DeepCollectionEquality().hash(slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(sliceNotes),updatedAt);
+int get hashCode => Object.hash(runtimeType,userId,name,filePath,pcmFilePath,description,isPublic,const DeepCollectionEquality().hash(slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(sliceNotes));
 
 @override
 String toString() {
-  return 'SampleWrite(userId: $userId, name: $name, filePath: $filePath, pcmFilePath: $pcmFilePath, description: $description, isPublic: $isPublic, slicePoints: $slicePoints, baseNote: $baseNote, fineTune: $fineTune, pitched: $pitched, sliceNotes: $sliceNotes, updatedAt: $updatedAt)';
+  return 'SampleWrite(userId: $userId, name: $name, filePath: $filePath, pcmFilePath: $pcmFilePath, description: $description, isPublic: $isPublic, slicePoints: $slicePoints, baseNote: $baseNote, fineTune: $fineTune, pitched: $pitched, sliceNotes: $sliceNotes)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SampleWriteCopyWith<$Res>  {
   factory $SampleWriteCopyWith(SampleWrite value, $Res Function(SampleWrite) _then) = _$SampleWriteCopyWithImpl;
 @useResult
 $Res call({
- String userId, String name, String filePath, String pcmFilePath, String description, bool isPublic, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, DateTime? updatedAt
+ String userId, String name, String filePath, String pcmFilePath, String description, bool isPublic, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes
 });
 
 
@@ -65,7 +65,7 @@ class _$SampleWriteCopyWithImpl<$Res>
 
 /// Create a copy of SampleWrite
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? name = null,Object? filePath = null,Object? pcmFilePath = null,Object? description = null,Object? isPublic = null,Object? slicePoints = null,Object? baseNote = null,Object? fineTune = null,Object? pitched = null,Object? sliceNotes = null,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? name = null,Object? filePath = null,Object? pcmFilePath = null,Object? description = null,Object? isPublic = null,Object? slicePoints = null,Object? baseNote = null,Object? fineTune = null,Object? pitched = null,Object? sliceNotes = null,}) {
   return _then(_self.copyWith(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -78,8 +78,7 @@ as List<double>,baseNote: null == baseNote ? _self.baseNote : baseNote // ignore
 as int,fineTune: null == fineTune ? _self.fineTune : fineTune // ignore: cast_nullable_to_non_nullable
 as int,pitched: null == pitched ? _self.pitched : pitched // ignore: cast_nullable_to_non_nullable
 as bool,sliceNotes: null == sliceNotes ? _self.sliceNotes : sliceNotes // ignore: cast_nullable_to_non_nullable
-as List<int>,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as List<int>,
   ));
 }
 
@@ -164,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SampleWrite() when $default != null:
-return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.updatedAt);case _:
+return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes);case _:
   return orElse();
 
 }
@@ -185,10 +184,10 @@ return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.d
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes)  $default,) {final _that = this;
 switch (_that) {
 case _SampleWrite():
-return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.updatedAt);case _:
+return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +204,10 @@ return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.d
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes)?  $default,) {final _that = this;
 switch (_that) {
 case _SampleWrite() when $default != null:
-return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.updatedAt);case _:
+return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes);case _:
   return null;
 
 }
@@ -220,7 +219,7 @@ return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.d
 @JsonSerializable()
 
 class _SampleWrite implements SampleWrite {
-  const _SampleWrite({required this.userId, required this.name, required this.filePath, required this.pcmFilePath, this.description = '', this.isPublic = false, final  List<double> slicePoints = defaultSlicePoints, this.baseNote = 60, this.fineTune = 0, this.pitched = false, final  List<int> sliceNotes = defaultSliceNotes, this.updatedAt}): _slicePoints = slicePoints,_sliceNotes = sliceNotes;
+  const _SampleWrite({required this.userId, required this.name, required this.filePath, required this.pcmFilePath, this.description = '', this.isPublic = false, final  List<double> slicePoints = defaultSlicePoints, this.baseNote = 60, this.fineTune = 0, this.pitched = false, final  List<int> sliceNotes = defaultSliceNotes}): _slicePoints = slicePoints,_sliceNotes = sliceNotes;
   factory _SampleWrite.fromJson(Map<String, dynamic> json) => _$SampleWriteFromJson(json);
 
 @override final  String userId;
@@ -246,7 +245,6 @@ class _SampleWrite implements SampleWrite {
   return EqualUnmodifiableListView(_sliceNotes);
 }
 
-@override final  DateTime? updatedAt;
 
 /// Create a copy of SampleWrite
 /// with the given fields replaced by the non-null parameter values.
@@ -261,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SampleWrite&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other._slicePoints, _slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other._sliceNotes, _sliceNotes)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SampleWrite&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other._slicePoints, _slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other._sliceNotes, _sliceNotes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,name,filePath,pcmFilePath,description,isPublic,const DeepCollectionEquality().hash(_slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(_sliceNotes),updatedAt);
+int get hashCode => Object.hash(runtimeType,userId,name,filePath,pcmFilePath,description,isPublic,const DeepCollectionEquality().hash(_slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(_sliceNotes));
 
 @override
 String toString() {
-  return 'SampleWrite(userId: $userId, name: $name, filePath: $filePath, pcmFilePath: $pcmFilePath, description: $description, isPublic: $isPublic, slicePoints: $slicePoints, baseNote: $baseNote, fineTune: $fineTune, pitched: $pitched, sliceNotes: $sliceNotes, updatedAt: $updatedAt)';
+  return 'SampleWrite(userId: $userId, name: $name, filePath: $filePath, pcmFilePath: $pcmFilePath, description: $description, isPublic: $isPublic, slicePoints: $slicePoints, baseNote: $baseNote, fineTune: $fineTune, pitched: $pitched, sliceNotes: $sliceNotes)';
 }
 
 
@@ -281,7 +279,7 @@ abstract mixin class _$SampleWriteCopyWith<$Res> implements $SampleWriteCopyWith
   factory _$SampleWriteCopyWith(_SampleWrite value, $Res Function(_SampleWrite) _then) = __$SampleWriteCopyWithImpl;
 @override @useResult
 $Res call({
- String userId, String name, String filePath, String pcmFilePath, String description, bool isPublic, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, DateTime? updatedAt
+ String userId, String name, String filePath, String pcmFilePath, String description, bool isPublic, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes
 });
 
 
@@ -298,7 +296,7 @@ class __$SampleWriteCopyWithImpl<$Res>
 
 /// Create a copy of SampleWrite
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? name = null,Object? filePath = null,Object? pcmFilePath = null,Object? description = null,Object? isPublic = null,Object? slicePoints = null,Object? baseNote = null,Object? fineTune = null,Object? pitched = null,Object? sliceNotes = null,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? name = null,Object? filePath = null,Object? pcmFilePath = null,Object? description = null,Object? isPublic = null,Object? slicePoints = null,Object? baseNote = null,Object? fineTune = null,Object? pitched = null,Object? sliceNotes = null,}) {
   return _then(_SampleWrite(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -311,8 +309,7 @@ as List<double>,baseNote: null == baseNote ? _self.baseNote : baseNote // ignore
 as int,fineTune: null == fineTune ? _self.fineTune : fineTune // ignore: cast_nullable_to_non_nullable
 as int,pitched: null == pitched ? _self.pitched : pitched // ignore: cast_nullable_to_non_nullable
 as bool,sliceNotes: null == sliceNotes ? _self._sliceNotes : sliceNotes // ignore: cast_nullable_to_non_nullable
-as List<int>,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as List<int>,
   ));
 }
 

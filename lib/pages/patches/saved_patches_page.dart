@@ -24,7 +24,9 @@ class _SavedPatchesPageState extends ConsumerState<SavedPatchesPage>
       length: 2,
       vsync: this,
     );
-    ref.read(savedPatchesProvider.notifier).fetchPublicPatches();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(savedPatchesProvider.notifier).fetchPublicPatches();
+    });
   }
 
   @override

@@ -159,9 +159,7 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final updates = <String, dynamic>{
-        'updated_at': DateTime.now().toIso8601String(),
-      };
+      final updates = <String, dynamic>{};
       if (name != null) {
         updates['name'] = name;
       }

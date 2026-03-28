@@ -164,7 +164,6 @@ class SavedSamplesNotifier extends Notifier<SavedSamplesState> {
         fineTune: sample.fineTune,
         pitched: sample.pitched,
         sliceNotes: sample.sliceNotes,
-        updatedAt: DateTime.now(),
       );
       await _supabase
           .from('samples')

@@ -14,9 +14,6 @@ _PatchWrite _$PatchWriteFromJson(Map<String, dynamic> json) => _PatchWrite(
   description: json['description'] as String? ?? '',
   isPublic: json['is_public'] as bool? ?? false,
   sampleId: json['sample_id'] as String?,
-  updatedAt: json['updated_at'] == null
-      ? null
-      : DateTime.parse(json['updated_at'] as String),
 );
 
 Map<String, dynamic> _$PatchWriteToJson(_PatchWrite instance) =>
@@ -28,5 +25,4 @@ Map<String, dynamic> _$PatchWriteToJson(_PatchWrite instance) =>
       'description': instance.description,
       'is_public': instance.isPublic,
       'sample_id': instance.sampleId,
-      'updated_at': instance.updatedAt?.toIso8601String(),
     };

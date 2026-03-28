@@ -26,9 +26,6 @@ _SampleWrite _$SampleWriteFromJson(Map<String, dynamic> json) => _SampleWrite(
           ?.map((e) => (e as num).toInt())
           .toList() ??
       defaultSliceNotes,
-  updatedAt: json['updated_at'] == null
-      ? null
-      : DateTime.parse(json['updated_at'] as String),
 );
 
 Map<String, dynamic> _$SampleWriteToJson(_SampleWrite instance) =>
@@ -44,5 +41,4 @@ Map<String, dynamic> _$SampleWriteToJson(_SampleWrite instance) =>
       'fine_tune': instance.fineTune,
       'pitched': instance.pitched,
       'slice_notes': instance.sliceNotes,
-      'updated_at': instance.updatedAt?.toIso8601String(),
     };

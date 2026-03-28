@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PatchWrite {
 
- String get userId; String get name; String get category; String get patchData; String get description; bool get isPublic; String? get sampleId; DateTime? get updatedAt;
+ String get userId; String get name; String get category; String get patchData; String get description; bool get isPublic; String? get sampleId;
 /// Create a copy of PatchWrite
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $PatchWriteCopyWith<PatchWrite> get copyWith => _$PatchWriteCopyWithImpl<PatchWr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PatchWrite&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.patchData, patchData) || other.patchData == patchData)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.sampleId, sampleId) || other.sampleId == sampleId)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PatchWrite&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.patchData, patchData) || other.patchData == patchData)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.sampleId, sampleId) || other.sampleId == sampleId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,name,category,patchData,description,isPublic,sampleId,updatedAt);
+int get hashCode => Object.hash(runtimeType,userId,name,category,patchData,description,isPublic,sampleId);
 
 @override
 String toString() {
-  return 'PatchWrite(userId: $userId, name: $name, category: $category, patchData: $patchData, description: $description, isPublic: $isPublic, sampleId: $sampleId, updatedAt: $updatedAt)';
+  return 'PatchWrite(userId: $userId, name: $name, category: $category, patchData: $patchData, description: $description, isPublic: $isPublic, sampleId: $sampleId)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $PatchWriteCopyWith<$Res>  {
   factory $PatchWriteCopyWith(PatchWrite value, $Res Function(PatchWrite) _then) = _$PatchWriteCopyWithImpl;
 @useResult
 $Res call({
- String userId, String name, String category, String patchData, String description, bool isPublic, String? sampleId, DateTime? updatedAt
+ String userId, String name, String category, String patchData, String description, bool isPublic, String? sampleId
 });
 
 
@@ -65,7 +65,7 @@ class _$PatchWriteCopyWithImpl<$Res>
 
 /// Create a copy of PatchWrite
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? name = null,Object? category = null,Object? patchData = null,Object? description = null,Object? isPublic = null,Object? sampleId = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? name = null,Object? category = null,Object? patchData = null,Object? description = null,Object? isPublic = null,Object? sampleId = freezed,}) {
   return _then(_self.copyWith(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -74,8 +74,7 @@ as String,patchData: null == patchData ? _self.patchData : patchData // ignore: 
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,isPublic: null == isPublic ? _self.isPublic : isPublic // ignore: cast_nullable_to_non_nullable
 as bool,sampleId: freezed == sampleId ? _self.sampleId : sampleId // ignore: cast_nullable_to_non_nullable
-as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as String?,
   ));
 }
 
@@ -160,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String name,  String category,  String patchData,  String description,  bool isPublic,  String? sampleId,  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String name,  String category,  String patchData,  String description,  bool isPublic,  String? sampleId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PatchWrite() when $default != null:
-return $default(_that.userId,_that.name,_that.category,_that.patchData,_that.description,_that.isPublic,_that.sampleId,_that.updatedAt);case _:
+return $default(_that.userId,_that.name,_that.category,_that.patchData,_that.description,_that.isPublic,_that.sampleId);case _:
   return orElse();
 
 }
@@ -181,10 +180,10 @@ return $default(_that.userId,_that.name,_that.category,_that.patchData,_that.des
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String name,  String category,  String patchData,  String description,  bool isPublic,  String? sampleId,  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String name,  String category,  String patchData,  String description,  bool isPublic,  String? sampleId)  $default,) {final _that = this;
 switch (_that) {
 case _PatchWrite():
-return $default(_that.userId,_that.name,_that.category,_that.patchData,_that.description,_that.isPublic,_that.sampleId,_that.updatedAt);case _:
+return $default(_that.userId,_that.name,_that.category,_that.patchData,_that.description,_that.isPublic,_that.sampleId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +200,10 @@ return $default(_that.userId,_that.name,_that.category,_that.patchData,_that.des
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String name,  String category,  String patchData,  String description,  bool isPublic,  String? sampleId,  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String name,  String category,  String patchData,  String description,  bool isPublic,  String? sampleId)?  $default,) {final _that = this;
 switch (_that) {
 case _PatchWrite() when $default != null:
-return $default(_that.userId,_that.name,_that.category,_that.patchData,_that.description,_that.isPublic,_that.sampleId,_that.updatedAt);case _:
+return $default(_that.userId,_that.name,_that.category,_that.patchData,_that.description,_that.isPublic,_that.sampleId);case _:
   return null;
 
 }
@@ -216,7 +215,7 @@ return $default(_that.userId,_that.name,_that.category,_that.patchData,_that.des
 @JsonSerializable()
 
 class _PatchWrite implements PatchWrite {
-  const _PatchWrite({required this.userId, required this.name, required this.category, required this.patchData, this.description = '', this.isPublic = false, this.sampleId, this.updatedAt});
+  const _PatchWrite({required this.userId, required this.name, required this.category, required this.patchData, this.description = '', this.isPublic = false, this.sampleId});
   factory _PatchWrite.fromJson(Map<String, dynamic> json) => _$PatchWriteFromJson(json);
 
 @override final  String userId;
@@ -226,7 +225,6 @@ class _PatchWrite implements PatchWrite {
 @override@JsonKey() final  String description;
 @override@JsonKey() final  bool isPublic;
 @override final  String? sampleId;
-@override final  DateTime? updatedAt;
 
 /// Create a copy of PatchWrite
 /// with the given fields replaced by the non-null parameter values.
@@ -241,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PatchWrite&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.patchData, patchData) || other.patchData == patchData)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.sampleId, sampleId) || other.sampleId == sampleId)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PatchWrite&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.patchData, patchData) || other.patchData == patchData)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.sampleId, sampleId) || other.sampleId == sampleId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,name,category,patchData,description,isPublic,sampleId,updatedAt);
+int get hashCode => Object.hash(runtimeType,userId,name,category,patchData,description,isPublic,sampleId);
 
 @override
 String toString() {
-  return 'PatchWrite(userId: $userId, name: $name, category: $category, patchData: $patchData, description: $description, isPublic: $isPublic, sampleId: $sampleId, updatedAt: $updatedAt)';
+  return 'PatchWrite(userId: $userId, name: $name, category: $category, patchData: $patchData, description: $description, isPublic: $isPublic, sampleId: $sampleId)';
 }
 
 
@@ -261,7 +259,7 @@ abstract mixin class _$PatchWriteCopyWith<$Res> implements $PatchWriteCopyWith<$
   factory _$PatchWriteCopyWith(_PatchWrite value, $Res Function(_PatchWrite) _then) = __$PatchWriteCopyWithImpl;
 @override @useResult
 $Res call({
- String userId, String name, String category, String patchData, String description, bool isPublic, String? sampleId, DateTime? updatedAt
+ String userId, String name, String category, String patchData, String description, bool isPublic, String? sampleId
 });
 
 
@@ -278,7 +276,7 @@ class __$PatchWriteCopyWithImpl<$Res>
 
 /// Create a copy of PatchWrite
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? name = null,Object? category = null,Object? patchData = null,Object? description = null,Object? isPublic = null,Object? sampleId = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? name = null,Object? category = null,Object? patchData = null,Object? description = null,Object? isPublic = null,Object? sampleId = freezed,}) {
   return _then(_PatchWrite(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -287,8 +285,7 @@ as String,patchData: null == patchData ? _self.patchData : patchData // ignore: 
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,isPublic: null == isPublic ? _self.isPublic : isPublic // ignore: cast_nullable_to_non_nullable
 as bool,sampleId: freezed == sampleId ? _self.sampleId : sampleId // ignore: cast_nullable_to_non_nullable
-as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as String?,
   ));
 }
 

@@ -151,7 +151,6 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
         description: description ?? existing.description,
         isPublic: existing.isPublic,
         sampleId: sampleId,
-        updatedAt: DateTime.now(),
       );
       final json = write.toJson();
       await _supabase.from('patches').update(json).eq('id', id);
@@ -174,9 +173,7 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final updates = <String, dynamic>{
-        'updated_at': DateTime.now().toIso8601String(),
-      };
+      final updates = <String, dynamic>{};
       if (description != null) {
         updates['description'] = description;
       }

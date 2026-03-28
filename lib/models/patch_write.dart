@@ -13,7 +13,6 @@ abstract class PatchWrite with _$PatchWrite {
     @Default('') String description,
     @Default(false) bool isPublic,
     String? sampleId,
-    DateTime? updatedAt,
   }) = _PatchWrite;
 
   factory PatchWrite.fromJson(Map<String, dynamic> json) =>

@@ -25,7 +25,9 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
       length: 3,
       vsync: this,
     );
-    ref.read(savedPacksProvider.notifier).fetchPublicPacks();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(savedPacksProvider.notifier).fetchPublicPacks();
+    });
   }
 
   @override

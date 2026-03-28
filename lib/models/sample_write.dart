@@ -18,7 +18,6 @@ abstract class SampleWrite with _$SampleWrite {
     @Default(0) int fineTune,
     @Default(false) bool pitched,
     @Default(defaultSliceNotes) List<int> sliceNotes,
-    DateTime? updatedAt,
   }) = _SampleWrite;
 
   factory SampleWrite.fromJson(Map<String, dynamic> json) =>

@@ -25,7 +25,9 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
       length: 2,
       vsync: this,
     );
-    ref.read(savedSamplesProvider.notifier).fetchPublicSamples();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(savedSamplesProvider.notifier).fetchPublicSamples();
+    });
   }
 
   @override
