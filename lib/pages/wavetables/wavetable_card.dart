@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_wavetable.dart';
+import 'package:plinkyhub/pages/wavetables/save_wavetable_to_plinky_dialog.dart';
 import 'package:plinkyhub/state/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/star_button.dart';
@@ -56,6 +57,11 @@ class WavetableCard extends ConsumerWidget {
                       .read(savedWavetablesProvider.notifier)
                       .toggleStar(wavetable),
                 ),
+                IconButton(
+                  icon: const Icon(Icons.usb, size: 20),
+                  tooltip: 'Save to Plinky',
+                  onPressed: () => _saveToPlinky(context),
+                ),
                 const Spacer(),
                 if (isOwned) ...[
                   IconButton(
@@ -92,6 +98,15 @@ class WavetableCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _saveToPlinky(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) =>
+          SaveWavetableToPlinkyDialog(wavetable: wavetable),
     );
   }
 
