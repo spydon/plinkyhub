@@ -86,13 +86,18 @@ class _PatternGridEditorState extends State<PatternGridEditor> {
     const cellSize = 36.0;
     const labelWidth = 48.0;
 
+    // Each cell is cellSize + 2px margin (1px each side).
+    const cellWithMargin = cellSize + 2;
+    // Header row (step numbers) + 8 rows of cells.
+    const gridHeight = 20.0 + cellWithMargin * 8;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Pattern Grid', style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
         SizedBox(
-          height: cellSize * 8 + 24,
+          height: gridHeight,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -104,7 +109,7 @@ class _PatternGridEditorState extends State<PatternGridEditor> {
                     const SizedBox(height: 20),
                     for (var row = 0; row < 8; row++)
                       SizedBox(
-                        height: cellSize,
+                        height: cellWithMargin,
                         child: Align(
                           alignment: Alignment.centerRight,
                           child: Padding(
