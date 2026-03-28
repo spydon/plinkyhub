@@ -3,21 +3,23 @@ import 'package:flutter/material.dart';
 class TunnelOfLightsInstructions extends StatelessWidget {
   const TunnelOfLightsInstructions({
     required this.itemType,
+    this.isLoading = false,
     super.key,
   });
 
   final String itemType;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
+    final action = isLoading
+        ? 'To load a $itemType from your Plinky, put it'
+        : 'To save this $itemType to your Plinky, put it';
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'To save this $itemType to your Plinky, put it '
-          'into Tunnel of Lights mode:',
-        ),
+        Text('$action into Tunnel of Lights mode:'),
         const SizedBox(height: 12),
         const Text('1. Turn off your Plinky'),
         const SizedBox(height: 4),

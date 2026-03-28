@@ -229,7 +229,10 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const TunnelOfLightsInstructions(itemType: 'sample'),
+              const TunnelOfLightsInstructions(
+                itemType: 'sample',
+                isLoading: true,
+              ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
                 initialValue: _selectedSlot,
