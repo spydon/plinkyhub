@@ -9,6 +9,7 @@ import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/plinky_save_dialog_views.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum _DialogStep {
@@ -268,10 +269,14 @@ class _SaveToPlinkyDialogState
       content: SizedBox(
         width: 400,
         child: switch (_step) {
-          _DialogStep.instructions => _buildInstructions(),
-          _DialogStep.progress => _buildProgress(),
-          _DialogStep.done => _buildDone(),
-          _DialogStep.error => _buildError(),
+          _DialogStep.instructions =>
+            const TunnelOfLightsInstructions(itemType: 'pack'),
+          _DialogStep.progress =>
+            SaveProgressView(statusMessage: _statusMessage),
+          _DialogStep.done =>
+            const SaveDoneView(itemType: 'pack'),
+          _DialogStep.error =>
+            SaveErrorView(errorMessage: _errorMessage),
         },
       ),
       actions: switch (_step) {
@@ -297,68 +302,4 @@ class _SaveToPlinkyDialogState
     );
   }
 
-  Widget _buildInstructions() {
-    return const Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'To save this pack to your Plinky, put it into '
-          'Tunnel of Lights mode:',
-        ),
-        SizedBox(height: 12),
-        Text('1. Turn off your Plinky'),
-        SizedBox(height: 4),
-        Text(
-          '2. Hold the rotary encoder while turning the Plinky on',
-        ),
-        SizedBox(height: 4),
-        Text(
-          '3. The Plinky will appear as a USB drive '
-          'on your computer',
-        ),
-        SizedBox(height: 12),
-        Text(
-          'Then click the button below to select the '
-          'Plinky drive.',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgress() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const CircularProgressIndicator(),
-        const SizedBox(height: 16),
-        Text(_statusMessage),
-      ],
-    );
-  }
-
-  Widget _buildDone() {
-    return const Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.check_circle, size: 48, color: Colors.green),
-        SizedBox(height: 16),
-        Text(
-          'Pack saved to Plinky successfully! '
-          'Eject the drive and restart your Plinky.',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildError() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Icon(Icons.error, size: 48, color: Colors.red),
-        const SizedBox(height: 16),
-        Text(_errorMessage ?? 'An unknown error occurred.'),
-      ],
-    );
-  }
 }
