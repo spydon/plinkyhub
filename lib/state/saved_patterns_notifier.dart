@@ -44,10 +44,9 @@ class SavedPatternsNotifier extends Notifier<SavedPatternsState> {
   ) {
     return response.map((row) {
       final map = row as Map<String, dynamic>;
-      return SavedPattern.fromJson({
-        ...map,
-        'is_starred': starredIds.contains(map['id']),
-      });
+      return SavedPattern.fromJson(map).copyWith(
+        isStarred: starredIds.contains(map['id']),
+      );
     }).toList();
   }
 
@@ -69,12 +68,39 @@ class SavedPatternsNotifier extends Notifier<SavedPatternsState> {
       final patterns = _applyStarred(response as List, starredIds);
 
       state = state.copyWith(userPatterns: patterns, isLoading: false);
+      await fetchStarredPatterns();
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: error.toString(),
       );
+    }
+  }
+
+  Future<void> fetchStarredPatterns() async {
+    final userId = ref.read(authenticationProvider).user?.id;
+    if (userId == null) {
+      return;
+    }
+
+    try {
+      final starredIds = await _fetchStarredPatternIds();
+      if (starredIds.isEmpty) {
+        state = state.copyWith(starredPatterns: []);
+        return;
+      }
+
+      final response = await _supabase
+          .from('patterns')
+          .select('*, profiles(username), pattern_stars(count)')
+          .inFilter('id', starredIds.toList())
+          .neq('user_id', userId);
+
+      final patterns = _applyStarred(response as List, starredIds);
+      state = state.copyWith(starredPatterns: patterns);
+    } on Exception catch (error) {
+      debugPrint('$error');
     }
   }
 
@@ -168,9 +194,7 @@ class SavedPatternsNotifier extends Notifier<SavedPatternsState> {
   Future<void> deletePattern(String id) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final pattern = state.userPatterns
-          .where((p) => p.id == id)
-          .firstOrNull;
+      final pattern = state.userPatterns.where((p) => p.id == id).firstOrNull;
       if (pattern != null) {
         await _supabase.storage.from('patterns').remove([
           pattern.filePath,
@@ -208,17 +232,29 @@ class SavedPatternsNotifier extends Notifier<SavedPatternsState> {
       }
 
       final delta = pattern.isStarred ? -1 : 1;
+      final newIsStarred = !pattern.isStarred;
+      final updatedStarred = newIsStarred
+          ? [
+              ...state.starredPatterns,
+              if (pattern.userId != userId)
+                pattern.copyWith(
+                  isStarred: true,
+                  starCount: pattern.starCount + delta,
+                ),
+            ]
+          : state.starredPatterns.where((p) => p.id != pattern.id).toList();
       state = state.copyWith(
         userPatterns: _updateStarInList(
           state.userPatterns,
           pattern.id,
-          !pattern.isStarred,
+          newIsStarred,
           delta,
         ),
+        starredPatterns: updatedStarred,
         publicPatterns: _updateStarInList(
           state.publicPatterns,
           pattern.id,
-          !pattern.isStarred,
+          newIsStarred,
           delta,
         ),
       );

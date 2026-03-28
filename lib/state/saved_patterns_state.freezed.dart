@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SavedPatternsState {
 
- List<SavedPattern> get userPatterns; List<SavedPattern> get publicPatterns; bool get isLoading; String? get errorMessage;
+ List<SavedPattern> get userPatterns; List<SavedPattern> get starredPatterns; List<SavedPattern> get publicPatterns; bool get isLoading; String? get errorMessage;
 /// Create a copy of SavedPatternsState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $SavedPatternsStateCopyWith<SavedPatternsState> get copyWith => _$SavedPatternsS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SavedPatternsState&&const DeepCollectionEquality().equals(other.userPatterns, userPatterns)&&const DeepCollectionEquality().equals(other.publicPatterns, publicPatterns)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SavedPatternsState&&const DeepCollectionEquality().equals(other.userPatterns, userPatterns)&&const DeepCollectionEquality().equals(other.starredPatterns, starredPatterns)&&const DeepCollectionEquality().equals(other.publicPatterns, publicPatterns)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(userPatterns),const DeepCollectionEquality().hash(publicPatterns),isLoading,errorMessage);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(userPatterns),const DeepCollectionEquality().hash(starredPatterns),const DeepCollectionEquality().hash(publicPatterns),isLoading,errorMessage);
 
 @override
 String toString() {
-  return 'SavedPatternsState(userPatterns: $userPatterns, publicPatterns: $publicPatterns, isLoading: $isLoading, errorMessage: $errorMessage)';
+  return 'SavedPatternsState(userPatterns: $userPatterns, starredPatterns: $starredPatterns, publicPatterns: $publicPatterns, isLoading: $isLoading, errorMessage: $errorMessage)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $SavedPatternsStateCopyWith<$Res>  {
   factory $SavedPatternsStateCopyWith(SavedPatternsState value, $Res Function(SavedPatternsState) _then) = _$SavedPatternsStateCopyWithImpl;
 @useResult
 $Res call({
- List<SavedPattern> userPatterns, List<SavedPattern> publicPatterns, bool isLoading, String? errorMessage
+ List<SavedPattern> userPatterns, List<SavedPattern> starredPatterns, List<SavedPattern> publicPatterns, bool isLoading, String? errorMessage
 });
 
 
@@ -62,9 +62,10 @@ class _$SavedPatternsStateCopyWithImpl<$Res>
 
 /// Create a copy of SavedPatternsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userPatterns = null,Object? publicPatterns = null,Object? isLoading = null,Object? errorMessage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? userPatterns = null,Object? starredPatterns = null,Object? publicPatterns = null,Object? isLoading = null,Object? errorMessage = freezed,}) {
   return _then(_self.copyWith(
 userPatterns: null == userPatterns ? _self.userPatterns : userPatterns // ignore: cast_nullable_to_non_nullable
+as List<SavedPattern>,starredPatterns: null == starredPatterns ? _self.starredPatterns : starredPatterns // ignore: cast_nullable_to_non_nullable
 as List<SavedPattern>,publicPatterns: null == publicPatterns ? _self.publicPatterns : publicPatterns // ignore: cast_nullable_to_non_nullable
 as List<SavedPattern>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
@@ -153,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<SavedPattern> userPatterns,  List<SavedPattern> publicPatterns,  bool isLoading,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<SavedPattern> userPatterns,  List<SavedPattern> starredPatterns,  List<SavedPattern> publicPatterns,  bool isLoading,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SavedPatternsState() when $default != null:
-return $default(_that.userPatterns,_that.publicPatterns,_that.isLoading,_that.errorMessage);case _:
+return $default(_that.userPatterns,_that.starredPatterns,_that.publicPatterns,_that.isLoading,_that.errorMessage);case _:
   return orElse();
 
 }
@@ -174,10 +175,10 @@ return $default(_that.userPatterns,_that.publicPatterns,_that.isLoading,_that.er
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<SavedPattern> userPatterns,  List<SavedPattern> publicPatterns,  bool isLoading,  String? errorMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<SavedPattern> userPatterns,  List<SavedPattern> starredPatterns,  List<SavedPattern> publicPatterns,  bool isLoading,  String? errorMessage)  $default,) {final _that = this;
 switch (_that) {
 case _SavedPatternsState():
-return $default(_that.userPatterns,_that.publicPatterns,_that.isLoading,_that.errorMessage);case _:
+return $default(_that.userPatterns,_that.starredPatterns,_that.publicPatterns,_that.isLoading,_that.errorMessage);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +195,10 @@ return $default(_that.userPatterns,_that.publicPatterns,_that.isLoading,_that.er
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<SavedPattern> userPatterns,  List<SavedPattern> publicPatterns,  bool isLoading,  String? errorMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<SavedPattern> userPatterns,  List<SavedPattern> starredPatterns,  List<SavedPattern> publicPatterns,  bool isLoading,  String? errorMessage)?  $default,) {final _that = this;
 switch (_that) {
 case _SavedPatternsState() when $default != null:
-return $default(_that.userPatterns,_that.publicPatterns,_that.isLoading,_that.errorMessage);case _:
+return $default(_that.userPatterns,_that.starredPatterns,_that.publicPatterns,_that.isLoading,_that.errorMessage);case _:
   return null;
 
 }
@@ -209,7 +210,7 @@ return $default(_that.userPatterns,_that.publicPatterns,_that.isLoading,_that.er
 
 
 class _SavedPatternsState implements SavedPatternsState {
-  const _SavedPatternsState({final  List<SavedPattern> userPatterns = const [], final  List<SavedPattern> publicPatterns = const [], this.isLoading = false, this.errorMessage}): _userPatterns = userPatterns,_publicPatterns = publicPatterns;
+  const _SavedPatternsState({final  List<SavedPattern> userPatterns = const [], final  List<SavedPattern> starredPatterns = const [], final  List<SavedPattern> publicPatterns = const [], this.isLoading = false, this.errorMessage}): _userPatterns = userPatterns,_starredPatterns = starredPatterns,_publicPatterns = publicPatterns;
   
 
  final  List<SavedPattern> _userPatterns;
@@ -217,6 +218,13 @@ class _SavedPatternsState implements SavedPatternsState {
   if (_userPatterns is EqualUnmodifiableListView) return _userPatterns;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_userPatterns);
+}
+
+ final  List<SavedPattern> _starredPatterns;
+@override@JsonKey() List<SavedPattern> get starredPatterns {
+  if (_starredPatterns is EqualUnmodifiableListView) return _starredPatterns;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_starredPatterns);
 }
 
  final  List<SavedPattern> _publicPatterns;
@@ -239,16 +247,16 @@ _$SavedPatternsStateCopyWith<_SavedPatternsState> get copyWith => __$SavedPatter
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavedPatternsState&&const DeepCollectionEquality().equals(other._userPatterns, _userPatterns)&&const DeepCollectionEquality().equals(other._publicPatterns, _publicPatterns)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavedPatternsState&&const DeepCollectionEquality().equals(other._userPatterns, _userPatterns)&&const DeepCollectionEquality().equals(other._starredPatterns, _starredPatterns)&&const DeepCollectionEquality().equals(other._publicPatterns, _publicPatterns)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_userPatterns),const DeepCollectionEquality().hash(_publicPatterns),isLoading,errorMessage);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_userPatterns),const DeepCollectionEquality().hash(_starredPatterns),const DeepCollectionEquality().hash(_publicPatterns),isLoading,errorMessage);
 
 @override
 String toString() {
-  return 'SavedPatternsState(userPatterns: $userPatterns, publicPatterns: $publicPatterns, isLoading: $isLoading, errorMessage: $errorMessage)';
+  return 'SavedPatternsState(userPatterns: $userPatterns, starredPatterns: $starredPatterns, publicPatterns: $publicPatterns, isLoading: $isLoading, errorMessage: $errorMessage)';
 }
 
 
@@ -259,7 +267,7 @@ abstract mixin class _$SavedPatternsStateCopyWith<$Res> implements $SavedPattern
   factory _$SavedPatternsStateCopyWith(_SavedPatternsState value, $Res Function(_SavedPatternsState) _then) = __$SavedPatternsStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<SavedPattern> userPatterns, List<SavedPattern> publicPatterns, bool isLoading, String? errorMessage
+ List<SavedPattern> userPatterns, List<SavedPattern> starredPatterns, List<SavedPattern> publicPatterns, bool isLoading, String? errorMessage
 });
 
 
@@ -276,9 +284,10 @@ class __$SavedPatternsStateCopyWithImpl<$Res>
 
 /// Create a copy of SavedPatternsState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userPatterns = null,Object? publicPatterns = null,Object? isLoading = null,Object? errorMessage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? userPatterns = null,Object? starredPatterns = null,Object? publicPatterns = null,Object? isLoading = null,Object? errorMessage = freezed,}) {
   return _then(_SavedPatternsState(
 userPatterns: null == userPatterns ? _self._userPatterns : userPatterns // ignore: cast_nullable_to_non_nullable
+as List<SavedPattern>,starredPatterns: null == starredPatterns ? _self._starredPatterns : starredPatterns // ignore: cast_nullable_to_non_nullable
 as List<SavedPattern>,publicPatterns: null == publicPatterns ? _self._publicPatterns : publicPatterns // ignore: cast_nullable_to_non_nullable
 as List<SavedPattern>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable

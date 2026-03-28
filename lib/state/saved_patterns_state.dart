@@ -7,6 +7,7 @@ part 'saved_patterns_state.freezed.dart';
 abstract class SavedPatternsState with _$SavedPatternsState {
   const factory SavedPatternsState({
     @Default([]) List<SavedPattern> userPatterns,
+    @Default([]) List<SavedPattern> starredPatterns,
     @Default([]) List<SavedPattern> publicPatterns,
     @Default(false) bool isLoading,
     String? errorMessage,

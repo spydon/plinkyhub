@@ -1,10 +1,11 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:plinkyhub/models/searchable.dart';
 
 part 'saved_pattern.freezed.dart';
 part 'saved_pattern.g.dart';
 
 @freezed
-abstract class SavedPattern with _$SavedPattern {
+abstract class SavedPattern with _$SavedPattern implements Searchable {
   const factory SavedPattern({
     required String id,
     required String userId,

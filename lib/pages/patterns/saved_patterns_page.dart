@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/pages/patterns/pattern_list.dart';
+import 'package:plinkyhub/pages/patterns/pattern_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_patterns_notifier.dart';
-import 'package:plinkyhub/widgets/authentication_button.dart';
-import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/searchable_item_list.dart';
+import 'package:plinkyhub/widgets/sign_in_prompt.dart';
 
 class SavedPatternsPage extends ConsumerStatefulWidget {
   const SavedPatternsPage({super.key});
@@ -65,41 +65,36 @@ class _SavedPatternsPageState extends ConsumerState<SavedPatternsPage>
             controller: _tabController,
             children: [
               if (isSignedIn)
-                PatternList(
-                  patterns: savedPatternsState.userPatterns,
+                SearchableItemList(
+                  items: savedPatternsState.userPatterns,
+                  starredItems: savedPatternsState.starredPatterns,
                   isLoading: savedPatternsState.isLoading,
                   isOwned: true,
                   onRefresh: () => ref
                       .read(savedPatternsProvider.notifier)
                       .fetchUserPatterns(),
+                  itemBuilder: (pattern) => PatternCard(
+                    pattern: pattern,
+                    isOwned: pattern.userId == authenticationState.user?.id,
+                  ),
+                  itemLabel: 'pattern',
                 )
               else
-                Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.cloud_off, size: 64),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Sign in to upload and manage your '
-                        'patterns',
-                      ),
-                      const SizedBox(height: 16),
-                      PlinkyButton(
-                        onPressed: () => showSignInDialog(context),
-                        icon: Icons.login,
-                        label: 'Sign in',
-                      ),
-                    ],
-                  ),
+                const SignInPrompt(
+                  message: 'Sign in to upload and manage your patterns',
                 ),
-              PatternList(
-                patterns: savedPatternsState.publicPatterns,
+              SearchableItemList(
+                items: savedPatternsState.publicPatterns,
                 isLoading: savedPatternsState.isLoading,
                 isOwned: false,
                 onRefresh: () => ref
                     .read(savedPatternsProvider.notifier)
                     .fetchPublicPatterns(),
+                itemBuilder: (pattern) => PatternCard(
+                  pattern: pattern,
+                  isOwned: false,
+                ),
+                itemLabel: 'pattern',
               ),
             ],
           ),
