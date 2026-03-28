@@ -142,15 +142,16 @@ class _SearchablePickerDialogState<T extends Searchable>
                       itemCount: filtered.length,
                       itemBuilder: (context, index) {
                         final item = filtered[index];
-                        final isOwned =
-                            item.userId == widget.currentUserId;
+                        final isOwned = item.userId == widget.currentUserId;
                         return ListTile(
                           leading: widget.itemLeading?.call(item),
                           title: Text(
                             item.name.isEmpty ? '(unnamed)' : item.name,
                           ),
                           subtitle: _buildSubtitle(item, isOwned),
-                          trailing: widget.itemTrailing?.call(item),
+                          trailing:
+                              widget.itemTrailing?.call(item) ??
+                              _buildStarCount(context, item),
                           dense: true,
                           onTap: () {
                             if (widget.onSelected != null) {
@@ -190,10 +191,27 @@ class _SearchablePickerDialogState<T extends Searchable>
       parts.add(customSubtitle);
     }
 
-    if (item.starCount > 0) {
-      parts.add('\u2605 ${item.starCount}');
-    }
-
     return parts.isEmpty ? null : Text(parts.join(' \u2022 '));
+  }
+
+  Widget? _buildStarCount(BuildContext context, T item) {
+    if (item.starCount <= 0) {
+      return null;
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          item.isStarred ? Icons.star : Icons.star_border,
+          size: 16,
+          color: item.isStarred ? Colors.amber : null,
+        ),
+        const SizedBox(width: 2),
+        Text(
+          '${item.starCount}',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
   }
 }
