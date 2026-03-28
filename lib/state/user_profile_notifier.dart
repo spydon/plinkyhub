@@ -18,6 +18,42 @@ class UserProfileNotifier extends Notifier<UserProfileState> {
   @override
   UserProfileState build() => const UserProfileState();
 
+  Future<void> loadUserProfileByUsername(String username) async {
+    if (state.username == username && !state.isLoading) {
+      return;
+    }
+
+    state = UserProfileState(
+      username: username,
+      isLoading: true,
+    );
+
+    try {
+      final response = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('username', username)
+          .maybeSingle();
+
+      if (response == null) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'User "$username" not found',
+        );
+        return;
+      }
+
+      final userId = response['id'] as String;
+      await loadUserProfile(userId, username);
+    } on Exception catch (error) {
+      debugPrint('$error');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: error.toString(),
+      );
+    }
+  }
+
   Future<void> loadUserProfile(String userId, String username) async {
     state = UserProfileState(
       userId: userId,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/main.dart';
+import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
@@ -81,9 +81,7 @@ class PresetDetailsHeader extends ConsumerWidget {
             _SaveToCloudButton(preset: preset),
             const SizedBox(width: 8),
             PlinkyButton(
-              onPressed: () {
-                ref.read(selectedPageProvider.notifier).selected = 0;
-              },
+              onPressed: () => context.go('/editor'),
               icon: Icons.play_arrow,
               label: 'Open in player',
             ),

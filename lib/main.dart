@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:plinkyhub/pages/about_page.dart';
-import 'package:plinkyhub/pages/editor/editor_page.dart';
-import 'package:plinkyhub/pages/packs/saved_packs_page.dart';
-import 'package:plinkyhub/pages/patterns/saved_patterns_page.dart';
-import 'package:plinkyhub/pages/presets/saved_presets_page.dart';
-import 'package:plinkyhub/pages/samples/saved_samples_page.dart';
-import 'package:plinkyhub/pages/user_profile_page.dart';
-import 'package:plinkyhub/pages/wavetables/saved_wavetables_page.dart';
+import 'package:plinkyhub/router.dart';
 import 'package:plinkyhub/widgets/navigation_sidebar.dart';
 import 'package:plinkyhub/widgets/terms_of_service_dialog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -33,18 +27,15 @@ Future<void> main() async {
     );
   }
 
-  runApp(const ProviderScope(child: PlinkyHubApp()));
-}
+  final container = ProviderContainer();
+  final router = createRouter(container);
 
-final selectedPageProvider = NotifierProvider<SelectedPageNotifier, int>(
-  SelectedPageNotifier.new,
-);
-
-class SelectedPageNotifier extends Notifier<int> {
-  @override
-  int build() => 0;
-
-  set selected(int index) => state = index;
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: PlinkyHubApp(router: router),
+    ),
+  );
 }
 
 final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
@@ -61,7 +52,9 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 }
 
 class PlinkyHubApp extends ConsumerWidget {
-  const PlinkyHubApp({super.key});
+  const PlinkyHubApp({required this.router, super.key});
+
+  final GoRouter router;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,7 +64,7 @@ class PlinkyHubApp extends ConsumerWidget {
       headlineMedium: GoogleFonts.fingerPaint(),
       headlineSmall: GoogleFonts.fingerPaint(),
     );
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'PlinkyHub',
       themeMode: themeMode,
@@ -87,30 +80,21 @@ class PlinkyHubApp extends ConsumerWidget {
         useMaterial3: true,
         textTheme: textTheme,
       ),
-      home: const PlinkyHubShell(),
+      routerConfig: router,
     );
   }
 }
 
 class PlinkyHubShell extends ConsumerStatefulWidget {
-  const PlinkyHubShell({super.key});
+  const PlinkyHubShell({required this.navigationShell, super.key});
+
+  final StatefulNavigationShell navigationShell;
 
   @override
   ConsumerState<PlinkyHubShell> createState() => _PlinkyHubShellState();
 }
 
 class _PlinkyHubShellState extends ConsumerState<PlinkyHubShell> {
-  static const _pages = <Widget>[
-    EditorPage(),
-    SavedPresetsPage(),
-    SavedPacksPage(),
-    SavedSamplesPage(),
-    SavedWavetablesPage(),
-    SavedPatternsPage(),
-    UserProfilePage(),
-    AboutPage(),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -123,7 +107,6 @@ class _PlinkyHubShellState extends ConsumerState<PlinkyHubShell> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = ref.watch(selectedPageProvider);
     final themeMode = ref.watch(themeModeProvider);
     final isDark = themeMode == ThemeMode.dark;
     return Scaffold(
@@ -132,18 +115,17 @@ class _PlinkyHubShellState extends ConsumerState<PlinkyHubShell> {
           Row(
             children: [
               NavigationSidebar(
-                selectedIndex: selectedIndex,
+                selectedIndex: widget.navigationShell.currentIndex,
                 onDestinationSelected: (index) {
-                  ref.read(selectedPageProvider.notifier).selected = index;
+                  widget.navigationShell.goBranch(
+                    index,
+                    initialLocation:
+                        index == widget.navigationShell.currentIndex,
+                  );
                 },
               ),
               const VerticalDivider(thickness: 1, width: 1),
-              Expanded(
-                child: IndexedStack(
-                  index: selectedIndex,
-                  children: _pages,
-                ),
-              ),
+              Expanded(child: widget.navigationShell),
             ],
           ),
           Positioned(

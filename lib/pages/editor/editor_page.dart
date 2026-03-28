@@ -7,7 +7,9 @@ import 'package:plinkyhub/widgets/parameter_tile.dart';
 import 'package:plinkyhub/widgets/preset_details.dart';
 
 class EditorPage extends ConsumerStatefulWidget {
-  const EditorPage({super.key});
+  const EditorPage({this.presetData, super.key});
+
+  final String? presetData;
 
   @override
   ConsumerState<EditorPage> createState() => _EditorPageState();
@@ -18,16 +20,11 @@ class _EditorPageState extends ConsumerState<EditorPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkUrlForPreset();
+      final presetData = widget.presetData;
+      if (presetData != null && presetData.isNotEmpty) {
+        ref.read(plinkyProvider.notifier).parsePresetFromUrl(presetData);
+      }
     });
-  }
-
-  void _checkUrlForPreset() {
-    final uri = Uri.base;
-    final presetParameter = uri.queryParameters['p'];
-    if (presetParameter != null && presetParameter.isNotEmpty) {
-      ref.read(plinkyProvider.notifier).parsePresetFromUrl(presetParameter);
-    }
   }
 
   @override

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/main.dart';
 import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/pages/presets/star_button.dart';
 import 'package:plinkyhub/state/saved_presets_notifier.dart';
@@ -67,7 +66,6 @@ class PresetCard extends ConsumerWidget {
                     ref
                         .read(savedPresetsProvider.notifier)
                         .loadPresetIntoEditor(preset);
-                    ref.read(selectedPageProvider.notifier).selected = 1;
                   },
                   icon: Icons.download,
                   label: 'Load into editor',

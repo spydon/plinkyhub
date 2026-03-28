@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/pages/samples/upload_sample_tab.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/state/deep_link_notifier.dart';
 import 'package:plinkyhub/state/saved_samples_notifier.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
@@ -27,7 +28,16 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(savedSamplesProvider.notifier).fetchPublicSamples();
+      _handleDeepLink();
     });
+  }
+
+  void _handleDeepLink() {
+    final target = ref.read(deepLinkTargetProvider);
+    if (target != null && target.type == 'sample') {
+      _tabController.animateTo(1);
+      ref.read(deepLinkTargetProvider.notifier).clear();
+    }
   }
 
   @override

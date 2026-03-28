@@ -4,6 +4,7 @@ import 'package:plinkyhub/pages/packs/create_pack_tab.dart';
 import 'package:plinkyhub/pages/packs/load_pack_tab.dart';
 import 'package:plinkyhub/pages/packs/pack_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/state/deep_link_notifier.dart';
 import 'package:plinkyhub/state/saved_packs_notifier.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
@@ -28,7 +29,16 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(savedPacksProvider.notifier).fetchPublicPacks();
+      _handleDeepLink();
     });
+  }
+
+  void _handleDeepLink() {
+    final target = ref.read(deepLinkTargetProvider);
+    if (target != null && target.type == 'pack') {
+      _tabController.animateTo(1);
+      ref.read(deepLinkTargetProvider.notifier).clear();
+    }
   }
 
   @override
