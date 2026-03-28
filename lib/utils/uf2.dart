@@ -78,6 +78,60 @@ Uint8List sampleToUf2(Uint8List data, {int slotIndex = 0}) {
   return dataToUf2(data, sampleSlotAddresses[slotIndex]);
 }
 
+/// Parses a UF2 file and extracts the raw data payload.
+///
+/// Returns the concatenated data from all UF2 blocks, ordered by target
+/// address. Throws [FormatException] if the file is not a valid UF2.
+Uint8List uf2ToData(Uint8List uf2Bytes) {
+  if (uf2Bytes.length % uf2BlockSize != 0) {
+    throw const FormatException('Invalid UF2: size not a multiple of 512');
+  }
+
+  final blockCount = uf2Bytes.length ~/ uf2BlockSize;
+  if (blockCount == 0) {
+    throw const FormatException('Invalid UF2: empty file');
+  }
+
+  final view = ByteData.sublistView(uf2Bytes);
+
+  // First pass: find the lowest target address and total data size.
+  var minAddress = 0xFFFFFFFF;
+  var maxEnd = 0;
+  for (var i = 0; i < blockCount; i++) {
+    final offset = i * uf2BlockSize;
+    final m1 = view.getUint32(offset + 0, Endian.little);
+    final m2 = view.getUint32(offset + 4, Endian.little);
+    final mEnd = view.getUint32(offset + uf2BlockSize - 4, Endian.little);
+    if (m1 != magic1 || m2 != magic2 || mEnd != magicEnd) {
+      throw FormatException('Invalid UF2: bad magic in block $i');
+    }
+    final targetAddress = view.getUint32(offset + 12, Endian.little);
+    final dataSize = view.getUint32(offset + 16, Endian.little);
+    if (targetAddress < minAddress) {
+      minAddress = targetAddress;
+    }
+    final end = targetAddress + dataSize;
+    if (end > maxEnd) {
+      maxEnd = end;
+    }
+  }
+
+  // Allocate output buffer and copy each block's payload.
+  final totalSize = maxEnd - minAddress;
+  final output = Uint8List(totalSize);
+  for (var i = 0; i < blockCount; i++) {
+    final offset = i * uf2BlockSize;
+    final targetAddress = view.getUint32(offset + 12, Endian.little);
+    final dataSize = view.getUint32(offset + 16, Endian.little);
+    final outputOffset = targetAddress - minAddress;
+    for (var j = 0; j < dataSize; j++) {
+      output[outputOffset + j] = uf2Bytes[offset + 32 + j];
+    }
+  }
+
+  return output;
+}
+
 /// Returns the UF2 file path for a given original sample [filePath].
 ///
 /// Example: `userId/sample.wav` → `userId/sample.uf2`

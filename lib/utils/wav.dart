@@ -163,6 +163,66 @@ Uint8List _encodePcm16(List<double> samples) {
   return output.buffer.asUint8List();
 }
 
+/// Creates a WAV file from Plinky's native PCM format (16-bit signed, mono,
+/// 31,250 Hz little-endian).
+Uint8List plinkyPcmToWav(Uint8List pcmBytes) {
+  const channels = 1;
+  const bitsPerSample = 16;
+  const bytesPerSample = bitsPerSample ~/ 8;
+  const blockAlign = channels * bytesPerSample;
+  const byteRate = plinkySampleRate * blockAlign;
+
+  final dataSize = pcmBytes.length;
+  // RIFF header (12) + fmt chunk (24) + data chunk header (8) + data
+  final fileSize = 12 + 24 + 8 + dataSize;
+  final output = ByteData(fileSize);
+  var offset = 0;
+
+  // RIFF header
+  _writeFourCC(output, offset, 'RIFF');
+  offset += 4;
+  output.setUint32(offset, fileSize - 8, Endian.little); // file size - 8
+  offset += 4;
+  _writeFourCC(output, offset, 'WAVE');
+  offset += 4;
+
+  // fmt chunk
+  _writeFourCC(output, offset, 'fmt ');
+  offset += 4;
+  output.setUint32(offset, 16, Endian.little); // chunk size
+  offset += 4;
+  output.setUint16(offset, 1, Endian.little); // PCM format
+  offset += 2;
+  output.setUint16(offset, channels, Endian.little);
+  offset += 2;
+  output.setUint32(offset, plinkySampleRate, Endian.little);
+  offset += 4;
+  output.setUint32(offset, byteRate, Endian.little);
+  offset += 4;
+  output.setUint16(offset, blockAlign, Endian.little);
+  offset += 2;
+  output.setUint16(offset, bitsPerSample, Endian.little);
+  offset += 2;
+
+  // data chunk
+  _writeFourCC(output, offset, 'data');
+  offset += 4;
+  output.setUint32(offset, dataSize, Endian.little);
+  offset += 4;
+
+  // Copy PCM data
+  final outputBytes = output.buffer.asUint8List();
+  outputBytes.setRange(offset, offset + dataSize, pcmBytes);
+
+  return outputBytes;
+}
+
+void _writeFourCC(ByteData data, int offset, String fourCC) {
+  for (var i = 0; i < 4; i++) {
+    data.setUint8(offset + i, fourCC.codeUnitAt(i));
+  }
+}
+
 String _readFourCC(ByteData data, int offset) {
   return String.fromCharCodes([
     data.getUint8(offset),

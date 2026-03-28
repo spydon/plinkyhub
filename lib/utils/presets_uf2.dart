@@ -237,6 +237,98 @@ void setPresetSampleSlot(Uint8List presetBytes, int firmwareSlotIndex) {
   byteData.setInt16(_sampleParameterOffset, raw, Endian.little);
 }
 
+/// Parsed sample metadata extracted from a SampleInfo struct in PRESETS.UF2.
+class ParsedSampleInfo {
+  ParsedSampleInfo({
+    required this.sampleLength,
+    required this.slicePoints,
+    required this.sliceNotes,
+    required this.pitched,
+  });
+
+  /// Total number of PCM frames in the sample.
+  final int sampleLength;
+
+  /// Fractional slice positions (0.0-1.0).
+  final List<double> slicePoints;
+
+  /// Slice notes in MIDI-based scheme (where 60 = C4).
+  final List<int> sliceNotes;
+
+  /// Whether the sample is in pitched/multisample mode.
+  final bool pitched;
+}
+
+/// Parses a 1072-byte SampleInfo struct and returns extracted metadata.
+///
+/// Returns `null` if the struct appears empty (sample length is 0).
+ParsedSampleInfo? parseSampleInfo(Uint8List sampleInfoBytes) {
+  if (sampleInfoBytes.length < sampleInfoSize) {
+    return null;
+  }
+
+  final data = ByteData.sublistView(sampleInfoBytes);
+
+  // Read sample length at offset 1056.
+  const sampleLengthOffset = 1056;
+  final sampleLength = data.getInt32(sampleLengthOffset, Endian.little);
+  if (sampleLength <= 0) {
+    return null;
+  }
+
+  // Read 8 split points (int32) at offset 1024, convert to fractional.
+  const splitpointsOffset = 1024;
+  final slicePoints = <double>[];
+  for (var i = 0; i < 8; i++) {
+    final absolutePosition =
+        data.getInt32(splitpointsOffset + i * 4, Endian.little);
+    slicePoints.add(
+      sampleLength > 0 ? (absolutePosition / sampleLength).clamp(0.0, 1.0) : 0,
+    );
+  }
+
+  // Read 8 slice notes (s8) at offset 1060, convert from Plinky to MIDI-based.
+  const notesOffset = 1060;
+  final sliceNotes = <int>[];
+  for (var i = 0; i < 8; i++) {
+    final plinkyNote = data.getInt8(notesOffset + i);
+    // Convert from Plinky scheme (value + 12 = MIDI) back to MIDI-based.
+    sliceNotes.add((plinkyNote + 12).clamp(0, 127));
+  }
+
+  // Read pitched flag at offset 1068.
+  const pitchedOffset = 1068;
+  final pitched = data.getUint8(pitchedOffset) != 0;
+
+  return ParsedSampleInfo(
+    sampleLength: sampleLength,
+    slicePoints: slicePoints,
+    sliceNotes: sliceNotes,
+    pitched: pitched,
+  );
+}
+
+/// Extracts SampleInfo structs from a raw PRESETS flash image.
+///
+/// [flashImage] is the raw flash data (255 pages × 2048 bytes) extracted
+/// from a PRESETS.UF2 file. Returns a list of up to 8 entries (indexed by
+/// sample slot), with `null` for empty slots.
+List<ParsedSampleInfo?> parseSampleInfosFromFlashImage(Uint8List flashImage) {
+  final results = List<ParsedSampleInfo?>.filled(sampleCount, null);
+  for (var i = 0; i < sampleCount; i++) {
+    final pageIndex = presetCount + i; // Pages 32-39
+    final pageOffset = pageIndex * flashPageSize;
+    if (pageOffset + sampleInfoSize > flashImage.length) {
+      break;
+    }
+    final end = pageOffset + sampleInfoSize;
+    final sampleInfoBytes =
+        Uint8List.sublistView(flashImage, pageOffset, end);
+    results[i] = parseSampleInfo(sampleInfoBytes);
+  }
+  return results;
+}
+
 /// Generates a complete PRESETS.UF2 file from presets and sample metadata.
 ///
 /// [presets] is a list of 32 entries. Each entry is either the raw 1552-byte

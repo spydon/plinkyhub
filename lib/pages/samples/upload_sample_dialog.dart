@@ -9,6 +9,8 @@ import 'package:plinkyhub/pages/samples/sample_mode_selector.dart';
 import 'package:plinkyhub/pages/samples/slice_points_editor.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_samples_notifier.dart';
+import 'package:plinkyhub/utils/presets_uf2.dart';
+import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/utils/wav.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
@@ -25,7 +27,7 @@ class _UploadSampleDialogState
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   bool _isPublic = true;
-  Uint8List? _fileBytes;
+  Uint8List? _wavBytes;
   String? _fileName;
   bool _isUploading = false;
   bool _isConverting = false;
@@ -44,7 +46,7 @@ class _UploadSampleDialogState
     super.dispose();
   }
 
-  Future<void> _pickFile() async {
+  Future<void> _pickWavFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['wav'],
@@ -64,8 +66,6 @@ class _UploadSampleDialogState
         }
       });
 
-      // Run conversion off the main isolate tick to let the UI
-      // update.
       await Future<void>.delayed(Duration.zero);
 
       String? warning;
@@ -88,7 +88,7 @@ class _UploadSampleDialogState
 
       if (mounted) {
         setState(() {
-          _fileBytes = bytes;
+          _wavBytes = bytes;
           _pcmFrameCount = frameCount;
           _isConverting = false;
           _sampleTooLongWarning = warning;
@@ -97,9 +97,124 @@ class _UploadSampleDialogState
     }
   }
 
+  Future<void> _pickUf2Files() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['uf2', 'UF2'],
+      withData: true,
+      allowMultiple: true,
+    );
+
+    if (result == null || result.files.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isConverting = true;
+      _sampleTooLongWarning = null;
+    });
+
+    await Future<void>.delayed(Duration.zero);
+
+    try {
+      // Separate sample UF2 and PRESETS.UF2 files.
+      PlatformFile? sampleFile;
+      PlatformFile? presetsFile;
+
+      for (final file in result.files) {
+        final upperName = file.name.toUpperCase();
+        if (upperName == 'PRESETS.UF2') {
+          presetsFile = file;
+        } else if (upperName.startsWith('SAMPLE') &&
+            upperName.endsWith('.UF2')) {
+          sampleFile = file;
+        }
+      }
+
+      if (sampleFile == null || sampleFile.bytes == null) {
+        throw const FormatException(
+          'Please select a SAMPLEx.UF2 file (e.g. SAMPLE0.UF2).',
+        );
+      }
+
+      // Parse the sample UF2 to get raw PCM data.
+      final pcmBytes = uf2ToData(sampleFile.bytes!);
+      if (pcmBytes.isEmpty) {
+        throw const FormatException('The sample UF2 file contains no data.');
+      }
+
+      // Determine the sample slot index from the filename.
+      final slotIndex = _parseSlotIndexFromFilename(sampleFile.name);
+
+      // Convert PCM to WAV for storage.
+      final wavBytes = plinkyPcmToWav(pcmBytes);
+      final frameCount = pcmBytes.length ~/ 2;
+
+      String? warning;
+      if (pcmBytes.length > maxPcmBytes) {
+        final durationSeconds = pcmBytes.length ~/ 2 / plinkySampleRate;
+        const maxSeconds = maxPcmBytes ~/ 2 / plinkySampleRate;
+        warning = 'Sample is too long (~${durationSeconds}s). '
+            'Plinky supports up to ~${maxSeconds}s per slot '
+            'at 31,250 Hz.';
+      }
+
+      // Try to extract metadata from PRESETS.UF2 if provided.
+      ParsedSampleInfo? sampleInfo;
+      if (presetsFile != null && presetsFile.bytes != null) {
+        try {
+          final flashImage = uf2ToData(presetsFile.bytes!);
+          final sampleInfos = parseSampleInfosFromFlashImage(flashImage);
+          if (slotIndex >= 0 && slotIndex < sampleInfos.length) {
+            sampleInfo = sampleInfos[slotIndex];
+          }
+        } on FormatException {
+          // Ignore PRESETS.UF2 parse errors; metadata is optional.
+        }
+      }
+
+      final name = sampleFile.name;
+
+      if (mounted) {
+        setState(() {
+          _fileName = name;
+          _wavBytes = wavBytes;
+          _pcmFrameCount = frameCount;
+          _isConverting = false;
+          _sampleTooLongWarning = warning;
+          if (_nameController.text.isEmpty) {
+            _nameController.text = name;
+          }
+          if (sampleInfo != null) {
+            _slicePoints = sampleInfo.slicePoints;
+            _sliceNotes = sampleInfo.sliceNotes;
+            _pitched = sampleInfo.pitched;
+          }
+        });
+      }
+    } on FormatException catch (e) {
+      if (mounted) {
+        setState(() {
+          _isConverting = false;
+          _sampleTooLongWarning = e.message;
+        });
+      }
+    }
+  }
+
+  /// Extracts the sample slot index (0-7) from a filename like "SAMPLE3.UF2".
+  int _parseSlotIndexFromFilename(String filename) {
+    final upperName = filename.toUpperCase();
+    final match = RegExp(r'SAMPLE(\d)').firstMatch(upperName);
+    if (match != null) {
+      return int.parse(match.group(1)!);
+    }
+    return 0;
+  }
+
   Future<void> _upload() async {
     final userId = ref.read(authenticationProvider).user?.id;
-    if (_fileBytes == null ||
+    if (_wavBytes == null ||
         _fileName == null ||
         userId == null) {
       return;
@@ -108,7 +223,7 @@ class _UploadSampleDialogState
     setState(() => _isUploading = true);
 
     try {
-      final pcmBytes = wavToPlinkyPcm(_fileBytes!);
+      final pcmBytes = wavToPlinkyPcm(_wavBytes!);
       final baseName =
           _fileName!.substring(0, _fileName!.lastIndexOf('.'));
       final timestamp =
@@ -137,7 +252,7 @@ class _UploadSampleDialogState
           .read(savedSamplesProvider.notifier)
           .saveSample(
             sample,
-            wavBytes: _fileBytes!,
+            wavBytes: _wavBytes!,
             pcmBytes: pcmBytes,
           );
 
@@ -168,13 +283,37 @@ class _UploadSampleDialogState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              PlinkyButton(
-                onPressed: _isUploading || _isConverting
-                    ? null
-                    : _pickFile,
-                icon: Icons.audio_file,
-                label: _fileName ?? 'Choose file',
+              Row(
+                children: [
+                  Expanded(
+                    child: PlinkyButton(
+                      onPressed: _isUploading || _isConverting
+                          ? null
+                          : _pickWavFile,
+                      icon: Icons.audio_file,
+                      label: 'WAV file',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: PlinkyButton(
+                      onPressed: _isUploading || _isConverting
+                          ? null
+                          : _pickUf2Files,
+                      icon: Icons.memory,
+                      label: 'UF2 files',
+                    ),
+                  ),
+                ],
               ),
+              if (_fileName != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _fileName!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
               if (_isConverting) ...[
                 const SizedBox(height: 8),
                 const Row(
@@ -242,7 +381,7 @@ class _UploadSampleDialogState
               if (!_pitched) const SizedBox(height: 16),
               SlicePointsEditor(
                 slicePoints: _slicePoints,
-                wavBytes: _fileBytes,
+                wavBytes: _wavBytes,
                 pcmFrameCount: _pcmFrameCount,
                 enabled: !_isUploading,
                 onChanged: (points) =>
@@ -290,7 +429,7 @@ class _UploadSampleDialogState
         ),
         PlinkyButton(
           onPressed: _isUploading ||
-                  _fileBytes == null ||
+                  _wavBytes == null ||
                   _sampleTooLongWarning != null
               ? null
               : _upload,
