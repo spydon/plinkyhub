@@ -106,7 +106,10 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
                     .fetchPublicSamples(),
               ),
               if (isSignedIn)
-                const UploadSampleTab()
+                UploadSampleTab(
+                  onUploaded: () =>
+                      _tabController.animateTo(0),
+                )
               else
                 Center(
                   child: Column(

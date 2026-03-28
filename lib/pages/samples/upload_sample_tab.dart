@@ -15,7 +15,9 @@ import 'package:plinkyhub/utils/wav.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class UploadSampleTab extends ConsumerStatefulWidget {
-  const UploadSampleTab({super.key});
+  const UploadSampleTab({this.onUploaded, super.key});
+
+  final VoidCallback? onUploaded;
 
   @override
   ConsumerState<UploadSampleTab> createState() =>
@@ -333,6 +335,7 @@ class _UploadSampleTabState
           const SnackBar(content: Text('Sample uploaded')),
         );
         _resetForm();
+        widget.onUploaded?.call();
       }
     } on Exception catch (e) {
       debugPrint('Failed to upload sample: $e');
