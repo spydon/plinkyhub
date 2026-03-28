@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/pack_slot_write.dart';
 import 'package:plinkyhub/models/pack_write.dart';
@@ -480,6 +481,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
               presetCategories: _presetCategories,
               sampleNames: _sampleNames,
               sampleDescriptions: _sampleDescriptions,
+              samplePcmData: _samplePcmData,
               packNameController: _packNameController,
               packDescriptionController: _packDescriptionController,
               packIsPublic: _packIsPublic,
@@ -570,6 +572,7 @@ class _LoadReviewStep extends StatelessWidget {
     required this.presetCategories,
     required this.sampleNames,
     required this.sampleDescriptions,
+    required this.samplePcmData,
     required this.packNameController,
     required this.packDescriptionController,
     required this.packIsPublic,
@@ -586,6 +589,7 @@ class _LoadReviewStep extends StatelessWidget {
   final Map<int, PresetCategory> presetCategories;
   final Map<int, TextEditingController> sampleNames;
   final Map<int, TextEditingController> sampleDescriptions;
+  final Map<int, Uint8List> samplePcmData;
   final TextEditingController packNameController;
   final TextEditingController packDescriptionController;
   final bool packIsPublic;
@@ -647,9 +651,10 @@ class _LoadReviewStep extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           for (final slotIndex in sampleNames.keys.toList()..sort())
-            _NamedItemRow(
+            _SamplePreviewRow(
               controller: sampleNames[slotIndex]!,
               label: 'Sample $slotIndex',
+              pcmData: samplePcmData[slotIndex],
               onEdit: () => _showSampleEditDialog(
                 context,
                 slotIndex,
@@ -739,6 +744,128 @@ class _LoadReviewStep extends StatelessWidget {
           presetCategories[slotIndex] = value;
           onChanged();
         },
+      ),
+    );
+  }
+}
+
+class _SamplePreviewRow extends StatefulWidget {
+  const _SamplePreviewRow({
+    required this.controller,
+    required this.label,
+    this.pcmData,
+    this.onEdit,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final Uint8List? pcmData;
+  final VoidCallback? onEdit;
+
+  @override
+  State<_SamplePreviewRow> createState() => _SamplePreviewRowState();
+}
+
+class _SamplePreviewRowState extends State<_SamplePreviewRow> {
+  AudioSource? _audioSource;
+  SoundHandle? _activeHandle;
+  bool _isPlaying = false;
+
+  @override
+  void dispose() {
+    _stopAndDispose();
+    super.dispose();
+  }
+
+  void _stopAndDispose() {
+    final handle = _activeHandle;
+    if (handle != null) {
+      SoLoud.instance.stop(handle);
+      _activeHandle = null;
+    }
+    final source = _audioSource;
+    if (source != null) {
+      SoLoud.instance.disposeSource(source);
+      _audioSource = null;
+    }
+  }
+
+  Future<void> _togglePlayback() async {
+    final soloud = SoLoud.instance;
+
+    if (_isPlaying && _activeHandle != null) {
+      await soloud.stop(_activeHandle!);
+      setState(() {
+        _activeHandle = null;
+        _isPlaying = false;
+      });
+      return;
+    }
+
+    final pcmData = widget.pcmData;
+    if (pcmData == null) {
+      return;
+    }
+
+    if (!soloud.isInitialized) {
+      await soloud.init();
+    }
+
+    if (_audioSource == null) {
+      final wavBytes = plinkyPcmToWav(pcmData);
+      _audioSource = await soloud.loadMem('preview.wav', wavBytes);
+    }
+
+    final handle = await soloud.play(_audioSource!);
+    setState(() {
+      _activeHandle = handle;
+      _isPlaying = true;
+    });
+
+    final duration = soloud.getLength(_audioSource!);
+    await Future<void>.delayed(duration);
+    if (mounted && _isPlaying) {
+      setState(() {
+        _activeHandle = null;
+        _isPlaying = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: widget.controller,
+              decoration: InputDecoration(
+                labelText: widget.label,
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+          ),
+          if (widget.pcmData != null)
+            IconButton(
+              icon: Icon(
+                _isPlaying ? Icons.stop : Icons.play_arrow,
+                size: 20,
+              ),
+              tooltip: _isPlaying ? 'Stop' : 'Play',
+              onPressed: _togglePlayback,
+            ),
+          if (widget.onEdit != null)
+            Tooltip(
+              message: 'Edit details',
+              child: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: widget.onEdit,
+              ),
+            ),
+        ],
       ),
     );
   }
