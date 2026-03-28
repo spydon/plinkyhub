@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_preset.dart';
+import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/play_notifier.dart';
 import 'package:plinkyhub/state/saved_presets_notifier.dart';
 import 'package:plinkyhub/state/saved_samples_notifier.dart';
-import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/searchable_picker_dialog.dart';
 
 class PresetPickerDialog extends ConsumerStatefulWidget {
   const PresetPickerDialog({super.key});
@@ -63,47 +64,31 @@ class _PresetPickerDialogState extends ConsumerState<PresetPickerDialog> {
   Widget build(BuildContext context) {
     final presetsState = ref.watch(savedPresetsProvider);
     final presets = presetsState.userPresets;
+    final currentUserId = ref.watch(authenticationProvider).user?.id;
 
-    return AlertDialog(
-      title: const Text('Load Preset'),
-      content: SizedBox(
-        width: 400,
-        height: 400,
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : presets.isEmpty
-            ? const Center(child: Text('No saved presets'))
-            : ListView.builder(
-                itemCount: presets.length,
-                itemBuilder: (context, index) {
-                  final preset = presets[index];
-                  return ListTile(
-                    leading: const Icon(Icons.piano),
-                    title: Text(
-                      preset.name.isEmpty ? '(unnamed)' : preset.name,
-                    ),
-                    subtitle: preset.category.isNotEmpty
-                        ? Text(preset.category)
-                        : null,
-                    trailing: preset.sampleId != null
-                        ? const Icon(
-                            Icons.audio_file,
-                            size: 16,
-                          )
-                        : null,
-                    dense: true,
-                    onTap: () => _loadPreset(preset),
-                  );
-                },
-              ),
-      ),
-      actions: [
-        PlinkyButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: Icons.close,
-          label: 'Cancel',
+    if (_loading) {
+      return const AlertDialog(
+        title: Text('Load Preset'),
+        content: SizedBox(
+          width: 400,
+          height: 400,
+          child: Center(child: CircularProgressIndicator()),
         ),
-      ],
+        actions: [],
+      );
+    }
+
+    return SearchablePickerDialog<SavedPreset>(
+      title: 'Load Preset',
+      items: presets,
+      currentUserId: currentUserId,
+      emptyMessage: 'No saved presets',
+      itemSubtitle: (preset) => preset.category,
+      itemLeading: (_) => const Icon(Icons.piano),
+      itemTrailing: (preset) => preset.sampleId != null
+          ? const Icon(Icons.audio_file, size: 16)
+          : const SizedBox.shrink(),
+      onSelected: _loadPreset,
     );
   }
 }

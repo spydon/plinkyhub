@@ -4,6 +4,7 @@ import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/packs/preset_picker_dialog.dart';
 import 'package:plinkyhub/pages/packs/sample_picker_dialog.dart';
+import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_presets_notifier.dart';
 import 'package:plinkyhub/state/saved_samples_notifier.dart';
 
@@ -45,7 +46,7 @@ class PackSlotTile extends ConsumerWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => _showPresetPicker(context, presets),
+        onTap: () => _showPresetPicker(context, ref, presets),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,
@@ -103,9 +104,9 @@ class PackSlotTile extends ConsumerWidget {
                 onSelected: (value) {
                   switch (value) {
                     case 'preset':
-                      _showPresetPicker(context, presets);
+                      _showPresetPicker(context, ref, presets);
                     case 'sample':
-                      _showSamplePicker(context, samples);
+                      _showSamplePicker(context, ref, samples);
                     case 'clear':
                       onPresetChanged(null);
                       onSampleChanged(null);
@@ -121,28 +122,38 @@ class PackSlotTile extends ConsumerWidget {
 
   void _showPresetPicker(
     BuildContext context,
+    WidgetRef ref,
     List<SavedPreset> presets,
   ) {
-    showDialog<String>(
+    final currentUserId = ref.read(authenticationProvider).user?.id;
+    showDialog<SavedPreset>(
       context: context,
-      builder: (context) => PresetPickerDialog(presets: presets),
-    ).then((selectedId) {
-      if (selectedId != null) {
-        onPresetChanged(selectedId);
+      builder: (context) => PresetPickerDialog(
+        presets: presets,
+        currentUserId: currentUserId,
+      ),
+    ).then((selected) {
+      if (selected != null) {
+        onPresetChanged(selected.id);
       }
     });
   }
 
   void _showSamplePicker(
     BuildContext context,
+    WidgetRef ref,
     List<SavedSample> samples,
   ) {
-    showDialog<String>(
+    final currentUserId = ref.read(authenticationProvider).user?.id;
+    showDialog<SavedSample>(
       context: context,
-      builder: (context) => SamplePickerDialog(samples: samples),
-    ).then((selectedId) {
-      if (selectedId != null) {
-        onSampleChanged(selectedId);
+      builder: (context) => SamplePickerDialog(
+        samples: samples,
+        currentUserId: currentUserId,
+      ),
+    ).then((selected) {
+      if (selected != null) {
+        onSampleChanged(selected.id);
       }
     });
   }

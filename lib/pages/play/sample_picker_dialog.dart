@@ -2,9 +2,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
+import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/play_notifier.dart';
 import 'package:plinkyhub/state/saved_samples_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/searchable_picker_dialog.dart';
 
 class SamplePickerDialog extends ConsumerStatefulWidget {
   const SamplePickerDialog({super.key});
@@ -74,61 +76,32 @@ class _SamplePickerDialogState extends ConsumerState<SamplePickerDialog> {
   Widget build(BuildContext context) {
     final samplesState = ref.watch(savedSamplesProvider);
     final samples = samplesState.userSamples;
+    final currentUserId = ref.watch(authenticationProvider).user?.id;
 
-    return AlertDialog(
-      title: const Text('Load Sample'),
-      content: SizedBox(
-        width: 400,
-        height: 400,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            PlinkyButton(
-              onPressed: _loading ? null : _pickFile,
-              icon: Icons.file_open,
-              label: 'Upload WAV file',
-            ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
-            Text(
-              'Saved Samples',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 8),
-            if (_loading)
-              const Center(child: CircularProgressIndicator())
-            else if (samples.isEmpty)
-              const Center(
-                child: Text('No saved samples'),
-              )
-            else
-              Expanded(
-                child: ListView.builder(
-                  itemCount: samples.length,
-                  itemBuilder: (context, index) {
-                    final sample = samples[index];
-                    return ListTile(
-                      leading: const Icon(Icons.audio_file),
-                      title: Text(
-                        sample.name.isEmpty ? '(unnamed)' : sample.name,
-                      ),
-                      dense: true,
-                      onTap: () => _loadSaved(sample),
-                    );
-                  },
-                ),
-              ),
-          ],
+    if (_loading) {
+      return const AlertDialog(
+        title: Text('Load Sample'),
+        content: SizedBox(
+          width: 400,
+          height: 400,
+          child: Center(child: CircularProgressIndicator()),
         ),
+        actions: [],
+      );
+    }
+
+    return SearchablePickerDialog<SavedSample>(
+      title: 'Load Sample',
+      items: samples,
+      currentUserId: currentUserId,
+      emptyMessage: 'No saved samples',
+      itemLeading: (_) => const Icon(Icons.audio_file),
+      headerWidget: PlinkyButton(
+        onPressed: _pickFile,
+        icon: Icons.file_open,
+        label: 'Upload WAV file',
       ),
-      actions: [
-        PlinkyButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: Icons.close,
-          label: 'Cancel',
-        ),
-      ],
+      onSelected: _loadSaved,
     );
   }
 }

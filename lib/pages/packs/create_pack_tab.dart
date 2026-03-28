@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
+import 'package:plinkyhub/models/saved_pattern.dart';
+import 'package:plinkyhub/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/packs/pack_sharing_check.dart';
 import 'package:plinkyhub/pages/packs/pack_slot_tile.dart';
 import 'package:plinkyhub/pages/packs/pattern_picker_dialog.dart';
@@ -334,18 +336,20 @@ class _WavetableSection extends ConsumerWidget {
               ),
             PlinkyButton(
               onPressed: () async {
+                final authState = ref.read(authenticationProvider);
                 final allWavetables = {
                   ...wavetablesState.userWavetables,
                   ...wavetablesState.publicWavetables,
                 }.toList();
-                final selectedId = await showDialog<String>(
+                final selected = await showDialog<SavedWavetable>(
                   context: context,
                   builder: (context) => WavetablePickerDialog(
                     wavetables: allWavetables,
+                    currentUserId: authState.user?.id,
                   ),
                 );
-                if (selectedId != null) {
-                  onChanged(selectedId);
+                if (selected != null) {
+                  onChanged(selected.id);
                 }
               },
               icon: Icons.waves,
@@ -407,18 +411,20 @@ class _PatternSection extends ConsumerWidget {
               ),
             PlinkyButton(
               onPressed: () async {
+                final authState = ref.read(authenticationProvider);
                 final allPatterns = {
                   ...patternsState.userPatterns,
                   ...patternsState.publicPatterns,
                 }.toList();
-                final selectedId = await showDialog<String>(
+                final selected = await showDialog<SavedPattern>(
                   context: context,
                   builder: (context) => PatternPickerDialog(
                     patterns: allPatterns,
+                    currentUserId: authState.user?.id,
                   ),
                 );
-                if (selectedId != null) {
-                  onChanged(selectedId);
+                if (selected != null) {
+                  onChanged(selected.id);
                 }
               },
               icon: Icons.grid_view,
