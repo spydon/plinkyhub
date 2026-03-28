@@ -12,6 +12,8 @@ All DDL and schema changes must be written as migration files under `supabase/mi
 
 The Plinky is a synthesizer. The firmware lives at https://github.com/ember-labs-io/Plinky_LPE and the docs/manual at https://plinkysynth.com/docs/manual — consult these for anything related to how the Plinky works (synth parameters, protocols, MIDI/USB communication, hardware capabilities, etc.).
 
+For details on the UF2 format (memory map, sample encoding, presets, SampleInfo metadata), read `docs/uf2.md`.
+
 The Plinky web player lives at https://github.com/plinkysynth/plinky-web — reference this for the player functionality we're building in PlinkyHub.
 
 The wavetable generator lives at https://github.com/plinkysynth/wavetable — reference this for wavetable generation functionality.
