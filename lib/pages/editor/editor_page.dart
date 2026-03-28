@@ -4,7 +4,7 @@ import 'package:plinkyhub/pages/editor/editor_header.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/state/plinky_state.dart';
 import 'package:plinkyhub/widgets/parameter_tile.dart';
-import 'package:plinkyhub/widgets/patch_details.dart';
+import 'package:plinkyhub/widgets/preset_details.dart';
 
 class EditorPage extends ConsumerStatefulWidget {
   const EditorPage({super.key});
@@ -18,33 +18,33 @@ class _EditorPageState extends ConsumerState<EditorPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkUrlForPatch();
+      _checkUrlForPreset();
     });
   }
 
-  void _checkUrlForPatch() {
+  void _checkUrlForPreset() {
     final uri = Uri.base;
-    final patchParameter = uri.queryParameters['p'];
-    if (patchParameter != null && patchParameter.isNotEmpty) {
-      ref.read(plinkyProvider.notifier).parsePatchFromUrl(patchParameter);
+    final presetParameter = uri.queryParameters['p'];
+    if (presetParameter != null && presetParameter.isNotEmpty) {
+      ref.read(plinkyProvider.notifier).parsePresetFromUrl(presetParameter);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(plinkyProvider);
-    final patch = state.patch;
+    final preset = state.preset;
     final isConnected = switch (state.connectionState) {
       PlinkyConnectionState.connected ||
-      PlinkyConnectionState.loadingPatch ||
-      PlinkyConnectionState.savingPatch => true,
+      PlinkyConnectionState.loadingPreset ||
+      PlinkyConnectionState.savingPreset => true,
       _ => false,
     };
     final isError = state.connectionState == PlinkyConnectionState.error;
     final isLoading =
-        state.connectionState == PlinkyConnectionState.loadingPatch;
+        state.connectionState == PlinkyConnectionState.loadingPreset;
 
-    final filteredParameters = patch?.parameters
+    final filteredParameters = preset?.parameters
         .where(
           (parameter) =>
               parameter.name != null && !parameter.name!.endsWith('_UNUSED'),
@@ -76,11 +76,11 @@ class _EditorPageState extends ConsumerState<EditorPage> {
               const SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator()),
               )
-            else if (patch != null) ...[
+            else if (preset != null) ...[
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverToBoxAdapter(
-                  child: PatchDetailsHeader(patch: patch),
+                  child: PresetDetailsHeader(preset: preset),
                 ),
               ),
               if (filteredParameters != null && filteredParameters.isNotEmpty)

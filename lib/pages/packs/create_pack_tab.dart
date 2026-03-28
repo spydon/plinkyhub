@@ -17,10 +17,10 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   bool _isPublic = false;
-  final List<({String? patchId, String? sampleId})> _slots =
+  final List<({String? presetId, String? sampleId})> _slots =
       List.generate(
     32,
-    (_) => (patchId: null, sampleId: null),
+    (_) => (presetId: null, sampleId: null),
   );
   String? _editingPackId;
 
@@ -37,11 +37,11 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
     _descriptionController.text = pack.description;
     _isPublic = pack.isPublic;
     for (var i = 0; i < 32; i++) {
-      _slots[i] = (patchId: null, sampleId: null);
+      _slots[i] = (presetId: null, sampleId: null);
     }
     for (final slot in pack.slots) {
       _slots[slot.slotNumber] = (
-        patchId: slot.patchId,
+        presetId: slot.presetId,
         sampleId: slot.sampleId,
       );
     }
@@ -53,7 +53,7 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
     _descriptionController.clear();
     _isPublic = false;
     for (var i = 0; i < 32; i++) {
-      _slots[i] = (patchId: null, sampleId: null);
+      _slots[i] = (presetId: null, sampleId: null);
     }
   }
 
@@ -128,7 +128,7 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Patch Slots',
+            'Preset Slots',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
@@ -151,12 +151,12 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
               final slotIndex = column * 8 + row;
               return PackSlotTile(
                 slotNumber: slotIndex,
-                patchId: _slots[slotIndex].patchId,
+                presetId: _slots[slotIndex].presetId,
                 sampleId: _slots[slotIndex].sampleId,
-                onPatchChanged: (patchId) {
+                onPresetChanged: (presetId) {
                   setState(() {
                     _slots[slotIndex] = (
-                      patchId: patchId,
+                      presetId: presetId,
                       sampleId: _slots[slotIndex].sampleId,
                     );
                   });
@@ -164,7 +164,7 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
                 onSampleChanged: (sampleId) {
                   setState(() {
                     _slots[slotIndex] = (
-                      patchId: _slots[slotIndex].patchId,
+                      presetId: _slots[slotIndex].presetId,
                       sampleId: sampleId,
                     );
                   });
@@ -191,11 +191,11 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
 
   void _savePack() {
     final slots =
-        <({int slotNumber, String? patchId, String? sampleId})>[];
+        <({int slotNumber, String? presetId, String? sampleId})>[];
     for (var i = 0; i < 32; i++) {
       slots.add((
         slotNumber: i,
-        patchId: _slots[i].patchId,
+        presetId: _slots[i].presetId,
         sampleId: _slots[i].sampleId,
       ));
     }

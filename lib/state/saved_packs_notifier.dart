@@ -102,7 +102,7 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
 
   Future<void> savePack(
     String name, {
-    required List<({int slotNumber, String? patchId, String? sampleId})> slots,
+    required List<({int slotNumber, String? presetId, String? sampleId})> slots,
     String description = '',
     bool isPublic = false,
   }) async {
@@ -170,15 +170,15 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
 
   Future<void> _insertSlots(
     String packId,
-    List<({int slotNumber, String? patchId, String? sampleId})> slots,
+    List<({int slotNumber, String? presetId, String? sampleId})> slots,
   ) async {
     final slotRows = slots
-        .where((slot) => slot.patchId != null || slot.sampleId != null)
+        .where((slot) => slot.presetId != null || slot.sampleId != null)
         .map(
           (slot) => PackSlotWrite(
             packId: packId,
             slotNumber: slot.slotNumber,
-            patchId: slot.patchId,
+            presetId: slot.presetId,
             sampleId: slot.sampleId,
           ).toJson(),
         )
@@ -194,7 +194,7 @@ class SavedPacksNotifier extends Notifier<SavedPacksState> {
     required String name,
     required String description,
     required bool isPublic,
-    required List<({int slotNumber, String? patchId, String? sampleId})> slots,
+    required List<({int slotNumber, String? presetId, String? sampleId})> slots,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {

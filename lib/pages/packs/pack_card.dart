@@ -41,7 +41,7 @@ class PackCard extends ConsumerWidget {
                 ),
                 Chip(
                   label: Text(
-                    '$filledSlots/32 patches',
+                    '$filledSlots/32 presets',
                     style: theme.textTheme.bodySmall,
                   ),
                   visualDensity: VisualDensity.compact,

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-/// Compress a 1552-byte patch into a short URI-safe
+/// Compress a 1552-byte preset into a short URI-safe
 /// Base64 string.
 String bytecompress(Uint8List input) {
   final swizzled = Uint8List(1552);
@@ -35,7 +35,7 @@ String bytecompress(Uint8List input) {
 }
 
 /// Decompress a short URI-safe Base64 string back to a
-/// 1552-byte patch.
+/// 1552-byte preset.
 Uint8List bytedecompress(String encoded) {
   final normalized = encoded
       .replaceAll('-', '/')

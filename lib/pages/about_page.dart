@@ -18,7 +18,7 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 16),
           const Text(
             'PlinkyHub is a site for sharing, creating and '
-            'organizing your Plinky patches.',
+            'organizing your Plinky presets.',
           ),
           const SizedBox(height: 16),
           const Text(

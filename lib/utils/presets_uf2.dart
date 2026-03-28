@@ -45,7 +45,7 @@ const _sampleInfoItemIdStart = 128;
 /// Flash item ID for the floating preset (FLOAT_PRESET_ID = 136).
 const _floatingPresetItemId = 136;
 
-/// Byte offset of P_SAMPLE base value in the patch binary.
+/// Byte offset of P_SAMPLE base value in the preset binary.
 /// eParams index 52 × 16 bytes per parameter = 832.
 /// The raw Int16 value occupies bytes 832-833 (little-endian).
 const _sampleParameterOffset = 832;
@@ -227,28 +227,28 @@ void _generateWaveform(ByteData info, Uint8List pcmData, int sampleLength) {
   }
 }
 
-/// Sets the P_SAMPLE raw value in a patch binary buffer.
+/// Sets the P_SAMPLE raw value in a preset binary buffer.
 ///
-/// [patchBytes] is a 1552-byte patch buffer (modified in place).
+/// [presetBytes] is a 1552-byte preset buffer (modified in place).
 /// [firmwareSlotIndex] is the Plinky sample slot (0-7).
-void setPatchSampleSlot(Uint8List patchBytes, int firmwareSlotIndex) {
+void setPresetSampleSlot(Uint8List presetBytes, int firmwareSlotIndex) {
   final raw = sampleSlotToRaw(firmwareSlotIndex);
-  final byteData = ByteData.sublistView(patchBytes);
+  final byteData = ByteData.sublistView(presetBytes);
   byteData.setInt16(_sampleParameterOffset, raw, Endian.little);
 }
 
-/// Generates a complete PRESETS.UF2 file from patches and sample metadata.
+/// Generates a complete PRESETS.UF2 file from presets and sample metadata.
 ///
-/// [patches] is a list of 32 entries. Each entry is either the raw 1552-byte
-/// patch data or null for an empty slot.
+/// [presets] is a list of 32 entries. Each entry is either the raw 1552-byte
+/// preset data or null for an empty slot.
 ///
 /// [sampleInfos] is a list of up to 8 SampleInfo byte arrays (1072 bytes
 /// each), indexed by Plinky sample slot. Null entries are skipped.
 Uint8List generatePresetsUf2({
-  required List<Uint8List?> patches,
+  required List<Uint8List?> presets,
   required List<Uint8List?> sampleInfos,
 }) {
-  assert(patches.length == presetCount);
+  assert(presets.length == presetCount);
   assert(sampleInfos.length <= sampleCount);
 
   // Create raw flash image: 256 pages × 2048 bytes, initialized to 0xFF
@@ -262,8 +262,8 @@ Uint8List generatePresetsUf2({
 
   // Pages 0-31: Presets.
   for (var i = 0; i < presetCount; i++) {
-    final patchData = patches[i] ?? Uint8List(presetSize);
-    _writePage(flashImage, i, patchData, i, seq++);
+    final presetData = presets[i] ?? Uint8List(presetSize);
+    _writePage(flashImage, i, presetData, i, seq++);
   }
 
   // Pages 32-39: SampleInfo entries.
@@ -280,7 +280,7 @@ Uint8List generatePresetsUf2({
   }
 
   // Page 40: Floating preset (copy of preset 0).
-  final floatingPreset = patches[0] ?? Uint8List(presetSize);
+  final floatingPreset = presets[0] ?? Uint8List(presetSize);
   _writePage(flashImage, presetCount + sampleCount, floatingPreset,
       _floatingPresetItemId, seq++);
 

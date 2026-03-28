@@ -36,13 +36,13 @@ enum RandomizeGroup {
   List<String> get parameterIds => _randomizeGroupParameterIds[this]!;
 }
 
-/// Sound type categories assignable to a patch on the
+/// Sound type categories assignable to a preset on the
 /// Plinky device.
 ///
 /// The order of values must match the Plinky firmware
-/// category indices, since `Patch` stores the category as
+/// category indices, since `Preset` stores the category as
 /// a byte index into this enum.
-enum PatchCategory {
+enum PresetCategory {
   none(''),
   bass('Bass'),
   leads('Leads'),
@@ -63,6 +63,6 @@ enum PatchCategory {
   weird('Weird')
   ;
 
-  const PatchCategory(this.label);
+  const PresetCategory(this.label);
   final String label;
 }

@@ -9,7 +9,7 @@ abstract class PackSlot with _$PackSlot {
     required String id,
     required String packId,
     required int slotNumber,
-    String? patchId,
+    String? presetId,
     String? sampleId,
   }) = _PackSlot;
 

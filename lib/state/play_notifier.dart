@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:plinkyhub/models/patch.dart';
+import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/state/play_state.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
@@ -87,21 +87,21 @@ class PlayNotifier extends Notifier<PlayState> {
     }
   }
 
-  /// Read the current patch from the plinky state.
-  Patch? get _patch => ref.read(plinkyProvider).patch;
+  /// Read the current preset from the plinky state.
+  Preset? get _preset => ref.read(plinkyProvider).preset;
 
   /// Start playing the pad at [row], [col].
   ///
-  /// Uses patch parameters (scale, stride, octave) to determine the
+  /// Uses preset parameters (scale, stride, octave) to determine the
   /// MIDI note, just like the Plinky hardware. If a sample is loaded
   /// it is played pitched to match the note; otherwise a waveform
   /// synth is used.
   Future<void> playPad(int row, int col) async {
     final hasSample = _audioSource != null;
-    final patch = _patch;
+    final preset = _preset;
 
-    // Need at least a patch to determine notes.
-    if (patch == null && !hasSample) {
+    // Need at least a preset to determine notes.
+    if (preset == null && !hasSample) {
       return;
     }
 
@@ -116,11 +116,11 @@ class PlayNotifier extends Notifier<PlayState> {
       } on Exception catch (_) {}
     }
 
-    // Calculate the MIDI note for this pad position using patch params.
-    final scaleIndex = patch?.scaleIndex ?? 25; // chromatic
-    final stride = patch?.stride ?? 7;
-    final octaveOffset = patch?.octaveOffset ?? 0;
-    final pitchOffset = patch?.pitchOffset ?? 0.0;
+    // Calculate the MIDI note for this pad position using preset params.
+    final scaleIndex = preset?.scaleIndex ?? 25; // chromatic
+    final stride = preset?.stride ?? 7;
+    final octaveOffset = preset?.octaveOffset ?? 0;
+    final pitchOffset = preset?.pitchOffset ?? 0.0;
 
     final midiNote = midiNoteForPad(
       row: row,

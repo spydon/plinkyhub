@@ -1,36 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:plinkyhub/models/saved_patch.dart';
+import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
-class PatchPickerDialog extends StatelessWidget {
-  const PatchPickerDialog({required this.patches, super.key});
+class PresetPickerDialog extends StatelessWidget {
+  const PresetPickerDialog({required this.presets, super.key});
 
-  final List<SavedPatch> patches;
+  final List<SavedPreset> presets;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Pick a patch'),
+      title: const Text('Pick a preset'),
       content: SizedBox(
         width: 400,
         height: 400,
-        child: patches.isEmpty
-            ? const Center(child: Text('No saved patches'))
+        child: presets.isEmpty
+            ? const Center(child: Text('No saved presets'))
             : ListView.builder(
-                itemCount: patches.length,
+                itemCount: presets.length,
                 itemBuilder: (context, index) {
-                  final patch = patches[index];
+                  final preset = presets[index];
                   return ListTile(
                     title: Text(
-                      patch.name.isEmpty
+                      preset.name.isEmpty
                           ? '(unnamed)'
-                          : patch.name,
+                          : preset.name,
                     ),
-                    subtitle: patch.category.isNotEmpty
-                        ? Text(patch.category)
+                    subtitle: preset.category.isNotEmpty
+                        ? Text(preset.category)
                         : null,
                     onTap: () =>
-                        Navigator.of(context).pop(patch.id),
+                        Navigator.of(context).pop(preset.id),
                   );
                 },
               ),

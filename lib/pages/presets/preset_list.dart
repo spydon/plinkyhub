@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_patch.dart';
+import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/models/sort_order.dart';
-import 'package:plinkyhub/pages/patches/patch_card.dart';
+import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/sort_order_button.dart';
 
-class PatchList extends ConsumerStatefulWidget {
-  const PatchList({
-    required this.patches,
+class PresetList extends ConsumerStatefulWidget {
+  const PresetList({
+    required this.presets,
     required this.isLoading,
     required this.isOwned,
     required this.onRefresh,
     super.key,
   });
 
-  final List<SavedPatch> patches;
+  final List<SavedPreset> presets;
   final bool isLoading;
   final bool isOwned;
   final VoidCallback onRefresh;
 
   @override
-  ConsumerState<PatchList> createState() => _PatchListState();
+  ConsumerState<PresetList> createState() => _PresetListState();
 }
 
-class _PatchListState extends ConsumerState<PatchList> {
+class _PresetListState extends ConsumerState<PresetList> {
   final _searchController = TextEditingController();
   String _query = '';
   SortOrder _sortOrder = SortOrder.stars;
@@ -35,22 +35,22 @@ class _PatchListState extends ConsumerState<PatchList> {
     super.dispose();
   }
 
-  List<SavedPatch> get _filteredPatches {
-    var patches = widget.patches.toList();
+  List<SavedPreset> get _filteredPresets {
+    var presets = widget.presets.toList();
 
     if (_query.isNotEmpty) {
       final lower = _query.toLowerCase();
-      patches = patches
+      presets = presets
           .where(
-            (patch) =>
-                patch.name.toLowerCase().contains(lower) ||
-                patch.username.toLowerCase().contains(lower) ||
-                patch.description.toLowerCase().contains(lower),
+            (preset) =>
+                preset.name.toLowerCase().contains(lower) ||
+                preset.username.toLowerCase().contains(lower) ||
+                preset.description.toLowerCase().contains(lower),
           )
           .toList();
     }
 
-    patches.sort((a, b) {
+    presets.sort((a, b) {
       if (_query.isNotEmpty) {
         final lower = _query.toLowerCase();
         final aExact = a.name.toLowerCase() == lower ? 0 : 1;
@@ -67,10 +67,10 @@ class _PatchListState extends ConsumerState<PatchList> {
         SortOrder.newest => b.updatedAt.compareTo(a.updatedAt),
       };
     });
-    return patches;
+    return presets;
   }
 
-  int _compareByStarsThenName(SavedPatch a, SavedPatch b) {
+  int _compareByStarsThenName(SavedPreset a, SavedPreset b) {
     final starCmp = b.starCount.compareTo(a.starCount);
     if (starCmp != 0) {
       return starCmp;
@@ -80,19 +80,19 @@ class _PatchListState extends ConsumerState<PatchList> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isLoading && widget.patches.isEmpty) {
+    if (widget.isLoading && widget.presets.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (widget.patches.isEmpty) {
+    if (widget.presets.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               widget.isOwned
-                  ? 'No saved patches yet'
-                  : 'No community patches yet',
+                  ? 'No saved presets yet'
+                  : 'No community presets yet',
             ),
             const SizedBox(height: 8),
             PlinkyButton(
@@ -105,7 +105,7 @@ class _PatchListState extends ConsumerState<PatchList> {
       );
     }
 
-    final filtered = _filteredPatches;
+    final filtered = _filteredPresets;
 
     return Column(
       children: [
@@ -114,7 +114,7 @@ class _PatchListState extends ConsumerState<PatchList> {
           child: TextField(
             controller: _searchController,
             decoration: const InputDecoration(
-              hintText: 'Search patches...',
+              hintText: 'Search presets...',
               prefixIcon: Icon(Icons.search, size: 20),
               border: OutlineInputBorder(),
               isDense: true,
@@ -135,7 +135,7 @@ class _PatchListState extends ConsumerState<PatchList> {
                       children: [
                         Text(
                           '${filtered.length} '
-                          'patch${filtered.length == 1 ? '' : 'es'}',
+                          'preset${filtered.length == 1 ? '' : 's'}',
                           style:
                               Theme.of(context).textTheme.bodySmall,
                         ),
@@ -167,16 +167,16 @@ class _PatchListState extends ConsumerState<PatchList> {
                             CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: PatchCard(
-                              patch: filtered[itemIndex],
+                            child: PresetCard(
+                              preset: filtered[itemIndex],
                               isOwned: widget.isOwned,
                             ),
                           ),
                           const SizedBox(width: 8),
                           if (itemIndex + 1 < filtered.length)
                             Expanded(
-                              child: PatchCard(
-                                patch: filtered[itemIndex + 1],
+                              child: PresetCard(
+                                preset: filtered[itemIndex + 1],
                                 isOwned: widget.isOwned,
                               ),
                             )

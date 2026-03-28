@@ -51,7 +51,7 @@ class NavigationSidebar extends StatelessWidget {
             const SizedBox(height: 8),
             ArcIconButton(
               icon: Icons.library_music,
-              label: 'Patches',
+              label: 'Presets',
               isSelected: selectedIndex == 2,
               onPressed: () => onDestinationSelected(2),
             ),

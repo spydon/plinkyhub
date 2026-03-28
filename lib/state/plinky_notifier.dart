@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/category.dart';
-import 'package:plinkyhub/models/patch.dart';
+import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/services/webusb_service.dart';
 import 'package:plinkyhub/state/plinky_state.dart';
 import 'package:plinkyhub/utils/compress.dart';
@@ -81,11 +81,11 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
     return _receivedData.removeAt(0);
   }
 
-  Future<void> loadPatch() async {
-    final patchNumber = _patchNumber.clamp(0, 31);
+  Future<void> loadPreset() async {
+    final presetNumber = _presetNumber.clamp(0, 31);
     state = state.copyWith(
-      connectionState: PlinkyConnectionState.loadingPatch,
-      patchNumber: patchNumber,
+      connectionState: PlinkyConnectionState.loadingPreset,
+      presetNumber: presetNumber,
     );
 
     try {
@@ -95,7 +95,7 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
       final requestBuffer = Uint8List.fromList([
         ..._magicHeader,
         0, // get
-        patchNumber,
+        presetNumber,
         0,
         0,
         0,
@@ -131,19 +131,19 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
         0,
         (sum, chunk) => sum + chunk.length,
       );
-      final patchData = Uint8List(totalLength);
+      final presetData = Uint8List(totalLength);
       var offset = 0;
       for (final chunk in chunks) {
-        patchData.setAll(offset, chunk);
+        presetData.setAll(offset, chunk);
         offset += chunk.length;
       }
 
-      final patch = Patch(patchData.buffer);
+      final preset = Preset(presetData.buffer);
 
       state = state.copyWith(
         connectionState: PlinkyConnectionState.connected,
-        patch: patch,
-        sourcePatchId: null,
+        preset: preset,
+        sourcePresetId: null,
       );
     } on Exception catch (error) {
       debugPrint('$error');
@@ -182,20 +182,20 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
     return true;
   }
 
-  Future<void> savePatch() async {
-    final patch = state.patch;
-    if (patch == null) {
+  Future<void> savePreset() async {
+    final preset = state.preset;
+    if (preset == null) {
       return;
     }
 
-    final patchNumber = _patchNumber.clamp(0, 31);
+    final presetNumber = _presetNumber.clamp(0, 31);
     state = state.copyWith(
-      connectionState: PlinkyConnectionState.savingPatch,
-      patchNumber: patchNumber,
+      connectionState: PlinkyConnectionState.savingPreset,
+      presetNumber: presetNumber,
     );
 
     try {
-      final data = Uint8List.view(patch.buffer);
+      final data = Uint8List.view(preset.buffer);
       final byteCount = data.length;
       final lowByte = byteCount & 0xFF;
       final highByte = (byteCount >> 8) & 0xFF;
@@ -203,7 +203,7 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
       final headerBuffer = Uint8List.fromList([
         ..._magicHeader,
         1, // set
-        patchNumber,
+        presetNumber,
         0,
         0,
         lowByte,
@@ -239,62 +239,62 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
     }
   }
 
-  set patchNumber(int number) {
-    _patchNumber = number.clamp(0, 31);
+  set presetNumber(int number) {
+    _presetNumber = number.clamp(0, 31);
   }
 
-  int _patchNumber = 0;
+  int _presetNumber = 0;
 
-  void parsePatchFromUrl(String encodedPatch) {
+  void parsePresetFromUrl(String encodedPreset) {
     try {
-      final decodedPatch = bytedecompress(
-        Uri.decodeComponent(encodedPatch),
+      final decodedPreset = bytedecompress(
+        Uri.decodeComponent(encodedPreset),
       );
-      final patch = Patch(decodedPatch.buffer);
-      state = state.copyWith(patch: patch);
+      final preset = Preset(decodedPreset.buffer);
+      state = state.copyWith(preset: preset);
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
-        errorMessage: 'Failed to parse patch from URL',
+        errorMessage: 'Failed to parse preset from URL',
       );
     }
   }
 
-  void loadPatchFromBytes(Uint8List data, {String? sourceId}) {
-    final patch = Patch(data.buffer);
-    state = state.copyWith(patch: patch, sourcePatchId: sourceId);
+  void loadPresetFromBytes(Uint8List data, {String? sourceId}) {
+    final preset = Preset(data.buffer);
+    state = state.copyWith(preset: preset, sourcePresetId: sourceId);
   }
 
-  void clearPatch() {
-    state = state.copyWith(patch: null, sourcePatchId: null);
+  void clearPreset() {
+    state = state.copyWith(preset: null, sourcePresetId: null);
   }
 
-  void randomizePatch(List<RandomizeGroup> groups) {
-    final patch = state.patch;
-    if (patch == null) {
+  void randomizePreset(List<RandomizeGroup> groups) {
+    final preset = state.preset;
+    if (preset == null) {
       return;
     }
-    patch.randomize(groups);
-    // Force a state change since Patch is mutated in place.
-    state = state.copyWith(patch: null);
-    state = state.copyWith(patch: patch);
+    preset.randomize(groups);
+    // Force a state change since Preset is mutated in place.
+    state = state.copyWith(preset: null);
+    state = state.copyWith(preset: preset);
   }
 
-  set patchName(String name) {
-    state.patch?.name = name;
+  set presetName(String name) {
+    state.preset?.name = name;
   }
 
-  set patchCategory(PatchCategory category) {
-    state.patch?.category = category;
+  set presetCategory(PresetCategory category) {
+    state.preset?.category = category;
   }
 
-  set patchArp(bool value) {
-    state.patch?.arp = value;
+  set presetArp(bool value) {
+    state.preset?.arp = value;
     ref.invalidateSelf();
   }
 
-  set patchLatch(bool value) {
-    state.patch?.latch = value;
+  set presetLatch(bool value) {
+    state.preset?.latch = value;
     ref.invalidateSelf();
   }
 }

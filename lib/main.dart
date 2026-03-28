@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:plinkyhub/pages/about_page.dart';
 import 'package:plinkyhub/pages/editor/editor_page.dart';
 import 'package:plinkyhub/pages/packs/saved_packs_page.dart';
-import 'package:plinkyhub/pages/patches/saved_patches_page.dart';
 import 'package:plinkyhub/pages/play/play_page.dart';
+import 'package:plinkyhub/pages/presets/saved_presets_page.dart';
 import 'package:plinkyhub/pages/samples/saved_samples_page.dart';
 import 'package:plinkyhub/widgets/navigation_sidebar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -18,6 +18,18 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+
+  final devEmail = dotenv.env['DEV_EMAIL'];
+  final devPassword = dotenv.env['DEV_PASSWORD'];
+  if (devEmail != null &&
+      devPassword != null &&
+      Supabase.instance.client.auth.currentUser == null) {
+    await Supabase.instance.client.auth.signInWithPassword(
+      email: devEmail,
+      password: devPassword,
+    );
+  }
+
   runApp(const ProviderScope(child: PlinkyHubApp()));
 }
 
@@ -88,7 +100,7 @@ class _PlinkyHubShellState extends ConsumerState<PlinkyHubShell> {
   static const _pages = <Widget>[
     PlayPage(),
     EditorPage(),
-    SavedPatchesPage(),
+    SavedPresetsPage(),
     SavedPacksPage(),
     SavedSamplesPage(),
     AboutPage(),

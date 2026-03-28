@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/pages/patches/patch_list.dart';
+import 'package:plinkyhub/pages/presets/preset_list.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/saved_patches_notifier.dart';
+import 'package:plinkyhub/state/saved_presets_notifier.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
 
-class SavedPatchesPage extends ConsumerStatefulWidget {
-  const SavedPatchesPage({super.key});
+class SavedPresetsPage extends ConsumerStatefulWidget {
+  const SavedPresetsPage({super.key});
 
   @override
-  ConsumerState<SavedPatchesPage> createState() =>
-      _SavedPatchesPageState();
+  ConsumerState<SavedPresetsPage> createState() =>
+      _SavedPresetsPageState();
 }
 
-class _SavedPatchesPageState extends ConsumerState<SavedPatchesPage>
+class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
@@ -25,7 +25,7 @@ class _SavedPatchesPageState extends ConsumerState<SavedPatchesPage>
       vsync: this,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(savedPatchesProvider.notifier).fetchPublicPatches();
+      ref.read(savedPresetsProvider.notifier).fetchPublicPresets();
     });
   }
 
@@ -38,7 +38,7 @@ class _SavedPatchesPageState extends ConsumerState<SavedPatchesPage>
   @override
   Widget build(BuildContext context) {
     final authenticationState = ref.watch(authenticationProvider);
-    final savedPatchesState = ref.watch(savedPatchesProvider);
+    final savedPresetsState = ref.watch(savedPresetsProvider);
     final isSignedIn = authenticationState.user != null;
 
     return Column(
@@ -46,15 +46,15 @@ class _SavedPatchesPageState extends ConsumerState<SavedPatchesPage>
         TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'My Patches'),
-            Tab(text: 'Community Patches'),
+            Tab(text: 'My Presets'),
+            Tab(text: 'Community Presets'),
           ],
         ),
-        if (savedPatchesState.errorMessage != null)
+        if (savedPresetsState.errorMessage != null)
           Padding(
             padding: const EdgeInsets.all(8),
             child: Text(
-              savedPatchesState.errorMessage!,
+              savedPresetsState.errorMessage!,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
               ),
@@ -65,26 +65,26 @@ class _SavedPatchesPageState extends ConsumerState<SavedPatchesPage>
             controller: _tabController,
             children: [
               if (isSignedIn)
-                PatchList(
-                  patches: savedPatchesState.userPatches,
-                  isLoading: savedPatchesState.isLoading,
+                PresetList(
+                  presets: savedPresetsState.userPresets,
+                  isLoading: savedPresetsState.isLoading,
                   isOwned: true,
                   onRefresh: () => ref
-                      .read(savedPatchesProvider.notifier)
-                      .fetchUserPatches(),
+                      .read(savedPresetsProvider.notifier)
+                      .fetchUserPresets(),
                 )
               else
                 const SignInPrompt(
                   message:
-                      'Sign in to save and manage your patches',
+                      'Sign in to save and manage your presets',
                 ),
-              PatchList(
-                patches: savedPatchesState.publicPatches,
-                isLoading: savedPatchesState.isLoading,
+              PresetList(
+                presets: savedPresetsState.publicPresets,
+                isLoading: savedPresetsState.isLoading,
                 isOwned: false,
                 onRefresh: () => ref
-                    .read(savedPatchesProvider.notifier)
-                    .fetchPublicPatches(),
+                    .read(savedPresetsProvider.notifier)
+                    .fetchPublicPresets(),
               ),
             ],
           ),

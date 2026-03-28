@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/main.dart';
 import 'package:plinkyhub/models/category.dart';
-import 'package:plinkyhub/models/patch.dart';
+import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/state/plinky_state.dart';
-import 'package:plinkyhub/state/saved_patches_notifier.dart';
+import 'package:plinkyhub/state/saved_presets_notifier.dart';
 import 'package:plinkyhub/state/saved_samples_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
-class PatchDetailsHeader extends ConsumerWidget {
-  const PatchDetailsHeader({required this.patch, super.key});
+class PresetDetailsHeader extends ConsumerWidget {
+  const PresetDetailsHeader({required this.preset, super.key});
 
-  final Patch patch;
+  final Preset preset;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,7 +31,7 @@ class PatchDetailsHeader extends ConsumerWidget {
               width: 120,
               child: TextField(
                 controller: TextEditingController(
-                  text: patch.name,
+                  text: preset.name,
                 ),
                 maxLength: 8,
                 decoration: const InputDecoration(
@@ -44,15 +44,15 @@ class PatchDetailsHeader extends ConsumerWidget {
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) {
-                  ref.read(plinkyProvider.notifier).patchName = value;
+                  ref.read(plinkyProvider.notifier).presetName = value;
                 },
               ),
             ),
             const SizedBox(width: 8),
             SizedBox(
               width: 160,
-              child: DropdownButtonFormField<PatchCategory>(
-                initialValue: patch.category,
+              child: DropdownButtonFormField<PresetCategory>(
+                initialValue: preset.category,
                 decoration: const InputDecoration(
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(
@@ -61,8 +61,8 @@ class PatchDetailsHeader extends ConsumerWidget {
                   ),
                   border: OutlineInputBorder(),
                 ),
-                items: PatchCategory.values.map((category) {
-                  return DropdownMenuItem<PatchCategory>(
+                items: PresetCategory.values.map((category) {
+                  return DropdownMenuItem<PresetCategory>(
                     value: category,
                     child: Text(
                       category.label.isEmpty ? '(none)' : category.label,
@@ -71,13 +71,13 @@ class PatchDetailsHeader extends ConsumerWidget {
                 }).toList(),
                 onChanged: (value) {
                   if (value != null) {
-                    ref.read(plinkyProvider.notifier).patchCategory = value;
+                    ref.read(plinkyProvider.notifier).presetCategory = value;
                   }
                 },
               ),
             ),
             const SizedBox(width: 8),
-            _SaveToCloudButton(patch: patch),
+            _SaveToCloudButton(preset: preset),
             const SizedBox(width: 8),
             PlinkyButton(
               onPressed: () {
@@ -93,7 +93,7 @@ class PatchDetailsHeader extends ConsumerWidget {
                 builder: (context) => const _RandomizeDialog(),
               ),
               icon: Icons.shuffle,
-              label: 'Randomize patch',
+              label: 'Randomize preset',
             ),
           ],
         ),
@@ -108,7 +108,7 @@ class PatchDetailsHeader extends ConsumerWidget {
                 const Icon(Icons.music_note, size: 20),
                 const SizedBox(width: 4),
                 DropdownButton<bool>(
-                  value: patch.arp,
+                  value: preset.arp,
                   isDense: true,
                   underline: const SizedBox.shrink(),
                   items: const [
@@ -123,7 +123,7 @@ class PatchDetailsHeader extends ConsumerWidget {
                   ],
                   onChanged: (value) {
                     if (value != null) {
-                      ref.read(plinkyProvider.notifier).patchArp = value;
+                      ref.read(plinkyProvider.notifier).presetArp = value;
                     }
                   },
                 ),
@@ -135,7 +135,7 @@ class PatchDetailsHeader extends ConsumerWidget {
                 const Icon(Icons.lock, size: 20),
                 const SizedBox(width: 4),
                 DropdownButton<bool>(
-                  value: patch.latch,
+                  value: preset.latch,
                   isDense: true,
                   underline: const SizedBox.shrink(),
                   items: const [
@@ -150,7 +150,7 @@ class PatchDetailsHeader extends ConsumerWidget {
                   ],
                   onChanged: (value) {
                     if (value != null) {
-                      ref.read(plinkyProvider.notifier).patchLatch = value;
+                      ref.read(plinkyProvider.notifier).presetLatch = value;
                     }
                   },
                 ),
@@ -162,7 +162,7 @@ class PatchDetailsHeader extends ConsumerWidget {
                 const Icon(Icons.first_page, size: 20),
                 const SizedBox(width: 4),
                 Text(
-                  'Loop start: ${patch.loopStart}',
+                  'Loop start: ${preset.loopStart}',
                   style: const TextStyle(fontSize: 15),
                 ),
               ],
@@ -173,19 +173,19 @@ class PatchDetailsHeader extends ConsumerWidget {
                 const Icon(Icons.straighten, size: 20),
                 const SizedBox(width: 4),
                 Text(
-                  'Loop length: ${patch.loopLength}',
+                  'Loop length: ${preset.loopLength}',
                   style: const TextStyle(fontSize: 15),
                 ),
               ],
             ),
-            if (patch.usesSample)
+            if (preset.usesSample)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.audio_file, size: 20),
                   const SizedBox(width: 4),
                   Text(
-                    'Sample #${patch.sampleSlot}',
+                    'Sample #${preset.sampleSlot}',
                     style: const TextStyle(fontSize: 15),
                   ),
                 ],
@@ -198,9 +198,9 @@ class PatchDetailsHeader extends ConsumerWidget {
 }
 
 class _SaveToCloudButton extends ConsumerWidget {
-  const _SaveToCloudButton({required this.patch});
+  const _SaveToCloudButton({required this.preset});
 
-  final Patch patch;
+  final Preset preset;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -224,7 +224,7 @@ class _SaveToCloudButton extends ConsumerWidget {
     final descriptionController = TextEditingController();
     var isPublic = false;
     String? selectedSampleId;
-    final sourcePatchId = plinkyState.sourcePatchId;
+    final sourcePresetId = plinkyState.sourcePresetId;
 
     showDialog<void>(
       context: context,
@@ -234,7 +234,7 @@ class _SaveToCloudButton extends ConsumerWidget {
               ref.read(savedSamplesProvider).userSamples;
           return AlertDialog(
             title: Text(
-              'Save "${patch.name.isEmpty ? '(unnamed)' : patch.name}"'
+              'Save "${preset.name.isEmpty ? '(unnamed)' : preset.name}"'
               ' to cloud',
             ),
             content: Column(
@@ -280,7 +280,7 @@ class _SaveToCloudButton extends ConsumerWidget {
                 SwitchListTile(
                   title: const Text('Share publicly'),
                   subtitle: const Text(
-                    'Allow others to find and load this patch',
+                    'Allow others to find and load this preset',
                   ),
                   value: isPublic,
                   onChanged: (value) {
@@ -295,15 +295,15 @@ class _SaveToCloudButton extends ConsumerWidget {
                 icon: Icons.close,
                 label: 'Cancel',
               ),
-              if (sourcePatchId != null)
+              if (sourcePresetId != null)
                 PlinkyButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                     ref
-                        .read(savedPatchesProvider.notifier)
-                        .overwritePatch(
-                          sourcePatchId,
-                          patch,
+                        .read(savedPresetsProvider.notifier)
+                        .overwritePreset(
+                          sourcePresetId,
+                          preset,
                           description:
                               descriptionController.text.isEmpty
                                   ? null
@@ -312,7 +312,7 @@ class _SaveToCloudButton extends ConsumerWidget {
                         );
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Patch overwritten'),
+                        content: Text('Preset overwritten'),
                       ),
                     );
                   },
@@ -323,16 +323,16 @@ class _SaveToCloudButton extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).pop();
                   ref
-                      .read(savedPatchesProvider.notifier)
-                      .savePatch(
-                        patch,
+                      .read(savedPresetsProvider.notifier)
+                      .savePreset(
+                        preset,
                         description: descriptionController.text,
                         isPublic: isPublic,
                         sampleId: selectedSampleId,
                       );
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Patch saved to cloud'),
+                      content: Text('Preset saved to cloud'),
                     ),
                   );
                 },
@@ -383,7 +383,7 @@ class _RandomizeDialogState extends ConsumerState<_RandomizeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Randomize patch'),
+      title: const Text('Randomize preset'),
       content: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 500),
         child: SingleChildScrollView(
@@ -514,7 +514,7 @@ class _RandomizeDialogState extends ConsumerState<_RandomizeDialog> {
               : () {
                   ref
                       .read(plinkyProvider.notifier)
-                      .randomizePatch(_selectedGroups.toList());
+                      .randomizePreset(_selectedGroups.toList());
                   Navigator.of(context).pop();
                 },
           icon: Icons.shuffle,

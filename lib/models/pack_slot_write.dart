@@ -8,7 +8,7 @@ abstract class PackSlotWrite with _$PackSlotWrite {
   const factory PackSlotWrite({
     required String packId,
     required int slotNumber,
-    String? patchId,
+    String? presetId,
     String? sampleId,
   }) = _PackSlotWrite;
 

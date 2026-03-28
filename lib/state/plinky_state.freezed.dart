@@ -14,9 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PlinkyState {
 
- PlinkyConnectionState get connectionState; Patch? get patch; int get patchNumber; String? get errorMessage;/// ID of the saved cloud patch that was loaded into the editor,
+ PlinkyConnectionState get connectionState; Preset? get preset; int get presetNumber; String? get errorMessage;/// ID of the saved cloud preset that was loaded into the editor,
 /// used to enable overwriting instead of always saving new.
- String? get sourcePatchId;
+ String? get sourcePresetId;
 /// Create a copy of PlinkyState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,16 +27,16 @@ $PlinkyStateCopyWith<PlinkyState> get copyWith => _$PlinkyStateCopyWithImpl<Plin
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlinkyState&&(identical(other.connectionState, connectionState) || other.connectionState == connectionState)&&(identical(other.patch, patch) || other.patch == patch)&&(identical(other.patchNumber, patchNumber) || other.patchNumber == patchNumber)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.sourcePatchId, sourcePatchId) || other.sourcePatchId == sourcePatchId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlinkyState&&(identical(other.connectionState, connectionState) || other.connectionState == connectionState)&&(identical(other.preset, preset) || other.preset == preset)&&(identical(other.presetNumber, presetNumber) || other.presetNumber == presetNumber)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.sourcePresetId, sourcePresetId) || other.sourcePresetId == sourcePresetId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,connectionState,patch,patchNumber,errorMessage,sourcePatchId);
+int get hashCode => Object.hash(runtimeType,connectionState,preset,presetNumber,errorMessage,sourcePresetId);
 
 @override
 String toString() {
-  return 'PlinkyState(connectionState: $connectionState, patch: $patch, patchNumber: $patchNumber, errorMessage: $errorMessage, sourcePatchId: $sourcePatchId)';
+  return 'PlinkyState(connectionState: $connectionState, preset: $preset, presetNumber: $presetNumber, errorMessage: $errorMessage, sourcePresetId: $sourcePresetId)';
 }
 
 
@@ -47,7 +47,7 @@ abstract mixin class $PlinkyStateCopyWith<$Res>  {
   factory $PlinkyStateCopyWith(PlinkyState value, $Res Function(PlinkyState) _then) = _$PlinkyStateCopyWithImpl;
 @useResult
 $Res call({
- PlinkyConnectionState connectionState, Patch? patch, int patchNumber, String? errorMessage, String? sourcePatchId
+ PlinkyConnectionState connectionState, Preset? preset, int presetNumber, String? errorMessage, String? sourcePresetId
 });
 
 
@@ -64,13 +64,13 @@ class _$PlinkyStateCopyWithImpl<$Res>
 
 /// Create a copy of PlinkyState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? connectionState = null,Object? patch = freezed,Object? patchNumber = null,Object? errorMessage = freezed,Object? sourcePatchId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? connectionState = null,Object? preset = freezed,Object? presetNumber = null,Object? errorMessage = freezed,Object? sourcePresetId = freezed,}) {
   return _then(_self.copyWith(
 connectionState: null == connectionState ? _self.connectionState : connectionState // ignore: cast_nullable_to_non_nullable
-as PlinkyConnectionState,patch: freezed == patch ? _self.patch : patch // ignore: cast_nullable_to_non_nullable
-as Patch?,patchNumber: null == patchNumber ? _self.patchNumber : patchNumber // ignore: cast_nullable_to_non_nullable
+as PlinkyConnectionState,preset: freezed == preset ? _self.preset : preset // ignore: cast_nullable_to_non_nullable
+as Preset?,presetNumber: null == presetNumber ? _self.presetNumber : presetNumber // ignore: cast_nullable_to_non_nullable
 as int,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
-as String?,sourcePatchId: freezed == sourcePatchId ? _self.sourcePatchId : sourcePatchId // ignore: cast_nullable_to_non_nullable
+as String?,sourcePresetId: freezed == sourcePresetId ? _self.sourcePresetId : sourcePresetId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -156,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( PlinkyConnectionState connectionState,  Patch? patch,  int patchNumber,  String? errorMessage,  String? sourcePatchId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( PlinkyConnectionState connectionState,  Preset? preset,  int presetNumber,  String? errorMessage,  String? sourcePresetId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlinkyState() when $default != null:
-return $default(_that.connectionState,_that.patch,_that.patchNumber,_that.errorMessage,_that.sourcePatchId);case _:
+return $default(_that.connectionState,_that.preset,_that.presetNumber,_that.errorMessage,_that.sourcePresetId);case _:
   return orElse();
 
 }
@@ -177,10 +177,10 @@ return $default(_that.connectionState,_that.patch,_that.patchNumber,_that.errorM
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( PlinkyConnectionState connectionState,  Patch? patch,  int patchNumber,  String? errorMessage,  String? sourcePatchId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( PlinkyConnectionState connectionState,  Preset? preset,  int presetNumber,  String? errorMessage,  String? sourcePresetId)  $default,) {final _that = this;
 switch (_that) {
 case _PlinkyState():
-return $default(_that.connectionState,_that.patch,_that.patchNumber,_that.errorMessage,_that.sourcePatchId);case _:
+return $default(_that.connectionState,_that.preset,_that.presetNumber,_that.errorMessage,_that.sourcePresetId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +197,10 @@ return $default(_that.connectionState,_that.patch,_that.patchNumber,_that.errorM
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( PlinkyConnectionState connectionState,  Patch? patch,  int patchNumber,  String? errorMessage,  String? sourcePatchId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( PlinkyConnectionState connectionState,  Preset? preset,  int presetNumber,  String? errorMessage,  String? sourcePresetId)?  $default,) {final _that = this;
 switch (_that) {
 case _PlinkyState() when $default != null:
-return $default(_that.connectionState,_that.patch,_that.patchNumber,_that.errorMessage,_that.sourcePatchId);case _:
+return $default(_that.connectionState,_that.preset,_that.presetNumber,_that.errorMessage,_that.sourcePresetId);case _:
   return null;
 
 }
@@ -212,16 +212,16 @@ return $default(_that.connectionState,_that.patch,_that.patchNumber,_that.errorM
 
 
 class _PlinkyState implements PlinkyState {
-  const _PlinkyState({this.connectionState = PlinkyConnectionState.disconnected, this.patch, this.patchNumber = 0, this.errorMessage, this.sourcePatchId});
+  const _PlinkyState({this.connectionState = PlinkyConnectionState.disconnected, this.preset, this.presetNumber = 0, this.errorMessage, this.sourcePresetId});
   
 
 @override@JsonKey() final  PlinkyConnectionState connectionState;
-@override final  Patch? patch;
-@override@JsonKey() final  int patchNumber;
+@override final  Preset? preset;
+@override@JsonKey() final  int presetNumber;
 @override final  String? errorMessage;
-/// ID of the saved cloud patch that was loaded into the editor,
+/// ID of the saved cloud preset that was loaded into the editor,
 /// used to enable overwriting instead of always saving new.
-@override final  String? sourcePatchId;
+@override final  String? sourcePresetId;
 
 /// Create a copy of PlinkyState
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +233,16 @@ _$PlinkyStateCopyWith<_PlinkyState> get copyWith => __$PlinkyStateCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlinkyState&&(identical(other.connectionState, connectionState) || other.connectionState == connectionState)&&(identical(other.patch, patch) || other.patch == patch)&&(identical(other.patchNumber, patchNumber) || other.patchNumber == patchNumber)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.sourcePatchId, sourcePatchId) || other.sourcePatchId == sourcePatchId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlinkyState&&(identical(other.connectionState, connectionState) || other.connectionState == connectionState)&&(identical(other.preset, preset) || other.preset == preset)&&(identical(other.presetNumber, presetNumber) || other.presetNumber == presetNumber)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.sourcePresetId, sourcePresetId) || other.sourcePresetId == sourcePresetId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,connectionState,patch,patchNumber,errorMessage,sourcePatchId);
+int get hashCode => Object.hash(runtimeType,connectionState,preset,presetNumber,errorMessage,sourcePresetId);
 
 @override
 String toString() {
-  return 'PlinkyState(connectionState: $connectionState, patch: $patch, patchNumber: $patchNumber, errorMessage: $errorMessage, sourcePatchId: $sourcePatchId)';
+  return 'PlinkyState(connectionState: $connectionState, preset: $preset, presetNumber: $presetNumber, errorMessage: $errorMessage, sourcePresetId: $sourcePresetId)';
 }
 
 
@@ -253,7 +253,7 @@ abstract mixin class _$PlinkyStateCopyWith<$Res> implements $PlinkyStateCopyWith
   factory _$PlinkyStateCopyWith(_PlinkyState value, $Res Function(_PlinkyState) _then) = __$PlinkyStateCopyWithImpl;
 @override @useResult
 $Res call({
- PlinkyConnectionState connectionState, Patch? patch, int patchNumber, String? errorMessage, String? sourcePatchId
+ PlinkyConnectionState connectionState, Preset? preset, int presetNumber, String? errorMessage, String? sourcePresetId
 });
 
 
@@ -270,13 +270,13 @@ class __$PlinkyStateCopyWithImpl<$Res>
 
 /// Create a copy of PlinkyState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? connectionState = null,Object? patch = freezed,Object? patchNumber = null,Object? errorMessage = freezed,Object? sourcePatchId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? connectionState = null,Object? preset = freezed,Object? presetNumber = null,Object? errorMessage = freezed,Object? sourcePresetId = freezed,}) {
   return _then(_PlinkyState(
 connectionState: null == connectionState ? _self.connectionState : connectionState // ignore: cast_nullable_to_non_nullable
-as PlinkyConnectionState,patch: freezed == patch ? _self.patch : patch // ignore: cast_nullable_to_non_nullable
-as Patch?,patchNumber: null == patchNumber ? _self.patchNumber : patchNumber // ignore: cast_nullable_to_non_nullable
+as PlinkyConnectionState,preset: freezed == preset ? _self.preset : preset // ignore: cast_nullable_to_non_nullable
+as Preset?,presetNumber: null == presetNumber ? _self.presetNumber : presetNumber // ignore: cast_nullable_to_non_nullable
 as int,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
-as String?,sourcePatchId: freezed == sourcePatchId ? _self.sourcePatchId : sourcePatchId // ignore: cast_nullable_to_non_nullable
+as String?,sourcePresetId: freezed == sourcePresetId ? _self.sourcePresetId : sourcePresetId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

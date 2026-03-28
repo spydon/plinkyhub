@@ -5,7 +5,7 @@ import 'package:plinkyhub/state/saved_samples_notifier.dart';
 class SamplesSection extends ConsumerWidget {
   const SamplesSection({required this.slots, super.key});
 
-  final List<({String? patchId, String? sampleId})> slots;
+  final List<({String? presetId, String? sampleId})> slots;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

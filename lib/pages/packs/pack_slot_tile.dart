@@ -1,41 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_patch.dart';
+import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
-import 'package:plinkyhub/pages/packs/patch_picker_dialog.dart';
+import 'package:plinkyhub/pages/packs/preset_picker_dialog.dart';
 import 'package:plinkyhub/pages/packs/sample_picker_dialog.dart';
-import 'package:plinkyhub/state/saved_patches_notifier.dart';
+import 'package:plinkyhub/state/saved_presets_notifier.dart';
 import 'package:plinkyhub/state/saved_samples_notifier.dart';
 
 class PackSlotTile extends ConsumerWidget {
   const PackSlotTile({
     required this.slotNumber,
-    required this.patchId,
+    required this.presetId,
     required this.sampleId,
-    required this.onPatchChanged,
+    required this.onPresetChanged,
     required this.onSampleChanged,
     super.key,
   });
 
   final int slotNumber;
-  final String? patchId;
+  final String? presetId;
   final String? sampleId;
-  final ValueChanged<String?> onPatchChanged;
+  final ValueChanged<String?> onPresetChanged;
   final ValueChanged<String?> onSampleChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final patches = ref.watch(
-      savedPatchesProvider.select((state) => state.userPatches),
+    final presets = ref.watch(
+      savedPresetsProvider.select((state) => state.userPresets),
     );
     final samples = ref.watch(
       savedSamplesProvider.select((state) => state.userSamples),
     );
 
-    final patchName = patchId != null
-        ? patches
-                  .where((patch) => patch.id == patchId)
+    final presetName = presetId != null
+        ? presets
+                  .where((preset) => preset.id == presetId)
                   .firstOrNull
                   ?.name ??
               '(unknown)'
@@ -51,7 +51,7 @@ class PackSlotTile extends ConsumerWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => _showPatchPicker(context, patches),
+        onTap: () => _showPresetPicker(context, presets),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,
@@ -74,7 +74,7 @@ class PackSlotTile extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      patchName,
+                      presetName,
                       style: theme.textTheme.bodySmall,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -93,14 +93,14 @@ class PackSlotTile extends ConsumerWidget {
                 icon: const Icon(Icons.more_vert, size: 16),
                 itemBuilder: (context) => [
                   const PopupMenuItem(
-                    value: 'patch',
-                    child: Text('Pick patch'),
+                    value: 'preset',
+                    child: Text('Pick preset'),
                   ),
                   const PopupMenuItem(
                     value: 'sample',
                     child: Text('Pick sample'),
                   ),
-                  if (patchId != null || sampleId != null)
+                  if (presetId != null || sampleId != null)
                     const PopupMenuItem(
                       value: 'clear',
                       child: Text('Clear slot'),
@@ -108,12 +108,12 @@ class PackSlotTile extends ConsumerWidget {
                 ],
                 onSelected: (value) {
                   switch (value) {
-                    case 'patch':
-                      _showPatchPicker(context, patches);
+                    case 'preset':
+                      _showPresetPicker(context, presets);
                     case 'sample':
                       _showSamplePicker(context, samples);
                     case 'clear':
-                      onPatchChanged(null);
+                      onPresetChanged(null);
                       onSampleChanged(null);
                   }
                 },
@@ -125,16 +125,16 @@ class PackSlotTile extends ConsumerWidget {
     );
   }
 
-  void _showPatchPicker(
+  void _showPresetPicker(
     BuildContext context,
-    List<SavedPatch> patches,
+    List<SavedPreset> presets,
   ) {
     showDialog<String>(
       context: context,
-      builder: (context) => PatchPickerDialog(patches: patches),
+      builder: (context) => PresetPickerDialog(presets: presets),
     ).then((selectedId) {
       if (selectedId != null) {
-        onPatchChanged(selectedId);
+        onPresetChanged(selectedId);
       }
     });
   }

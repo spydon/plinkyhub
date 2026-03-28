@@ -2,56 +2,56 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/patch.dart';
-import 'package:plinkyhub/models/patch_write.dart';
-import 'package:plinkyhub/models/saved_patch.dart';
+import 'package:plinkyhub/models/preset.dart';
+import 'package:plinkyhub/models/preset_write.dart';
+import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
-import 'package:plinkyhub/state/saved_patches_state.dart';
+import 'package:plinkyhub/state/saved_presets_state.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final savedPatchesProvider =
-    NotifierProvider<SavedPatchesNotifier, SavedPatchesState>(
-      SavedPatchesNotifier.new,
+final savedPresetsProvider =
+    NotifierProvider<SavedPresetsNotifier, SavedPresetsState>(
+      SavedPresetsNotifier.new,
     );
 
-class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
+class SavedPresetsNotifier extends Notifier<SavedPresetsState> {
   SupabaseClient get _supabase => Supabase.instance.client;
 
   @override
-  SavedPatchesState build() {
+  SavedPresetsState build() {
     final authenticationState = ref.watch(authenticationProvider);
     if (authenticationState.user != null) {
-      Future.microtask(fetchUserPatches);
+      Future.microtask(fetchUserPresets);
     }
-    return const SavedPatchesState();
+    return const SavedPresetsState();
   }
 
-  Future<List<SavedPatch>> _parsePatchRows(List<dynamic> response) async {
+  Future<List<SavedPreset>> _parsePresetRows(List<dynamic> response) async {
     final userId = ref.read(authenticationProvider).user?.id;
-    final starredPatchIds = <String>{};
+    final starredPresetIds = <String>{};
 
     if (userId != null) {
       final stars = await _supabase
-          .from('patch_stars')
-          .select('patch_id')
+          .from('preset_stars')
+          .select('preset_id')
           .eq('user_id', userId);
-      starredPatchIds.addAll([
+      starredPresetIds.addAll([
         for (final row in stars as List)
-          (row as Map<String, dynamic>)['patch_id'] as String,
+          (row as Map<String, dynamic>)['preset_id'] as String,
       ]);
     }
 
     return response.map((row) {
       final map = row as Map<String, dynamic>;
-      return SavedPatch.fromJson({
+      return SavedPreset.fromJson({
         ...map,
-        'is_starred': starredPatchIds.contains(map['id']),
+        'is_starred': starredPresetIds.contains(map['id']),
       });
     }).toList();
   }
 
-  Future<void> fetchUserPatches() async {
+  Future<void> fetchUserPresets() async {
     final userId = ref.read(authenticationProvider).user?.id;
     if (userId == null) {
       return;
@@ -60,13 +60,13 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final response = await _supabase
-          .from('patches')
-          .select('*, profiles(username), patch_stars(count)')
+          .from('presets')
+          .select('*, profiles(username), preset_stars(count)')
           .eq('user_id', userId)
           .order('updated_at', ascending: false);
 
-      final patches = await _parsePatchRows(response as List);
-      state = state.copyWith(userPatches: patches, isLoading: false);
+      final presets = await _parsePresetRows(response as List);
+      state = state.copyWith(userPresets: presets, isLoading: false);
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
@@ -76,16 +76,16 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
     }
   }
 
-  Future<void> fetchPublicPatches() async {
+  Future<void> fetchPublicPresets() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final response = await _supabase
-          .from('patches')
-          .select('*, profiles(username), patch_stars(count)')
+          .from('presets')
+          .select('*, profiles(username), preset_stars(count)')
           .eq('is_public', true);
 
-      final patches = await _parsePatchRows(response as List);
-      state = state.copyWith(publicPatches: patches, isLoading: false);
+      final presets = await _parsePresetRows(response as List);
+      state = state.copyWith(publicPresets: presets, isLoading: false);
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
@@ -95,8 +95,8 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
     }
   }
 
-  Future<void> savePatch(
-    Patch patch, {
+  Future<void> savePreset(
+    Preset preset, {
     String description = '',
     bool isPublic = false,
     String? sampleId,
@@ -108,17 +108,17 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
 
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final write = PatchWrite(
+      final write = PresetWrite(
         userId: userId,
-        name: patch.name,
-        category: patch.category.name,
-        patchData: base64Encode(Uint8List.view(patch.buffer)),
+        name: preset.name,
+        category: preset.category.name,
+        presetData: base64Encode(Uint8List.view(preset.buffer)),
         description: description,
         isPublic: isPublic,
         sampleId: sampleId,
       );
-      await _supabase.from('patches').insert(write.toJson());
-      await fetchUserPatches();
+      await _supabase.from('presets').insert(write.toJson());
+      await fetchUserPresets();
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
@@ -128,13 +128,13 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
     }
   }
 
-  Future<void> overwritePatch(
+  Future<void> overwritePreset(
     String id,
-    Patch patch, {
+    Preset preset, {
     String? description,
     String? sampleId,
   }) async {
-    final existing = state.userPatches
+    final existing = state.userPresets
         .where((p) => p.id == id)
         .firstOrNull;
     if (existing == null) {
@@ -143,18 +143,18 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
 
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final write = PatchWrite(
+      final write = PresetWrite(
         userId: existing.userId,
-        name: patch.name,
-        category: patch.category.name,
-        patchData: base64Encode(Uint8List.view(patch.buffer)),
+        name: preset.name,
+        category: preset.category.name,
+        presetData: base64Encode(Uint8List.view(preset.buffer)),
         description: description ?? existing.description,
         isPublic: existing.isPublic,
         sampleId: sampleId,
       );
       final json = write.toJson();
-      await _supabase.from('patches').update(json).eq('id', id);
-      await fetchUserPatches();
+      await _supabase.from('presets').update(json).eq('id', id);
+      await fetchUserPresets();
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
@@ -164,7 +164,7 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
     }
   }
 
-  Future<void> updatePatch(
+  Future<void> updatePreset(
     String id, {
     String? description,
     bool? isPublic,
@@ -186,8 +186,8 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
         updates['sample_id'] = null;
       }
 
-      await _supabase.from('patches').update(updates).eq('id', id);
-      await fetchUserPatches();
+      await _supabase.from('presets').update(updates).eq('id', id);
+      await fetchUserPresets();
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
@@ -197,11 +197,11 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
     }
   }
 
-  Future<void> deletePatch(String id) async {
+  Future<void> deletePreset(String id) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      await _supabase.from('patches').delete().eq('id', id);
-      await fetchUserPatches();
+      await _supabase.from('presets').delete().eq('id', id);
+      await fetchUserPresets();
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
@@ -211,39 +211,39 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
     }
   }
 
-  Future<void> toggleStar(SavedPatch patch) async {
+  Future<void> toggleStar(SavedPreset preset) async {
     final userId = ref.read(authenticationProvider).user?.id;
     if (userId == null) {
       return;
     }
 
     try {
-      if (patch.isStarred) {
+      if (preset.isStarred) {
         await _supabase
-            .from('patch_stars')
+            .from('preset_stars')
             .delete()
-            .eq('patch_id', patch.id)
+            .eq('preset_id', preset.id)
             .eq('user_id', userId);
       } else {
-        await _supabase.from('patch_stars').insert({
-          'patch_id': patch.id,
+        await _supabase.from('preset_stars').insert({
+          'preset_id': preset.id,
           'user_id': userId,
         });
       }
 
       // Optimistically update both lists.
-      final delta = patch.isStarred ? -1 : 1;
+      final delta = preset.isStarred ? -1 : 1;
       state = state.copyWith(
-        userPatches: _updateStarInList(
-          state.userPatches,
-          patch.id,
-          !patch.isStarred,
+        userPresets: _updateStarInList(
+          state.userPresets,
+          preset.id,
+          !preset.isStarred,
           delta,
         ),
-        publicPatches: _updateStarInList(
-          state.publicPatches,
-          patch.id,
-          !patch.isStarred,
+        publicPresets: _updateStarInList(
+          state.publicPresets,
+          preset.id,
+          !preset.isStarred,
           delta,
         ),
       );
@@ -253,31 +253,31 @@ class SavedPatchesNotifier extends Notifier<SavedPatchesState> {
     }
   }
 
-  List<SavedPatch> _updateStarInList(
-    List<SavedPatch> patches,
-    String patchId,
+  List<SavedPreset> _updateStarInList(
+    List<SavedPreset> presets,
+    String presetId,
     bool isStarred,
     int delta,
   ) {
-    return patches.map((patch) {
-      if (patch.id == patchId) {
-        return patch.copyWith(
+    return presets.map((preset) {
+      if (preset.id == presetId) {
+        return preset.copyWith(
           isStarred: isStarred,
-          starCount: patch.starCount + delta,
+          starCount: preset.starCount + delta,
         );
       }
-      return patch;
+      return preset;
     }).toList();
   }
 
-  void loadPatchIntoEditor(SavedPatch savedPatch) {
-    final bytes = base64Decode(savedPatch.patchData);
+  void loadPresetIntoEditor(SavedPreset savedPreset) {
+    final bytes = base64Decode(savedPreset.presetData);
     final userId = ref.read(authenticationProvider).user?.id;
-    // Only allow overwriting if the user owns the patch.
+    // Only allow overwriting if the user owns the preset.
     final sourceId =
-        savedPatch.userId == userId ? savedPatch.id : null;
+        savedPreset.userId == userId ? savedPreset.id : null;
     ref
         .read(plinkyProvider.notifier)
-        .loadPatchFromBytes(Uint8List.fromList(bytes), sourceId: sourceId);
+        .loadPresetFromBytes(Uint8List.fromList(bytes), sourceId: sourceId);
   }
 }

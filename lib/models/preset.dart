@@ -4,10 +4,10 @@ import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/parameter.dart';
 import 'package:plinkyhub/models/plinky_params.dart';
 
-/// Represents a single Plinky synthesizer patch stored as
+/// Represents a single Plinky synthesizer preset stored as
 /// a 1552-byte binary buffer.
-class Patch {
-  Patch(ByteBuffer buffer) : _buffer = buffer {
+class Preset {
+  Preset(ByteBuffer buffer) : _buffer = buffer {
     for (var index = 0; index < eParams.length; index++) {
       final parameterIdentifier = eParams[index];
       final byteOffset = index * 16;
@@ -67,16 +67,16 @@ class Patch {
   int get loopStart => _bitFieldInt8[1];
   int get loopLength => _bitFieldInt8[2];
 
-  PatchCategory get category {
+  PresetCategory get category {
     final array = Uint8List.view(_buffer, 1543, 1);
     final index = array[0];
-    if (index >= PatchCategory.values.length) {
-      return PatchCategory.none;
+    if (index >= PresetCategory.values.length) {
+      return PresetCategory.none;
     }
-    return PatchCategory.values[index];
+    return PresetCategory.values[index];
   }
 
-  set category(PatchCategory value) {
+  set category(PresetCategory value) {
     final array = Uint8List.view(_buffer, 1543, 1);
     array[0] = value.index;
   }
@@ -146,7 +146,7 @@ class Patch {
     return (octaveParameter.value / 256).round().clamp(-4, 4);
   }
 
-  /// Sample slot number (0-127) used by this patch.
+  /// Sample slot number (0-127) used by this preset.
   int get sampleSlot {
     final sampleParameter = parameterById('P_SAMPLE');
     if (sampleParameter == null) {
@@ -155,7 +155,7 @@ class Patch {
     return (sampleParameter.value / 1024 * 127).round().clamp(0, 127);
   }
 
-  /// Whether this patch uses a sample (sample slot > 0).
+  /// Whether this preset uses a sample (sample slot > 0).
   bool get usesSample => sampleSlot > 0;
 
   /// Fine pitch offset in semitones (fractional, ±12).

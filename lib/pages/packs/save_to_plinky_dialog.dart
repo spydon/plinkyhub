@@ -51,7 +51,7 @@ class _SaveToPlinkyDialogState
 
     setState(() {
       _step = _DialogStep.progress;
-      _statusMessage = 'Fetching patch data...';
+      _statusMessage = 'Fetching preset data...';
     });
 
     try {
@@ -71,30 +71,30 @@ class _SaveToPlinkyDialogState
     final slots = widget.pack.slots;
 
     // Collect unique patch IDs and sample IDs from the pack.
-    final patchIds = <String>{};
+    final presetIds = <String>{};
     final sampleIds = <String>{};
     for (final slot in slots) {
-      if (slot.patchId != null) {
-        patchIds.add(slot.patchId!);
+      if (slot.presetId != null) {
+        presetIds.add(slot.presetId!);
       }
       if (slot.sampleId != null) {
         sampleIds.add(slot.sampleId!);
       }
     }
 
-    // Fetch patches from the database.
-    setState(() => _statusMessage = 'Fetching patches...');
-    final patchDataMap = <String, Uint8List>{};
-    if (patchIds.isNotEmpty) {
+    // Fetch presets from the database.
+    setState(() => _statusMessage = 'Fetching presets...');
+    final presetDataMap = <String, Uint8List>{};
+    if (presetIds.isNotEmpty) {
       final response = await _supabase
-          .from('patches')
-          .select('id, patch_data')
-          .inFilter('id', patchIds.toList());
+          .from('presets')
+          .select('id, preset_data')
+          .inFilter('id', presetIds.toList());
       for (final row in response as List) {
         final map = row as Map<String, dynamic>;
         final id = map['id'] as String;
-        final patchData = map['patch_data'] as String;
-        patchDataMap[id] = Uint8List.fromList(base64Decode(patchData));
+        final presetData = map['preset_data'] as String;
+        presetDataMap[id] = Uint8List.fromList(base64Decode(presetData));
       }
     }
 
@@ -170,36 +170,36 @@ class _SaveToPlinkyDialogState
       );
     }
 
-    // Build the 32 patch entries, remapping P_SAMPLE for each.
+    // Build the 32 preset entries, remapping P_SAMPLE for each.
     setState(() => _statusMessage = 'Generating PRESETS.UF2...');
-    final patches = List<Uint8List?>.filled(presetCount, null);
+    final presets = List<Uint8List?>.filled(presetCount, null);
     for (final slot in slots) {
       if (slot.slotNumber < 0 || slot.slotNumber >= presetCount) {
         continue;
       }
-      if (slot.patchId == null) {
+      if (slot.presetId == null) {
         continue;
       }
-      final originalPatchBytes = patchDataMap[slot.patchId];
-      if (originalPatchBytes == null) {
+      final originalPresetBytes = presetDataMap[slot.presetId];
+      if (originalPresetBytes == null) {
         continue;
       }
 
-      // Clone the patch bytes so we can modify P_SAMPLE.
-      final patchBytes = Uint8List.fromList(originalPatchBytes);
+      // Clone the preset bytes so we can modify P_SAMPLE.
+      final presetBytes = Uint8List.fromList(originalPresetBytes);
 
       if (slot.sampleId != null &&
           sampleSlotMapping.containsKey(slot.sampleId)) {
         final firmwareSlot = sampleSlotMapping[slot.sampleId]!;
-        setPatchSampleSlot(patchBytes, firmwareSlot);
+        setPresetSampleSlot(presetBytes, firmwareSlot);
       }
 
-      patches[slot.slotNumber] = patchBytes;
+      presets[slot.slotNumber] = presetBytes;
     }
 
     // Generate PRESETS.UF2.
     final presetsUf2 = generatePresetsUf2(
-      patches: patches,
+      presets: presets,
       sampleInfos: sampleInfos,
     );
 

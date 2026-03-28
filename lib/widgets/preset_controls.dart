@@ -4,65 +4,65 @@ import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/state/plinky_state.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
-class PatchControls extends ConsumerStatefulWidget {
-  const PatchControls({super.key});
+class PresetControls extends ConsumerStatefulWidget {
+  const PresetControls({super.key});
 
   @override
-  ConsumerState<PatchControls> createState() => _PatchControlsState();
+  ConsumerState<PresetControls> createState() => _PresetControlsState();
 }
 
-class _PatchControlsState extends ConsumerState<PatchControls> {
-  late TextEditingController _patchNumberController;
+class _PresetControlsState extends ConsumerState<PresetControls> {
+  late TextEditingController _presetNumberController;
 
   @override
   void initState() {
     super.initState();
-    final patchNumber = ref.read(plinkyProvider).patchNumber;
-    _patchNumberController = TextEditingController(
-      text: (patchNumber + 1).toString(),
+    final presetNumber = ref.read(plinkyProvider).presetNumber;
+    _presetNumberController = TextEditingController(
+      text: (presetNumber + 1).toString(),
     );
   }
 
   @override
   void dispose() {
-    _patchNumberController.dispose();
+    _presetNumberController.dispose();
     super.dispose();
   }
 
-  void _updatePatchNumber() {
-    final parsed = int.tryParse(_patchNumberController.text);
+  void _updatePresetNumber() {
+    final parsed = int.tryParse(_presetNumberController.text);
     if (parsed != null) {
       final clamped = parsed.clamp(1, 32);
-      _patchNumberController.text = clamped.toString();
-      ref.read(plinkyProvider.notifier).patchNumber = clamped - 1;
+      _presetNumberController.text = clamped.toString();
+      ref.read(plinkyProvider.notifier).presetNumber = clamped - 1;
     }
   }
 
-  void _stepPatchNumber(int delta) {
-    final current = int.tryParse(_patchNumberController.text) ?? 1;
+  void _stepPresetNumber(int delta) {
+    final current = int.tryParse(_presetNumberController.text) ?? 1;
     final next = (current + delta).clamp(1, 32);
-    _patchNumberController.text = next.toString();
-    ref.read(plinkyProvider.notifier).patchNumber = next - 1;
+    _presetNumberController.text = next.toString();
+    ref.read(plinkyProvider.notifier).presetNumber = next - 1;
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(plinkyProvider);
     final isLoading =
-        state.connectionState == PlinkyConnectionState.loadingPatch ||
-        state.connectionState == PlinkyConnectionState.savingPatch;
+        state.connectionState == PlinkyConnectionState.loadingPreset ||
+        state.connectionState == PlinkyConnectionState.savingPreset;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text('Patch number'),
+            const Text('Preset number'),
             const SizedBox(width: 8),
             SizedBox(
               width: 75,
               child: TextField(
-                controller: _patchNumberController,
+                controller: _presetNumberController,
                 keyboardType: TextInputType.number,
                 enabled: !isLoading,
                 decoration: InputDecoration(
@@ -87,7 +87,7 @@ class _PatchControlsState extends ConsumerState<PatchControls> {
                           icon: const Icon(Icons.arrow_drop_up),
                           onPressed: isLoading
                               ? null
-                              : () => _stepPatchNumber(1),
+                              : () => _stepPresetNumber(1),
                         ),
                       ),
                       SizedBox(
@@ -101,13 +101,13 @@ class _PatchControlsState extends ConsumerState<PatchControls> {
                           ),
                           onPressed: isLoading
                               ? null
-                              : () => _stepPatchNumber(-1),
+                              : () => _stepPresetNumber(-1),
                         ),
                       ),
                     ],
                   ),
                 ),
-                onSubmitted: (_) => _updatePatchNumber(),
+                onSubmitted: (_) => _updatePresetNumber(),
               ),
             ),
             const SizedBox(width: 8),
@@ -115,30 +115,30 @@ class _PatchControlsState extends ConsumerState<PatchControls> {
               onPressed: isLoading
                   ? null
                   : () {
-                      _updatePatchNumber();
-                      ref.read(plinkyProvider.notifier).loadPatch();
+                      _updatePresetNumber();
+                      ref.read(plinkyProvider.notifier).loadPreset();
                     },
               icon: Icons.download,
               label: 'Load from Plinky',
             ),
             const SizedBox(width: 8),
             PlinkyButton(
-              onPressed: isLoading || state.patch == null
+              onPressed: isLoading || state.preset == null
                   ? null
                   : () {
-                      _updatePatchNumber();
-                      ref.read(plinkyProvider.notifier).savePatch();
+                      _updatePresetNumber();
+                      ref.read(plinkyProvider.notifier).savePreset();
                     },
               icon: Icons.upload,
               label: 'Save to Plinky',
             ),
             const SizedBox(width: 8),
             PlinkyButton(
-              onPressed: isLoading || state.patch == null
+              onPressed: isLoading || state.preset == null
                   ? null
-                  : () => ref.read(plinkyProvider.notifier).clearPatch(),
+                  : () => ref.read(plinkyProvider.notifier).clearPreset(),
               icon: Icons.delete_outline,
-              label: 'Clear loaded patch',
+              label: 'Clear loaded preset',
             ),
           ],
         ),

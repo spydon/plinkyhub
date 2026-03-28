@@ -1,16 +1,16 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'saved_patch.freezed.dart';
-part 'saved_patch.g.dart';
+part 'saved_preset.freezed.dart';
+part 'saved_preset.g.dart';
 
 @freezed
-abstract class SavedPatch with _$SavedPatch {
-  const factory SavedPatch({
+abstract class SavedPreset with _$SavedPreset {
+  const factory SavedPreset({
     required String id,
     required String userId,
     required String name,
     required String category,
-    required String patchData,
+    required String presetData,
     required DateTime createdAt,
     required DateTime updatedAt,
     @Default('') String description,
@@ -23,10 +23,10 @@ abstract class SavedPatch with _$SavedPatch {
     int starCount,
     @Default(false) bool isStarred,
     String? sampleId,
-  }) = _SavedPatch;
+  }) = _SavedPreset;
 
-  factory SavedPatch.fromJson(Map<String, dynamic> json) =>
-      _$SavedPatchFromJson(json);
+  factory SavedPreset.fromJson(Map<String, dynamic> json) =>
+      _$SavedPresetFromJson(json);
 }
 
 Object? _readUsername(Map<dynamic, dynamic> json, String key) {

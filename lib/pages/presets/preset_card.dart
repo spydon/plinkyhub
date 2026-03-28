@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/main.dart';
-import 'package:plinkyhub/models/saved_patch.dart';
-import 'package:plinkyhub/pages/patches/star_button.dart';
-import 'package:plinkyhub/state/saved_patches_notifier.dart';
+import 'package:plinkyhub/models/saved_preset.dart';
+import 'package:plinkyhub/pages/presets/star_button.dart';
+import 'package:plinkyhub/state/saved_presets_notifier.dart';
 import 'package:plinkyhub/utils/note_names.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
-class PatchCard extends ConsumerWidget {
-  const PatchCard({
-    required this.patch,
+class PresetCard extends ConsumerWidget {
+  const PresetCard({
+    required this.preset,
     required this.isOwned,
     super.key,
   });
 
-  final SavedPatch patch;
+  final SavedPreset preset;
   final bool isOwned;
 
   @override
@@ -32,33 +32,33 @@ class PatchCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    patch.name.isEmpty ? '(unnamed)' : patch.name,
+                    preset.name.isEmpty ? '(unnamed)' : preset.name,
                     style: theme.textTheme.titleMedium,
                   ),
                 ),
-                if (patch.category.isNotEmpty)
+                if (preset.category.isNotEmpty)
                   Chip(
                     label: Text(
-                      patch.category,
+                      preset.category,
                       style: theme.textTheme.bodySmall,
                     ),
                     visualDensity: VisualDensity.compact,
                   ),
               ],
             ),
-            if (patch.description.isNotEmpty) ...[
+            if (preset.description.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                patch.description,
+                preset.description,
                 style: theme.textTheme.bodyMedium,
               ),
             ],
             const SizedBox(height: 4),
             Text(
               [
-                if (patch.username.isNotEmpty)
-                  'by ${patch.username}',
-                formatDate(patch.updatedAt),
+                if (preset.username.isNotEmpty)
+                  'by ${preset.username}',
+                formatDate(preset.updatedAt),
               ].join(' · '),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
@@ -70,8 +70,8 @@ class PatchCard extends ConsumerWidget {
                 PlinkyButton(
                   onPressed: () {
                     ref
-                        .read(savedPatchesProvider.notifier)
-                        .loadPatchIntoEditor(patch);
+                        .read(savedPresetsProvider.notifier)
+                        .loadPresetIntoEditor(preset);
                     ref.read(selectedPageProvider.notifier).selected =
                         1;
                   },
@@ -79,32 +79,32 @@ class PatchCard extends ConsumerWidget {
                   label: 'Load into editor',
                 ),
                 const SizedBox(width: 8),
-                PatchStarButton(patch: patch),
+                PresetStarButton(preset: preset),
                 const Spacer(),
                 if (isOwned) ...[
                   IconButton(
                     icon: Icon(
-                      patch.isPublic
+                      preset.isPublic
                           ? Icons.public
                           : Icons.public_off,
                       size: 20,
                     ),
-                    tooltip: patch.isPublic
+                    tooltip: preset.isPublic
                         ? 'Make private'
                         : 'Make public',
                     onPressed: () {
                       ref
-                          .read(savedPatchesProvider.notifier)
-                          .updatePatch(
-                            patch.id,
-                            isPublic: !patch.isPublic,
+                          .read(savedPresetsProvider.notifier)
+                          .updatePreset(
+                            preset.id,
+                            isPublic: !preset.isPublic,
                           );
                     },
                   ),
                   IconButton(
                     icon:
                         const Icon(Icons.delete_outline, size: 20),
-                    tooltip: 'Delete patch',
+                    tooltip: 'Delete preset',
                     onPressed: () =>
                         _confirmDelete(context, ref),
                   ),
@@ -121,10 +121,10 @@ class PatchCard extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete patch?'),
+        title: const Text('Delete preset?'),
         content: Text(
           'Are you sure you want to delete '
-          '"${patch.name.isEmpty ? '(unnamed)' : patch.name}"?',
+          '"${preset.name.isEmpty ? '(unnamed)' : preset.name}"?',
         ),
         actions: [
           PlinkyButton(
@@ -136,8 +136,8 @@ class PatchCard extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).pop();
               ref
-                  .read(savedPatchesProvider.notifier)
-                  .deletePatch(patch.id);
+                  .read(savedPresetsProvider.notifier)
+                  .deletePreset(preset.id);
             },
             icon: Icons.delete,
             label: 'Delete',

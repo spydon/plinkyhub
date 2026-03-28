@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/pages/play/patch_picker_dialog.dart';
 import 'package:plinkyhub/pages/play/play_pad.dart';
+import 'package:plinkyhub/pages/play/preset_picker_dialog.dart';
 import 'package:plinkyhub/pages/play/sample_picker_dialog.dart';
 import 'package:plinkyhub/state/midi_notifier.dart';
 import 'package:plinkyhub/state/play_notifier.dart';
@@ -68,8 +68,8 @@ class PlayPage extends ConsumerWidget {
     final playState = ref.watch(playProvider);
     final plinkyState = ref.watch(plinkyProvider);
     final midiState = ref.watch(midiProvider);
-    final patchName = plinkyState.patch?.name ?? '';
-    final canPlay = plinkyState.patch != null ||
+    final presetName = plinkyState.preset?.name ?? '';
+    final canPlay = plinkyState.preset != null ||
         playState.sampleWavBytes != null;
 
     return Padding(
@@ -82,12 +82,12 @@ class PlayPage extends ConsumerWidget {
               PlinkyButton(
                 onPressed: () => showDialog<void>(
                   context: context,
-                  builder: (_) => const PatchPickerDialog(),
+                  builder: (_) => const PresetPickerDialog(),
                 ),
                 icon: Icons.piano,
-                label: patchName.isEmpty
-                    ? 'Load Patch'
-                    : patchName,
+                label: presetName.isEmpty
+                    ? 'Load Preset'
+                    : presetName,
               ),
               const SizedBox(width: 16),
               PlinkyButton(
