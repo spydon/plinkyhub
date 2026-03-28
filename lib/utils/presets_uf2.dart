@@ -8,8 +8,9 @@ const presetsBaseAddress = 0x08080000;
 /// Size of one flash page (matches firmware FLASH_PAGE_SIZE).
 const flashPageSize = 2048;
 
-/// Number of flash pages in the presets region.
-const flashPageCount = 256;
+/// Number of flash pages in the presets region (0-254).
+/// Page 255 is reserved for calibration data and must not be overwritten.
+const flashPageCount = 255;
 
 /// Usable data bytes per page (before SysParams and PageFooter).
 const _flashPageUsable = flashPageSize - _sysParamsSize - _pageFooterSize;
