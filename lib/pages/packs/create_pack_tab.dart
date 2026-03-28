@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
+import 'package:plinkyhub/pages/packs/pack_sharing_check.dart';
 import 'package:plinkyhub/pages/packs/pack_slot_tile.dart';
 import 'package:plinkyhub/pages/packs/pattern_picker_dialog.dart';
 import 'package:plinkyhub/pages/packs/samples_section.dart';
 import 'package:plinkyhub/pages/packs/wavetable_picker_dialog.dart';
+import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_packs_notifier.dart';
 import 'package:plinkyhub/state/saved_patterns_notifier.dart';
 import 'package:plinkyhub/state/saved_wavetables_notifier.dart';
@@ -205,7 +207,7 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
     );
   }
 
-  void _savePack() {
+  Future<void> _savePack() async {
     final slots = <({int slotNumber, String? presetId, String? sampleId})>[];
     for (var i = 0; i < 32; i++) {
       slots.add((
@@ -213,6 +215,41 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
         presetId: _slots[i].presetId,
         sampleId: _slots[i].sampleId,
       ));
+    }
+
+    if (_isPublic) {
+      final userId = ref.read(authenticationProvider).user?.id;
+      if (userId != null) {
+        final summary = findPrivateItems(
+          ref: ref,
+          currentUserId: userId,
+          slots: _slots
+              .map(
+                (slot) => (
+                  presetId: slot.presetId,
+                  sampleId: slot.sampleId,
+                ),
+              )
+              .toList(),
+          wavetableId: _wavetableId,
+          patternId: _patternId,
+        );
+
+        if (summary.hasPrivateItems && mounted) {
+          final result = await showSharingConflictDialog(
+            context,
+            summary,
+          );
+          if (result == null) {
+            return;
+          }
+          if (result == SharingCheckResult.makeAllPublic) {
+            await makeItemsPublic(summary);
+          } else {
+            setState(() => _isPublic = false);
+          }
+        }
+      }
     }
 
     final notifier = ref.read(savedPacksProvider.notifier);

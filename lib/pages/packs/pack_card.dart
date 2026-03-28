@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
+import 'package:plinkyhub/pages/packs/pack_sharing_check.dart';
 import 'package:plinkyhub/pages/packs/save_to_plinky_dialog.dart';
+import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_packs_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/star_button.dart';
@@ -91,14 +93,7 @@ class PackCard extends ConsumerWidget {
                       size: 20,
                     ),
                     tooltip: pack.isPublic ? 'Make private' : 'Make public',
-                    onPressed: () {
-                      ref
-                          .read(savedPacksProvider.notifier)
-                          .updatePack(
-                            pack.id,
-                            isPublic: !pack.isPublic,
-                          );
-                    },
+                    onPressed: () => _togglePublic(context, ref),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 20),
@@ -112,6 +107,62 @@ class PackCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _togglePublic(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    if (pack.isPublic) {
+      ref
+          .read(savedPacksProvider.notifier)
+          .updatePack(
+            pack.id,
+            isPublic: false,
+          );
+      return;
+    }
+
+    final userId = ref.read(authenticationProvider).user?.id;
+    if (userId != null) {
+      final slots = pack.slots
+          .map(
+            (slot) => (
+              presetId: slot.presetId,
+              sampleId: slot.sampleId,
+            ),
+          )
+          .toList();
+      final summary = findPrivateItems(
+        ref: ref,
+        currentUserId: userId,
+        slots: slots,
+        wavetableId: pack.wavetableId,
+        patternId: pack.patternId,
+      );
+
+      if (summary.hasPrivateItems) {
+        final result = await showSharingConflictDialog(
+          context,
+          summary,
+        );
+        if (result == null) {
+          return;
+        }
+        if (result == SharingCheckResult.makeAllPublic) {
+          await makeItemsPublic(summary);
+        } else {
+          return;
+        }
+      }
+    }
+
+    ref
+        .read(savedPacksProvider.notifier)
+        .updatePack(
+          pack.id,
+          isPublic: true,
+        );
   }
 
   void _saveToPlinky(BuildContext context) {
