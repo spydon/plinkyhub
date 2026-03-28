@@ -13,7 +13,7 @@ class ShareLinkButton extends StatelessWidget {
   final String itemType;
   final String itemName;
 
-  String get _path {
+  String get itemPath {
     final encodedName = Uri.encodeComponent(itemName);
     return '/$username/$itemType/$encodedName';
   }
@@ -24,14 +24,18 @@ class ShareLinkButton extends StatelessWidget {
       icon: const Icon(Icons.share, size: 20),
       tooltip: 'Copy link',
       onPressed: () {
-        final uri = Uri.base.replace(
-          path: _path,
-          query: '',
-          fragment: '',
-        );
-        Clipboard.setData(ClipboardData(text: uri.toString()));
+        final base = Uri.base;
+        final url = Uri(
+          scheme: base.scheme,
+          host: base.host,
+          port: base.port,
+          path: itemPath,
+        ).toString();
+        Clipboard.setData(ClipboardData(text: url));
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Link copied to clipboard')),
+          const SnackBar(
+            content: Text('Link copied to clipboard'),
+          ),
         );
       },
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/pages/presets/star_button.dart';
 import 'package:plinkyhub/state/saved_presets_notifier.dart';
@@ -23,88 +24,97 @@ class PresetCard extends ConsumerWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    preset.name.isEmpty ? '(unnamed)' : preset.name,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
-                if (preset.category.isNotEmpty)
-                  Chip(
-                    label: Text(
-                      preset.category,
-                      style: theme.textTheme.bodySmall,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: preset.username.isNotEmpty
+            ? () => context.go(
+                '/${preset.username}/preset/'
+                '${Uri.encodeComponent(preset.name)}',
+              )
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      preset.name.isEmpty ? '(unnamed)' : preset.name,
+                      style: theme.textTheme.titleMedium,
                     ),
-                    visualDensity: VisualDensity.compact,
                   ),
-              ],
-            ),
-            if (preset.description.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                preset.description,
-                style: theme.textTheme.bodyMedium,
+                  if (preset.category.isNotEmpty)
+                    Chip(
+                      label: Text(
+                        preset.category,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                ],
               ),
-            ],
-            const SizedBox(height: 4),
-            UsernameDateLine(
-              userId: preset.userId,
-              username: preset.username,
-              updatedAt: preset.updatedAt,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                PlinkyButton(
-                  onPressed: () {
-                    ref
-                        .read(savedPresetsProvider.notifier)
-                        .loadPresetIntoEditor(preset);
-                  },
-                  icon: Icons.download,
-                  label: 'Load into editor',
+              if (preset.description.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  preset.description,
+                  style: theme.textTheme.bodyMedium,
                 ),
-                const SizedBox(width: 8),
-                PresetStarButton(preset: preset),
-                if (preset.username.isNotEmpty)
-                  ShareLinkButton(
-                    username: preset.username,
-                    itemType: 'preset',
-                    itemName: preset.name,
-                  ),
-                const Spacer(),
-                if (isOwned) ...[
-                  IconButton(
-                    icon: Icon(
-                      preset.isPublic ? Icons.public : Icons.public_off,
-                      size: 20,
-                    ),
-                    tooltip: preset.isPublic ? 'Make private' : 'Make public',
+              ],
+              const SizedBox(height: 4),
+              UsernameDateLine(
+                userId: preset.userId,
+                username: preset.username,
+                updatedAt: preset.updatedAt,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  PlinkyButton(
                     onPressed: () {
                       ref
                           .read(savedPresetsProvider.notifier)
-                          .updatePreset(
-                            preset.id,
-                            isPublic: !preset.isPublic,
-                          );
+                          .loadPresetIntoEditor(preset);
                     },
+                    icon: Icons.download,
+                    label: 'Load into editor',
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 20),
-                    tooltip: 'Delete preset',
-                    onPressed: () => _confirmDelete(context, ref),
-                  ),
+                  const SizedBox(width: 8),
+                  PresetStarButton(preset: preset),
+                  if (preset.username.isNotEmpty)
+                    ShareLinkButton(
+                      username: preset.username,
+                      itemType: 'preset',
+                      itemName: preset.name,
+                    ),
+                  const Spacer(),
+                  if (isOwned) ...[
+                    IconButton(
+                      icon: Icon(
+                        preset.isPublic ? Icons.public : Icons.public_off,
+                        size: 20,
+                      ),
+                      tooltip: preset.isPublic ? 'Make private' : 'Make public',
+                      onPressed: () {
+                        ref
+                            .read(savedPresetsProvider.notifier)
+                            .updatePreset(
+                              preset.id,
+                              isPublic: !preset.isPublic,
+                            );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      tooltip: 'Delete preset',
+                      onPressed: () => _confirmDelete(context, ref),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/samples/sample_mode_selector.dart';
 import 'package:plinkyhub/pages/samples/slice_points_editor.dart';
@@ -134,156 +135,165 @@ class _SampleCardState extends ConsumerState<SampleCard> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    sample.name.isEmpty ? '(unnamed)' : sample.name,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
-                Chip(
-                  label: Text(
-                    noteNameFromMidi(
-                      sample.baseNote,
-                      sample.fineTune,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: sample.username.isNotEmpty
+            ? () => context.go(
+                '/${sample.username}/sample/'
+                '${Uri.encodeComponent(sample.name)}',
+              )
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      sample.name.isEmpty ? '(unnamed)' : sample.name,
+                      style: theme.textTheme.titleMedium,
                     ),
-                    style: theme.textTheme.bodySmall,
                   ),
-                  visualDensity: VisualDensity.compact,
-                ),
-              ],
-            ),
-            if (sample.description.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                sample.description,
-                style: theme.textTheme.bodyMedium,
-              ),
-            ],
-            const SizedBox(height: 4),
-            UsernameDateLine(
-              userId: sample.userId,
-              username: sample.username,
-              updatedAt: sample.updatedAt,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    _expanded ? Icons.expand_less : Icons.expand_more,
-                    size: 20,
-                  ),
-                  tooltip: _expanded ? 'Hide slices' : 'Show slices',
-                  onPressed: _toggleExpanded,
-                ),
-                const SizedBox(width: 8),
-                StarButton(
-                  isStarred: sample.isStarred,
-                  starCount: sample.starCount,
-                  onToggle: () => ref
-                      .read(savedSamplesProvider.notifier)
-                      .toggleStar(sample),
-                ),
-                if (sample.username.isNotEmpty)
-                  ShareLinkButton(
-                    username: sample.username,
-                    itemType: 'sample',
-                    itemName: sample.name,
-                  ),
-                const Spacer(),
-                if (isOwned) ...[
-                  IconButton(
-                    icon: Icon(
-                      sample.isPublic ? Icons.public : Icons.public_off,
-                      size: 20,
+                  Chip(
+                    label: Text(
+                      noteNameFromMidi(
+                        sample.baseNote,
+                        sample.fineTune,
+                      ),
+                      style: theme.textTheme.bodySmall,
                     ),
-                    tooltip: sample.isPublic ? 'Make private' : 'Make public',
-                    onPressed: () {
-                      ref
-                          .read(savedSamplesProvider.notifier)
-                          .updateSample(
-                            sample.copyWith(
-                              isPublic: !sample.isPublic,
-                            ),
-                          );
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      size: 20,
-                    ),
-                    tooltip: 'Delete sample',
-                    onPressed: () => _confirmDelete(context),
+                    visualDensity: VisualDensity.compact,
                   ),
                 ],
+              ),
+              if (sample.description.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  sample.description,
+                  style: theme.textTheme.bodyMedium,
+                ),
               ],
-            ),
-            if (_expanded) ...[
-              const SizedBox(height: 8),
-              SampleModeSelector(
-                pitched: _pitched,
-                enabled: isOwned,
-                onChanged: (value) => setState(() => _pitched = value),
+              const SizedBox(height: 4),
+              UsernameDateLine(
+                userId: sample.userId,
+                username: sample.username,
+                updatedAt: sample.updatedAt,
               ),
               const SizedBox(height: 8),
-              if (_loadingWav)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator(),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 20,
+                    ),
+                    tooltip: _expanded ? 'Hide slices' : 'Show slices',
+                    onPressed: _toggleExpanded,
                   ),
-                )
-              else
-                SlicePointsEditor(
-                  slicePoints: _slicePoints,
-                  wavBytes: _wavBytes,
-                  pcmFrameCount: _pcmFrameCount,
-                  enabled: isOwned,
-                  onChanged: (points) {
-                    setState(() => _slicePoints = points);
-                  },
+                  const SizedBox(width: 8),
+                  StarButton(
+                    isStarred: sample.isStarred,
+                    starCount: sample.starCount,
+                    onToggle: () => ref
+                        .read(savedSamplesProvider.notifier)
+                        .toggleStar(sample),
+                  ),
+                  if (sample.username.isNotEmpty)
+                    ShareLinkButton(
+                      username: sample.username,
+                      itemType: 'sample',
+                      itemName: sample.name,
+                    ),
+                  const Spacer(),
+                  if (isOwned) ...[
+                    IconButton(
+                      icon: Icon(
+                        sample.isPublic ? Icons.public : Icons.public_off,
+                        size: 20,
+                      ),
+                      tooltip: sample.isPublic ? 'Make private' : 'Make public',
+                      onPressed: () {
+                        ref
+                            .read(savedSamplesProvider.notifier)
+                            .updateSample(
+                              sample.copyWith(
+                                isPublic: !sample.isPublic,
+                              ),
+                            );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        size: 20,
+                      ),
+                      tooltip: 'Delete sample',
+                      onPressed: () => _confirmDelete(context),
+                    ),
+                  ],
+                ],
+              ),
+              if (_expanded) ...[
+                const SizedBox(height: 8),
+                SampleModeSelector(
                   pitched: _pitched,
-                  sliceNotes: _sliceNotes,
-                  onSliceNotesChanged: (notes) {
-                    setState(() => _sliceNotes = notes);
-                  },
+                  enabled: isOwned,
+                  onChanged: (value) => setState(() => _pitched = value),
                 ),
-              if (isOwned &&
-                  (_hasUnsavedChanges || _saving || _showSavedMessage))
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedOpacity(
-                        opacity: _showSavedMessage ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 500),
-                        child: Text(
-                          'Changes saved',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.primary,
+                const SizedBox(height: 8),
+                if (_loadingWav)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                else
+                  SlicePointsEditor(
+                    slicePoints: _slicePoints,
+                    wavBytes: _wavBytes,
+                    pcmFrameCount: _pcmFrameCount,
+                    enabled: isOwned,
+                    onChanged: (points) {
+                      setState(() => _slicePoints = points);
+                    },
+                    pitched: _pitched,
+                    sliceNotes: _sliceNotes,
+                    onSliceNotesChanged: (notes) {
+                      setState(() => _sliceNotes = notes);
+                    },
+                  ),
+                if (isOwned &&
+                    (_hasUnsavedChanges || _saving || _showSavedMessage))
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedOpacity(
+                          opacity: _showSavedMessage ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 500),
+                          child: Text(
+                            'Changes saved',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.primary,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      PlinkyButton(
-                        onPressed: _saving ? null : _saveSampleSettings,
-                        icon: Icons.save,
-                        label: 'Save changes',
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        PlinkyButton(
+                          onPressed: _saving ? null : _saveSampleSettings,
+                          icon: Icons.save,
+                          label: 'Save changes',
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

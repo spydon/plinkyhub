@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/pages/packs/pack_sharing_check.dart';
 import 'package:plinkyhub/pages/packs/save_to_plinky_dialog.dart';
@@ -29,88 +30,99 @@ class PackCard extends ConsumerWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    pack.name.isEmpty ? '(unnamed)' : pack.name,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
-                Chip(
-                  label: Text(
-                    '$filledSlots/32 presets',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  visualDensity: VisualDensity.compact,
-                ),
-              ],
-            ),
-            if (pack.description.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                pack.description,
-                style: theme.textTheme.bodyMedium,
-              ),
-            ],
-            const SizedBox(height: 4),
-            UsernameDateLine(
-              userId: pack.userId,
-              username: pack.username,
-              updatedAt: pack.updatedAt,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                StarButton(
-                  isStarred: pack.isStarred,
-                  starCount: pack.starCount,
-                  onToggle: () =>
-                      ref.read(savedPacksProvider.notifier).toggleStar(pack),
-                ),
-                if (pack.username.isNotEmpty)
-                  ShareLinkButton(
-                    username: pack.username,
-                    itemType: 'pack',
-                    itemName: pack.name,
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.usb, size: 20),
-                  tooltip: 'Save to Plinky',
-                  onPressed: () => _saveToPlinky(context),
-                ),
-                const Spacer(),
-                if (isOwned) ...[
-                  IconButton(
-                    icon: const Icon(Icons.edit, size: 20),
-                    tooltip: 'Edit pack',
-                    onPressed: () {
-                      ref.read(savedPacksProvider.notifier).startEditing(pack);
-                      onEdit?.call();
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      pack.isPublic ? Icons.public : Icons.public_off,
-                      size: 20,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: pack.username.isNotEmpty
+            ? () => context.go(
+                '/${pack.username}/pack/'
+                '${Uri.encodeComponent(pack.name)}',
+              )
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      pack.name.isEmpty ? '(unnamed)' : pack.name,
+                      style: theme.textTheme.titleMedium,
                     ),
-                    tooltip: pack.isPublic ? 'Make private' : 'Make public',
-                    onPressed: () => _togglePublic(context, ref),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 20),
-                    tooltip: 'Delete pack',
-                    onPressed: () => _confirmDelete(context, ref),
+                  Chip(
+                    label: Text(
+                      '$filledSlots/32 presets',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    visualDensity: VisualDensity.compact,
                   ),
                 ],
+              ),
+              if (pack.description.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  pack.description,
+                  style: theme.textTheme.bodyMedium,
+                ),
               ],
-            ),
-          ],
+              const SizedBox(height: 4),
+              UsernameDateLine(
+                userId: pack.userId,
+                username: pack.username,
+                updatedAt: pack.updatedAt,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  StarButton(
+                    isStarred: pack.isStarred,
+                    starCount: pack.starCount,
+                    onToggle: () =>
+                        ref.read(savedPacksProvider.notifier).toggleStar(pack),
+                  ),
+                  if (pack.username.isNotEmpty)
+                    ShareLinkButton(
+                      username: pack.username,
+                      itemType: 'pack',
+                      itemName: pack.name,
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.usb, size: 20),
+                    tooltip: 'Save to Plinky',
+                    onPressed: () => _saveToPlinky(context),
+                  ),
+                  const Spacer(),
+                  if (isOwned) ...[
+                    IconButton(
+                      icon: const Icon(Icons.edit, size: 20),
+                      tooltip: 'Edit pack',
+                      onPressed: () {
+                        ref
+                            .read(savedPacksProvider.notifier)
+                            .startEditing(pack);
+                        onEdit?.call();
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        pack.isPublic ? Icons.public : Icons.public_off,
+                        size: 20,
+                      ),
+                      tooltip: pack.isPublic ? 'Make private' : 'Make public',
+                      onPressed: () => _togglePublic(context, ref),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      tooltip: 'Delete pack',
+                      onPressed: () => _confirmDelete(context, ref),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
