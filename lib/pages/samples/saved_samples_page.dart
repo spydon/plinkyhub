@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/pages/samples/sample_list.dart';
+import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/pages/samples/upload_sample_tab.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_samples_notifier.dart';
-import 'package:plinkyhub/widgets/authentication_button.dart';
-import 'package:plinkyhub/widgets/plinky_button.dart';
+import 'package:plinkyhub/widgets/searchable_item_list.dart';
+import 'package:plinkyhub/widgets/sign_in_prompt.dart';
 
 class SavedSamplesPage extends ConsumerStatefulWidget {
   const SavedSamplesPage({super.key});
@@ -67,64 +67,43 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
             controller: _tabController,
             children: [
               if (isSignedIn)
-                SampleList(
-                  samples: savedSamplesState.userSamples,
+                SearchableItemList(
+                  items: savedSamplesState.userSamples,
                   isLoading: savedSamplesState.isLoading,
                   isOwned: true,
                   onRefresh: () => ref
                       .read(savedSamplesProvider.notifier)
                       .fetchUserSamples(),
+                  itemBuilder: (sample) => SampleCard(
+                    sample: sample,
+                    isOwned: true,
+                  ),
+                  itemLabel: 'sample',
                 )
               else
-                Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.cloud_off, size: 64),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Sign in to upload and manage your '
-                        'samples',
-                      ),
-                      const SizedBox(height: 16),
-                      PlinkyButton(
-                        onPressed: () => showSignInDialog(context),
-                        icon: Icons.login,
-                        label: 'Sign in',
-                      ),
-                    ],
-                  ),
+                const SignInPrompt(
+                  message: 'Sign in to upload and manage your samples',
                 ),
-              SampleList(
-                samples: savedSamplesState.publicSamples,
+              SearchableItemList(
+                items: savedSamplesState.publicSamples,
                 isLoading: savedSamplesState.isLoading,
                 isOwned: false,
                 onRefresh: () => ref
                     .read(savedSamplesProvider.notifier)
                     .fetchPublicSamples(),
+                itemBuilder: (sample) => SampleCard(
+                  sample: sample,
+                  isOwned: false,
+                ),
+                itemLabel: 'sample',
               ),
               if (isSignedIn)
                 UploadSampleTab(
                   onUploaded: () => _tabController.animateTo(0),
                 )
               else
-                Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.cloud_off, size: 64),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Sign in to upload samples',
-                      ),
-                      const SizedBox(height: 16),
-                      PlinkyButton(
-                        onPressed: () => showSignInDialog(context),
-                        icon: Icons.login,
-                        label: 'Sign in',
-                      ),
-                    ],
-                  ),
+                const SignInPrompt(
+                  message: 'Sign in to upload samples',
                 ),
             ],
           ),

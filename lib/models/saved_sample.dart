@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:plinkyhub/models/searchable.dart';
 
 part 'saved_sample.freezed.dart';
 part 'saved_sample.g.dart';
@@ -10,7 +11,7 @@ const defaultSlicePoints = [0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875];
 const defaultSliceNotes = [48, 48, 48, 48, 48, 48, 48, 48];
 
 @freezed
-abstract class SavedSample with _$SavedSample {
+abstract class SavedSample with _$SavedSample implements Searchable {
   const factory SavedSample({
     required String id,
     required String userId,

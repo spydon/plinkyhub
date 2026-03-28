@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/pages/presets/preset_list.dart';
+import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_presets_notifier.dart';
+import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
 
 class SavedPresetsPage extends ConsumerStatefulWidget {
@@ -64,25 +65,35 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
             controller: _tabController,
             children: [
               if (isSignedIn)
-                PresetList(
-                  presets: savedPresetsState.userPresets,
+                SearchableItemList(
+                  items: savedPresetsState.userPresets,
                   isLoading: savedPresetsState.isLoading,
                   isOwned: true,
                   onRefresh: () => ref
                       .read(savedPresetsProvider.notifier)
                       .fetchUserPresets(),
+                  itemBuilder: (preset) => PresetCard(
+                    preset: preset,
+                    isOwned: true,
+                  ),
+                  itemLabel: 'preset',
                 )
               else
                 const SignInPrompt(
                   message: 'Sign in to save and manage your presets',
                 ),
-              PresetList(
-                presets: savedPresetsState.publicPresets,
+              SearchableItemList(
+                items: savedPresetsState.publicPresets,
                 isLoading: savedPresetsState.isLoading,
                 isOwned: false,
                 onRefresh: () => ref
                     .read(savedPresetsProvider.notifier)
                     .fetchPublicPresets(),
+                itemBuilder: (preset) => PresetCard(
+                  preset: preset,
+                  isOwned: false,
+                ),
+                itemLabel: 'preset',
               ),
             ],
           ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/pages/packs/pack_list.dart';
-import 'package:plinkyhub/pages/presets/preset_list.dart';
-import 'package:plinkyhub/pages/samples/sample_list.dart';
+import 'package:plinkyhub/pages/packs/pack_card.dart';
+import 'package:plinkyhub/pages/presets/preset_card.dart';
+import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/user_profile_notifier.dart';
+import 'package:plinkyhub/widgets/searchable_item_list.dart';
 
 class UserProfilePage extends ConsumerStatefulWidget {
   const UserProfilePage({super.key});
@@ -39,6 +40,15 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
       return const Center(
         child: Text('Select a user to view their profile'),
       );
+    }
+
+    void refreshProfile() {
+      ref
+          .read(userProfileProvider.notifier)
+          .loadUserProfile(
+            profileState.userId,
+            profileState.username,
+          );
     }
 
     return Column(
@@ -92,38 +102,38 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
           child: TabBarView(
             controller: _tabController,
             children: [
-              PresetList(
-                presets: profileState.presets,
+              SearchableItemList(
+                items: profileState.presets,
                 isLoading: profileState.isLoading,
                 isOwned: isOwnProfile,
-                onRefresh: () => ref
-                    .read(userProfileProvider.notifier)
-                    .loadUserProfile(
-                      profileState.userId,
-                      profileState.username,
-                    ),
+                onRefresh: refreshProfile,
+                itemBuilder: (preset) => PresetCard(
+                  preset: preset,
+                  isOwned: isOwnProfile,
+                ),
+                itemLabel: 'preset',
               ),
-              PackList(
-                packs: profileState.packs,
+              SearchableItemList(
+                items: profileState.packs,
                 isLoading: profileState.isLoading,
                 isOwned: false,
-                onRefresh: () => ref
-                    .read(userProfileProvider.notifier)
-                    .loadUserProfile(
-                      profileState.userId,
-                      profileState.username,
-                    ),
+                onRefresh: refreshProfile,
+                itemBuilder: (pack) => PackCard(
+                  pack: pack,
+                  isOwned: false,
+                ),
+                itemLabel: 'pack',
               ),
-              SampleList(
-                samples: profileState.samples,
+              SearchableItemList(
+                items: profileState.samples,
                 isLoading: profileState.isLoading,
                 isOwned: false,
-                onRefresh: () => ref
-                    .read(userProfileProvider.notifier)
-                    .loadUserProfile(
-                      profileState.userId,
-                      profileState.username,
-                    ),
+                onRefresh: refreshProfile,
+                itemBuilder: (sample) => SampleCard(
+                  sample: sample,
+                  isOwned: false,
+                ),
+                itemLabel: 'sample',
               ),
             ],
           ),

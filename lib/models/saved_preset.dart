@@ -1,10 +1,11 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:plinkyhub/models/searchable.dart';
 
 part 'saved_preset.freezed.dart';
 part 'saved_preset.g.dart';
 
 @freezed
-abstract class SavedPreset with _$SavedPreset {
+abstract class SavedPreset with _$SavedPreset implements Searchable {
   const factory SavedPreset({
     required String id,
     required String userId,

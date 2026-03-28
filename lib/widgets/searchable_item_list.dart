@@ -1,30 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_preset.dart';
+import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/models/sort_order.dart';
-import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/sort_order_button.dart';
 
-class PresetList extends ConsumerStatefulWidget {
-  const PresetList({
-    required this.presets,
+class SearchableItemList<T extends Searchable> extends ConsumerStatefulWidget {
+  const SearchableItemList({
+    required this.items,
     required this.isLoading,
     required this.isOwned,
     required this.onRefresh,
+    required this.itemBuilder,
+    required this.itemLabel,
     super.key,
   });
 
-  final List<SavedPreset> presets;
+  final List<T> items;
   final bool isLoading;
   final bool isOwned;
   final VoidCallback onRefresh;
+  final Widget Function(T item) itemBuilder;
+  final String itemLabel;
 
   @override
-  ConsumerState<PresetList> createState() => _PresetListState();
+  ConsumerState<SearchableItemList<T>> createState() =>
+      _SearchableItemListState<T>();
 }
 
-class _PresetListState extends ConsumerState<PresetList> {
+class _SearchableItemListState<T extends Searchable>
+    extends ConsumerState<SearchableItemList<T>> {
   final _searchController = TextEditingController();
   String _query = '';
   SortOrder _sortOrder = SortOrder.stars;
@@ -35,22 +40,22 @@ class _PresetListState extends ConsumerState<PresetList> {
     super.dispose();
   }
 
-  List<SavedPreset> get _filteredPresets {
-    var presets = widget.presets.toList();
+  List<T> get _filteredItems {
+    var items = widget.items.toList();
 
     if (_query.isNotEmpty) {
       final lower = _query.toLowerCase();
-      presets = presets
+      items = items
           .where(
-            (preset) =>
-                preset.name.toLowerCase().contains(lower) ||
-                preset.username.toLowerCase().contains(lower) ||
-                preset.description.toLowerCase().contains(lower),
+            (item) =>
+                item.name.toLowerCase().contains(lower) ||
+                item.username.toLowerCase().contains(lower) ||
+                item.description.toLowerCase().contains(lower),
           )
           .toList();
     }
 
-    presets.sort((a, b) {
+    items.sort((a, b) {
       if (_query.isNotEmpty) {
         final lower = _query.toLowerCase();
         final aExact = a.name.toLowerCase() == lower ? 0 : 1;
@@ -66,10 +71,10 @@ class _PresetListState extends ConsumerState<PresetList> {
         SortOrder.newest => b.updatedAt.compareTo(a.updatedAt),
       };
     });
-    return presets;
+    return items;
   }
 
-  int _compareByStarsThenName(SavedPreset a, SavedPreset b) {
+  int _compareByStarsThenName(T a, T b) {
     final starCmp = b.starCount.compareTo(a.starCount);
     if (starCmp != 0) {
       return starCmp;
@@ -79,19 +84,19 @@ class _PresetListState extends ConsumerState<PresetList> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isLoading && widget.presets.isEmpty) {
+    if (widget.isLoading && widget.items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (widget.presets.isEmpty) {
+    if (widget.items.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               widget.isOwned
-                  ? 'No saved presets yet'
-                  : 'No community presets yet',
+                  ? 'No saved ${widget.itemLabel}s yet'
+                  : 'No community ${widget.itemLabel}s yet',
             ),
             const SizedBox(height: 8),
             PlinkyButton(
@@ -104,7 +109,7 @@ class _PresetListState extends ConsumerState<PresetList> {
       );
     }
 
-    final filtered = _filteredPresets;
+    final filtered = _filteredItems;
 
     return Column(
       children: [
@@ -112,12 +117,12 @@ class _PresetListState extends ConsumerState<PresetList> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: TextField(
             controller: _searchController,
-            decoration: const InputDecoration(
-              hintText: 'Search presets...',
-              prefixIcon: Icon(Icons.search, size: 20),
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: 'Search ${widget.itemLabel}s...',
+              prefixIcon: const Icon(Icons.search, size: 20),
+              border: const OutlineInputBorder(),
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
             ),
             onChanged: (value) => setState(() => _query = value),
           ),
@@ -134,7 +139,8 @@ class _PresetListState extends ConsumerState<PresetList> {
                       children: [
                         Text(
                           '${filtered.length} '
-                          'preset${filtered.length == 1 ? '' : 's'}',
+                          '${widget.itemLabel}'
+                          '${filtered.length == 1 ? '' : 's'}',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         const Spacer(),
@@ -162,17 +168,13 @@ class _PresetListState extends ConsumerState<PresetList> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: PresetCard(
-                              preset: filtered[itemIndex],
-                              isOwned: widget.isOwned,
-                            ),
+                            child: widget.itemBuilder(filtered[itemIndex]),
                           ),
                           const SizedBox(width: 8),
                           if (itemIndex + 1 < filtered.length)
                             Expanded(
-                              child: PresetCard(
-                                preset: filtered[itemIndex + 1],
-                                isOwned: widget.isOwned,
+                              child: widget.itemBuilder(
+                                filtered[itemIndex + 1],
                               ),
                             )
                           else

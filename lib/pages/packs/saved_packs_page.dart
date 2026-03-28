@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/packs/create_pack_tab.dart';
 import 'package:plinkyhub/pages/packs/load_pack_tab.dart';
-import 'package:plinkyhub/pages/packs/pack_list.dart';
+import 'package:plinkyhub/pages/packs/pack_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_packs_notifier.dart';
+import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
 
 class SavedPacksPage extends ConsumerStatefulWidget {
@@ -68,24 +69,34 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
             controller: _tabController,
             children: [
               if (isSignedIn)
-                PackList(
-                  packs: savedPacksState.userPacks,
+                SearchableItemList(
+                  items: savedPacksState.userPacks,
                   isLoading: savedPacksState.isLoading,
                   isOwned: true,
                   onRefresh: () =>
                       ref.read(savedPacksProvider.notifier).fetchUserPacks(),
-                  onEdit: () => _tabController.animateTo(2),
+                  itemBuilder: (pack) => PackCard(
+                    pack: pack,
+                    isOwned: true,
+                    onEdit: () => _tabController.animateTo(2),
+                  ),
+                  itemLabel: 'pack',
                 )
               else
                 const SignInPrompt(
                   message: 'Sign in to save and manage your packs',
                 ),
-              PackList(
-                packs: savedPacksState.publicPacks,
+              SearchableItemList(
+                items: savedPacksState.publicPacks,
                 isLoading: savedPacksState.isLoading,
                 isOwned: false,
                 onRefresh: () =>
                     ref.read(savedPacksProvider.notifier).fetchPublicPacks(),
+                itemBuilder: (pack) => PackCard(
+                  pack: pack,
+                  isOwned: false,
+                ),
+                itemLabel: 'pack',
               ),
               if (isSignedIn)
                 const CreatePackTab()
