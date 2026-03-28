@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/pages/samples/load_sample_tab.dart';
 import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/pages/samples/upload_sample_tab.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
@@ -22,7 +23,7 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 3,
+      length: 4,
       vsync: this,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -50,6 +51,7 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
             Tab(text: 'My Samples'),
             Tab(text: 'Community Samples'),
             Tab(text: 'Create Sample'),
+            Tab(text: 'Load from Plinky'),
           ],
         ),
         if (savedSamplesState.errorMessage != null)
@@ -105,6 +107,14 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
               else
                 const SignInPrompt(
                   message: 'Sign in to create samples',
+                ),
+              if (isSignedIn)
+                LoadSampleTab(
+                  onLoaded: () => _tabController.animateTo(0),
+                )
+              else
+                const SignInPrompt(
+                  message: 'Sign in to load samples from Plinky',
                 ),
             ],
           ),
