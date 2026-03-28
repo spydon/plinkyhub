@@ -207,16 +207,20 @@ class _SaveToPlinkyDialogState
     setState(() => _statusMessage = 'Writing PRESETS.UF2...');
     await _writeFile(directory, 'PRESETS.UF2', presetsUf2);
 
-    // Generate and write SAMPLE*.UF2 files.
-    for (final entry in samplePcmData.entries) {
-      final slotIndex = entry.key;
-      final pcmBytes = entry.value;
-
+    // Generate and write SAMPLE*.UF2 files for all 8 slots.
+    // Slots with samples get their PCM data; unused slots are cleared
+    // with an empty file so previous data doesn't persist.
+    for (var slotIndex = 0; slotIndex < sampleCount; slotIndex++) {
       setState(() {
         _statusMessage = 'Writing SAMPLE$slotIndex.UF2...';
       });
 
-      final sampleUf2Bytes = sampleToUf2(pcmBytes, slotIndex: slotIndex);
+      final pcmBytes =
+          samplePcmData[slotIndex] ?? Uint8List(0);
+      final sampleUf2Bytes = sampleToUf2(
+        pcmBytes,
+        slotIndex: slotIndex,
+      );
       await _writeFile(
         directory,
         'SAMPLE$slotIndex.UF2',
