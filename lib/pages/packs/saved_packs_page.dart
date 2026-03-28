@@ -48,8 +48,8 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
           controller: _tabController,
           tabs: const [
             Tab(text: 'My Packs'),
-            Tab(text: 'Create Pack'),
             Tab(text: 'Community Packs'),
+            Tab(text: 'Create Pack'),
           ],
         ),
         if (savedPacksState.errorMessage != null)
@@ -74,18 +74,12 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
                   onRefresh: () => ref
                       .read(savedPacksProvider.notifier)
                       .fetchUserPacks(),
-                  onEdit: () => _tabController.animateTo(1),
+                  onEdit: () => _tabController.animateTo(2),
                 )
               else
                 const SignInPrompt(
                   message:
                       'Sign in to save and manage your packs',
-                ),
-              if (isSignedIn)
-                const CreatePackTab()
-              else
-                const SignInPrompt(
-                  message: 'Sign in to create packs',
                 ),
               PackList(
                 packs: savedPacksState.publicPacks,
@@ -95,6 +89,12 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
                     .read(savedPacksProvider.notifier)
                     .fetchPublicPacks(),
               ),
+              if (isSignedIn)
+                const CreatePackTab()
+              else
+                const SignInPrompt(
+                  message: 'Sign in to create packs',
+                ),
             ],
           ),
         ),

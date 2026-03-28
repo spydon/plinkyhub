@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/editor/connect_button.dart';
+import 'package:plinkyhub/pages/editor/create_preset_button.dart';
 import 'package:plinkyhub/services/webusb_service.dart';
 import 'package:plinkyhub/state/plinky_state.dart';
 import 'package:plinkyhub/widgets/linux_webusb_instructions.dart';
 import 'package:plinkyhub/widgets/preset_controls.dart';
 
-class EditorHeader extends StatelessWidget {
+class EditorHeader extends ConsumerWidget {
   const EditorHeader({
     required this.state,
     required this.isConnected,
@@ -18,7 +20,7 @@ class EditorHeader extends StatelessWidget {
   final bool isError;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -86,7 +88,13 @@ class EditorHeader extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 8),
-          const ConnectButton(),
+          const Row(
+            children: [
+              ConnectButton(),
+              SizedBox(width: 8),
+              CreatePresetButton(),
+            ],
+          ),
         ],
         if (isConnected) ...[
           const SizedBox(height: 16),
