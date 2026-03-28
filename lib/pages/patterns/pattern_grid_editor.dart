@@ -142,7 +142,7 @@ class _PatternGridEditorState extends State<PatternGridEditor> {
                         children: [
                           for (var step = 0; step < widget.stepCount; step++)
                             SizedBox(
-                              width: cellSize,
+                              width: cellWithMargin,
                               height: 20,
                               child: Center(
                                 child: Text(

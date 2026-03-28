@@ -7,6 +7,7 @@ environment:
   sdk: ^3.11.1
 
 dependencies:
+  dart_midi_pro: ^1.0.4+2
   file_picker: ^10.3.10
   flutter:
     sdk: flutter
