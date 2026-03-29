@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/saved_wavetable.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_wavetables_notifier.dart';
-import 'package:plinkyhub/utils/wavetable.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class UploadWavetableTab extends ConsumerStatefulWidget {
@@ -23,14 +22,10 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
   final _descriptionController = TextEditingController();
   bool _isPublic = true;
   bool _isUploading = false;
-  bool _isGenerating = false;
   String? _errorMessage;
 
-  /// The 15 WAV file slots (c0–c14). Null means the slot is empty.
-  final List<_WavSlot?> _slots = List<_WavSlot?>.filled(
-    wavetableUserShapeCount,
-    null,
-  );
+  String? _selectedFileName;
+  Uint8List? _selectedFileBytes;
 
   @override
   void dispose() {
@@ -45,126 +40,47 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
       _descriptionController.clear();
       _isPublic = true;
       _isUploading = false;
-      _isGenerating = false;
       _errorMessage = null;
-      for (var i = 0; i < _slots.length; i++) {
-        _slots[i] = null;
-      }
+      _selectedFileName = null;
+      _selectedFileBytes = null;
     });
   }
 
-  int get _filledSlotCount => _slots.where((slot) => slot != null).length;
-
-  bool get _allSlotsFilled => _filledSlotCount == wavetableUserShapeCount;
-
-  Future<void> _pickAllFiles() async {
+  Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['wav'],
-      allowMultiple: true,
+      allowedExtensions: ['uf2'],
       withData: true,
     );
 
-    if (result == null || result.files.isEmpty) {
-      return;
-    }
-
-    final files = result.files.where((file) => file.bytes != null).toList()
-      ..sort(
-        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-      );
-
-    setState(() {
-      _errorMessage = null;
-      // Try to match filenames to c0–c14 pattern first.
-      final unmatched = <PlatformFile>[];
-      for (final file in files) {
-        final slotIndex = _parseSlotIndex(file.name);
-        if (slotIndex != null && _slots[slotIndex] == null) {
-          _slots[slotIndex] = _WavSlot(
-            fileName: file.name,
-            bytes: file.bytes!,
-          );
-        } else {
-          unmatched.add(file);
-        }
-      }
-
-      // Assign remaining files to empty slots in order.
-      var nextEmpty = 0;
-      for (final file in unmatched) {
-        while (nextEmpty < wavetableUserShapeCount &&
-            _slots[nextEmpty] != null) {
-          nextEmpty++;
-        }
-        if (nextEmpty >= wavetableUserShapeCount) {
-          break;
-        }
-        _slots[nextEmpty] = _WavSlot(
-          fileName: file.name,
-          bytes: file.bytes!,
-        );
-        nextEmpty++;
-      }
-    });
-  }
-
-  Future<void> _pickSlotFile(int slotIndex) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['wav'],
-      withData: true,
-    );
-
-    if (result != null && result.files.single.bytes != null) {
+    final fileBytes = result?.files.single.bytes;
+    if (result != null && fileBytes != null) {
       final file = result.files.single;
       setState(() {
         _errorMessage = null;
-        _slots[slotIndex] = _WavSlot(
-          fileName: file.name,
-          bytes: file.bytes!,
-        );
+        _selectedFileName = file.name;
+        _selectedFileBytes = fileBytes;
+        if (_nameController.text.trim().isEmpty) {
+          // Pre-fill name from filename without extension.
+          final baseName = file.name.replaceAll(RegExp(r'\.uf2$'), '');
+          _nameController.text = baseName;
+        }
       });
     }
   }
 
-  /// Tries to extract a slot index (0–14) from a filename like "c0.wav",
-  /// "c14.wav", "C3.wav", etc.
-  int? _parseSlotIndex(String fileName) {
-    final match = RegExp(r'^[cC](\d{1,2})\b').firstMatch(fileName);
-    if (match == null) {
-      return null;
-    }
-    final index = int.tryParse(match.group(1)!);
-    if (index == null || index < 0 || index >= wavetableUserShapeCount) {
-      return null;
-    }
-    return index;
-  }
-
-  Future<void> _createAndUpload() async {
+  Future<void> _upload() async {
     final userId = ref.read(authenticationProvider).user?.id;
-    if (userId == null || !_allSlotsFilled) {
+    if (userId == null || _selectedFileBytes == null) {
       return;
     }
 
     setState(() {
-      _isGenerating = true;
+      _isUploading = true;
       _errorMessage = null;
     });
 
     try {
-      // Allow the UI to update before heavy computation.
-      await Future<void>.delayed(Duration.zero);
-
-      final wavFiles = _slots.map((slot) => slot!.bytes).toList();
-      final uf2Bytes = generateWavetableUf2(wavFiles);
-
-      setState(() {
-        _isGenerating = false;
-        _isUploading = true;
-      });
-
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final name = _nameController.text.trim().isNotEmpty
           ? _nameController.text.trim()
@@ -184,31 +100,24 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
 
       await ref
           .read(savedWavetablesProvider.notifier)
-          .saveWavetable(wavetable, uf2Bytes: uf2Bytes);
+          .saveWavetable(wavetable, uf2Bytes: _selectedFileBytes!);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Wavetable created')),
+          const SnackBar(content: Text('Wavetable uploaded')),
         );
         _resetForm();
         widget.onUploaded?.call();
       }
-    } on FormatException catch (e) {
+    } on Exception catch (error) {
+      debugPrint('Failed to upload wavetable: $error');
       setState(() {
-        _isGenerating = false;
         _isUploading = false;
-        _errorMessage = e.message;
-      });
-    } on Exception catch (e) {
-      debugPrint('Failed to create wavetable: $e');
-      setState(() {
-        _isGenerating = false;
-        _isUploading = false;
-        _errorMessage = e.toString();
+        _errorMessage = error.toString();
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(error.toString())),
         );
       }
     }
@@ -217,7 +126,6 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isBusy = _isUploading || _isGenerating;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -228,85 +136,56 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Create a wavetable from 15 single-cycle WAV '
-                'files (c0 through c14). Each file should '
-                'contain one cycle of a waveform. A built-in '
-                'saw and sine wave are added automatically as '
-                'the first and last shapes.',
+                'Upload a pre-built wavetable UF2 file. '
+                'This can be a file generated by an external '
+                'wavetable editor or exported from a Plinky.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 16),
               PlinkyButton(
-                onPressed: isBusy ? null : _pickAllFiles,
-                icon: Icons.folder_open,
-                label: 'Pick WAV files',
+                onPressed: _isUploading ? null : _pickFile,
+                icon: Icons.file_open,
+                label: 'Pick UF2 file',
               ),
               const SizedBox(height: 12),
-              Text(
-                '$_filledSlotCount / $wavetableUserShapeCount '
-                'slots filled',
-                style: theme.textTheme.bodySmall,
-              ),
-              const SizedBox(height: 8),
-              ...List.generate(wavetableUserShapeCount, (index) {
-                final slot = _slots[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 36,
-                        child: Text(
-                          'c$index',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+              if (_selectedFileName != null)
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _selectedFileName!,
+                        style: theme.textTheme.bodySmall,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      Icon(
-                        slot != null
-                            ? Icons.check_circle
-                            : Icons.radio_button_unchecked,
-                        size: 16,
-                        color: slot != null
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.outline,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          slot?.fileName ?? '(empty)',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: slot != null
-                                ? null
-                                : theme.colorScheme.outline,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.audio_file, size: 18),
-                        tooltip: 'Pick file for c$index',
-                        onPressed: isBusy ? null : () => _pickSlotFile(index),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      if (slot != null)
-                        IconButton(
-                          icon: const Icon(Icons.close, size: 18),
-                          tooltip: 'Remove',
-                          onPressed: isBusy
-                              ? null
-                              : () => setState(
-                                  () => _slots[index] = null,
-                                ),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                    ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      tooltip: 'Remove',
+                      onPressed: _isUploading
+                          ? null
+                          : () => setState(() {
+                              _selectedFileName = null;
+                              _selectedFileBytes = null;
+                            }),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
+                )
+              else
+                Text(
+                  'No file selected',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.outline,
                   ),
-                );
-              }),
+                ),
               const SizedBox(height: 16),
               TextField(
                 controller: _nameController,
@@ -328,7 +207,7 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
               SwitchListTile(
                 title: const Text('Share with community'),
                 value: _isPublic,
-                onChanged: isBusy
+                onChanged: _isUploading
                     ? null
                     : (value) => setState(() => _isPublic = value),
               ),
@@ -343,52 +222,26 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
               ],
               const SizedBox(height: 8),
               Text(
-                'By uploading, you confirm that you own these '
-                'waveforms or have the right to use and '
-                'distribute them (e.g. under a Creative Commons '
+                'By uploading, you confirm that you own this '
+                'wavetable or have the right to use and '
+                'distribute it (e.g. under a Creative Commons '
                 'licence or similar terms).',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 16),
-              if (_isGenerating)
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Text('Generating wavetable...'),
-                  ],
-                )
-              else
-                PlinkyButton(
-                  onPressed: isBusy || !_allSlotsFilled
-                      ? null
-                      : _createAndUpload,
-                  icon: _isUploading ? Icons.hourglass_empty : Icons.upload,
-                  label: _isUploading ? 'Uploading...' : 'Create & Upload',
-                ),
+              PlinkyButton(
+                onPressed: _isUploading || _selectedFileBytes == null
+                    ? null
+                    : _upload,
+                icon: _isUploading ? Icons.hourglass_empty : Icons.upload,
+                label: _isUploading ? 'Uploading...' : 'Upload',
+              ),
             ],
           ),
         ),
       ),
     );
   }
-}
-
-class _WavSlot {
-  const _WavSlot({
-    required this.fileName,
-    required this.bytes,
-  });
-
-  final String fileName;
-  final Uint8List bytes;
 }

@@ -50,7 +50,7 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
           controller: _tabController,
           tabs: const [
             Tab(text: 'My Wavetables'),
-            Tab(text: 'Community'),
+            Tab(text: 'Community Wavetables'),
             Tab(text: 'Create'),
             Tab(text: 'Upload'),
           ],
