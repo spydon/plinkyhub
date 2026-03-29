@@ -43,6 +43,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
   List<ParsedSampleInfo?> _sampleInfos = [];
   List<Uint8List?> _patternQuarters = [];
   Map<int, Uint8List> _samplePcmData = {};
+  Set<int> _emptySampleSlots = {};
   Uint8List? _wavetableUf2Bytes;
 
   // User-editable names and sharing toggles.
@@ -121,6 +122,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       _sampleInfos = [];
       _patternQuarters = [];
       _samplePcmData = {};
+      _emptySampleSlots = {};
       _wavetableUf2Bytes = null;
       _packNameController.text = '';
       _packDescriptionController.clear();
@@ -196,13 +198,8 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       _patternQuarters = parsed.patternQuarters;
 
       _samplePcmData = {};
+      _emptySampleSlots = {};
       for (var i = 0; i < sampleCount; i++) {
-        // Skip samples where the sample info indicates no data.
-        final sampleInfo = i < _sampleInfos.length ? _sampleInfos[i] : null;
-        if (sampleInfo == null) {
-          continue;
-        }
-
         setState(() {
           _statusMessage = 'Reading SAMPLE$i.UF2...';
         });
@@ -215,10 +212,14 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
             final pcmData = uf2ToData(sampleBytes);
             if (pcmData.isNotEmpty && !_isSilentPcm(pcmData)) {
               _samplePcmData[i] = pcmData;
+            } else {
+              _emptySampleSlots.add(i);
             }
           } on FormatException {
-            // Skip invalid sample files.
+            _emptySampleSlots.add(i);
           }
+        } else {
+          _emptySampleSlots.add(i);
         }
       }
 
@@ -541,13 +542,21 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
         );
       }
 
-      // Sample slots (56-63).
+      // Sample slots (56-63): filled samples and explicit empties.
       for (final entry in sampleIdBySlot.entries) {
         slotRows.add(
           PackSlotWrite(
             packId: packId,
             slotNumber: sampleSlotStart + entry.key,
             sampleId: entry.value,
+          ).toJson(),
+        );
+      }
+      for (final emptySlot in _emptySampleSlots) {
+        slotRows.add(
+          PackSlotWrite(
+            packId: packId,
+            slotNumber: sampleSlotStart + emptySlot,
           ).toJson(),
         );
       }
@@ -599,6 +608,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
               sampleNames: _sampleNames,
               sampleDescriptions: _sampleDescriptions,
               samplePcmData: _samplePcmData,
+              emptySampleSlots: _emptySampleSlots,
               packNameController: _packNameController,
               packDescriptionController: _packDescriptionController,
               packIsPublic: _packIsPublic,
@@ -690,6 +700,7 @@ class _LoadReviewStep extends StatelessWidget {
     required this.sampleNames,
     required this.sampleDescriptions,
     required this.samplePcmData,
+    required this.emptySampleSlots,
     required this.packNameController,
     required this.packDescriptionController,
     required this.packIsPublic,
@@ -714,6 +725,7 @@ class _LoadReviewStep extends StatelessWidget {
   final Map<int, TextEditingController> sampleNames;
   final Map<int, TextEditingController> sampleDescriptions;
   final Map<int, Uint8List> samplePcmData;
+  final Set<int> emptySampleSlots;
   final TextEditingController packNameController;
   final TextEditingController packDescriptionController;
   final bool packIsPublic;
@@ -777,23 +789,32 @@ class _LoadReviewStep extends StatelessWidget {
           value: packIsPublic,
           onChanged: onPackIsPublicChanged,
         ),
-        if (sampleNames.isNotEmpty) ...[
+        if (sampleNames.isNotEmpty ||
+            emptySampleSlots.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text(
             'Samples',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          for (final slotIndex in sampleNames.keys.toList()..sort())
-            _SamplePreviewRow(
-              controller: sampleNames[slotIndex]!,
-              label: 'Sample $slotIndex',
-              pcmData: samplePcmData[slotIndex],
-              onEdit: () => _showSampleEditDialog(
-                context,
-                slotIndex,
+          for (final slotIndex in [
+            ...sampleNames.keys,
+            ...emptySampleSlots,
+          ]..sort())
+            if (sampleNames.containsKey(slotIndex))
+              _SamplePreviewRow(
+                controller: sampleNames[slotIndex]!,
+                label: 'Sample $slotIndex',
+                pcmData: samplePcmData[slotIndex],
+                onEdit: () => _showSampleEditDialog(
+                  context,
+                  slotIndex,
+                ),
+              )
+            else
+              _EmptySlotRow(
+                label: 'Sample $slotIndex',
               ),
-            ),
         ],
         if (hasWavetable) ...[
           const SizedBox(height: 16),
@@ -1048,6 +1069,33 @@ class _SamplePreviewRowState extends State<_SamplePreviewRow> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _EmptySlotRow extends StatelessWidget {
+  const _EmptySlotRow({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          isDense: true,
+        ),
+        child: Text(
+          'EMPTY',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
       ),
     );
   }
