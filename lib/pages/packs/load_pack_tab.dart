@@ -83,16 +83,16 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     for (final entry in _presetNames.entries) {
       if (!_presetsWithDeviceName.contains(entry.key)) {
         entry.value.text =
-            packName.isEmpty ? '' : '$packName ${entry.key + 1}';
+            packName.isEmpty ? '' : '$packName - ${entry.key + 1}';
       }
     }
     for (final entry in _sampleNames.entries) {
       entry.value.text =
-          packName.isEmpty ? '' : '$packName ${entry.key + 1}';
+          packName.isEmpty ? '' : '$packName - ${entry.key + 1}';
     }
     for (final entry in _patternNames.entries) {
       entry.value.text =
-          packName.isEmpty ? '' : '$packName ${entry.key + 1}';
+          packName.isEmpty ? '' : '$packName - ${entry.key + 1}';
     }
   }
 
