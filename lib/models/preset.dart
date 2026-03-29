@@ -161,6 +161,9 @@ class Preset {
   /// Whether this preset uses a sample (sample slot > 0).
   bool get usesSample => sampleSlot > 0;
 
+  /// Whether this preset is effectively empty (all parameters at zero).
+  bool get isEmpty => parameters.every((parameter) => parameter.value == 0);
+
   /// Fine pitch offset in semitones (fractional, ±12).
   double get pitchOffset {
     final pitchParameter = parameterById('P_PITCH');

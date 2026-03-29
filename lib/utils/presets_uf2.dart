@@ -39,16 +39,83 @@ const presetCount = 32;
 /// Number of sample slots on Plinky.
 const sampleCount = 8;
 
+/// Number of patterns on Plinky.
+const patternCount = 24;
+
+/// Number of quarters per pattern.
+const _quartersPerPattern = 4;
+
+/// Total number of pattern quarter flash items.
+const _patternQuarterCount = patternCount * _quartersPerPattern;
+
+/// Size of one PatternQuarter struct in bytes.
+const patternQuarterSize = 1792;
+
+/// Flash item ID for the first pattern quarter (PATTERNS_START = 32).
+const _patternQuarterItemIdStart = presetCount;
+
 /// Flash item ID for the first SampleInfo (F_SAMPLES_START = 128).
-const _sampleInfoItemIdStart = 128;
+const _sampleInfoItemIdStart =
+    _patternQuarterItemIdStart + _patternQuarterCount;
 
 /// Flash item ID for the floating preset (FLOAT_PRESET_ID = 136).
-const _floatingPresetItemId = 136;
+const _floatingPresetItemId = _sampleInfoItemIdStart + sampleCount;
+
+/// Flash item ID for the first floating pattern quarter.
+const _floatingPatternItemIdStart = _floatingPresetItemId + 1;
+
+/// Total number of flash items used by the firmware.
+const _numFlashItems = _floatingPatternItemIdStart + _quartersPerPattern;
 
 /// Byte offset of P_SAMPLE base value in the preset binary.
 /// eParams index 52 × 16 bytes per parameter = 832.
 /// The raw Int16 value occupies bytes 832-833 (little-endian).
 const _sampleParameterOffset = 832;
+
+/// Scans all pages in a raw PRESETS flash image and returns a map from
+/// item ID to the page data with the highest wear-leveling sequence number.
+///
+/// Each page has a footer at the last 8 bytes:
+///   [0] item ID, [1] version, [2-3] CRC, [4-7] sequence number.
+Map<int, Uint8List> _scanFlashPages(Uint8List flashImage) {
+  final bestSeq = <int, int>{};
+  final bestPage = <int, Uint8List>{};
+
+  for (var pageIndex = 0; pageIndex < flashPageCount; pageIndex++) {
+    final pageOffset = pageIndex * flashPageSize;
+    if (pageOffset + flashPageSize > flashImage.length) {
+      break;
+    }
+
+    final footerOffset = pageOffset + flashPageSize - _pageFooterSize;
+    final itemId = flashImage[footerOffset];
+    final version = flashImage[footerOffset + 1];
+
+    // Skip erased pages (0xFF footer) or unknown versions.
+    if (itemId == 0xFF || version != _footerVersion) {
+      continue;
+    }
+
+    // Skip items outside the valid range.
+    if (itemId >= _numFlashItems) {
+      continue;
+    }
+
+    final seq = flashImage[footerOffset + 4] |
+        (flashImage[footerOffset + 5] << 8) |
+        (flashImage[footerOffset + 6] << 16) |
+        (flashImage[footerOffset + 7] << 24);
+
+    if (!bestSeq.containsKey(itemId) || seq > bestSeq[itemId]!) {
+      bestSeq[itemId] = seq;
+      bestPage[itemId] = Uint8List.fromList(
+        flashImage.sublist(pageOffset, pageOffset + flashPageSize),
+      );
+    }
+  }
+
+  return bestPage;
+}
 
 /// Number of sample ID values (NUM_SAMPLES + 1 = 9, including NO_SAMPLE).
 const _sampleRange = 9;
@@ -313,65 +380,136 @@ ParsedSampleInfo? parseSampleInfo(Uint8List sampleInfoBytes) {
   );
 }
 
-/// Extracts SampleInfo structs from a raw PRESETS flash image.
-///
-/// [flashImage] is the raw flash data (255 pages × 2048 bytes) extracted
-/// from a PRESETS.UF2 file. Returns a list of up to 8 entries (indexed by
-/// sample slot), with `null` for empty slots.
-List<ParsedSampleInfo?> parseSampleInfosFromFlashImage(Uint8List flashImage) {
-  final results = List<ParsedSampleInfo?>.filled(sampleCount, null);
-  for (var i = 0; i < sampleCount; i++) {
-    final pageIndex = presetCount + i; // Pages 32-39
-    final pageOffset = pageIndex * flashPageSize;
-    if (pageOffset + sampleInfoSize > flashImage.length) {
-      break;
-    }
-    final end = pageOffset + sampleInfoSize;
-    final sampleInfoBytes = Uint8List.sublistView(flashImage, pageOffset, end);
-    results[i] = parseSampleInfo(sampleInfoBytes);
-  }
-  return results;
-}
 
-/// Extracts 32 preset byte arrays from a raw PRESETS flash image.
+/// Extracts all items from a raw PRESETS flash image using the wear-leveling
+/// page footer to identify each item correctly.
 ///
-/// Returns a list of 32 entries. Each entry is either a 1552-byte
-/// `Uint8List` or `null` if the page is empty (all 0xFF, erased flash).
-List<Uint8List?> parsePresetsFromFlashImage(Uint8List flashImage) {
-  final results = List<Uint8List?>.filled(presetCount, null);
+/// Returns a [ParsedFlashImage] containing presets, sample infos, and
+/// pattern quarter data.
+ParsedFlashImage parseFlashImage(Uint8List flashImage) {
+  final pages = _scanFlashPages(flashImage);
+
+  // Extract presets (item IDs 0-31).
+  final presets = List<Uint8List?>.filled(presetCount, null);
   for (var i = 0; i < presetCount; i++) {
-    final pageOffset = i * flashPageSize;
-    if (pageOffset + presetSize > flashImage.length) {
-      break;
+    final page = pages[i];
+    if (page == null) {
+      continue;
     }
-    final presetBytes = Uint8List.sublistView(
-      flashImage,
-      pageOffset,
-      pageOffset + presetSize,
-    );
-    // Skip pages that are entirely erased (0xFF) or zeroed.
+    final presetBytes = Uint8List.sublistView(page, 0, presetSize);
     final isEmpty =
-        presetBytes.every((b) => b == 0xFF) || presetBytes.every((b) => b == 0);
+        presetBytes.every((b) => b == 0xFF) ||
+        presetBytes.every((b) => b == 0);
     if (!isEmpty) {
-      results[i] = Uint8List.fromList(presetBytes);
+      presets[i] = Uint8List.fromList(presetBytes);
     }
   }
-  return results;
+
+  // Extract sample infos (item IDs 128-135).
+  final sampleInfos = List<ParsedSampleInfo?>.filled(sampleCount, null);
+  for (var i = 0; i < sampleCount; i++) {
+    final page = pages[_sampleInfoItemIdStart + i];
+    if (page == null) {
+      continue;
+    }
+    final sampleInfoBytes = Uint8List.sublistView(page, 0, sampleInfoSize);
+    sampleInfos[i] = parseSampleInfo(sampleInfoBytes);
+  }
+
+  // Extract pattern quarters (item IDs 32-127).
+  final patternQuarters =
+      List<Uint8List?>.filled(_patternQuarterCount, null);
+  for (var i = 0; i < _patternQuarterCount; i++) {
+    final page = pages[_patternQuarterItemIdStart + i];
+    if (page == null) {
+      continue;
+    }
+    patternQuarters[i] =
+        Uint8List.fromList(page.sublist(0, patternQuarterSize));
+  }
+
+  return ParsedFlashImage(
+    presets: presets,
+    sampleInfos: sampleInfos,
+    patternQuarters: patternQuarters,
+  );
 }
 
-/// Generates a complete PRESETS.UF2 file from presets and sample metadata.
+/// Result of parsing a PRESETS.UF2 flash image.
+class ParsedFlashImage {
+  ParsedFlashImage({
+    required this.presets,
+    required this.sampleInfos,
+    required this.patternQuarters,
+  });
+
+  /// 32 preset entries (null for empty slots).
+  final List<Uint8List?> presets;
+
+  /// 8 sample info entries (null for empty slots).
+  final List<ParsedSampleInfo?> sampleInfos;
+
+  /// 96 pattern quarter entries (24 patterns × 4 quarters, null for empty).
+  final List<Uint8List?> patternQuarters;
+
+  /// Returns true if any pattern quarter for the given [patternIndex] is
+  /// non-null (i.e., the pattern has data).
+  bool hasPattern(int patternIndex) {
+    final start = patternIndex * _quartersPerPattern;
+    for (var q = 0; q < _quartersPerPattern; q++) {
+      if (patternQuarters[start + q] != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Returns the number of non-empty patterns.
+  int get nonEmptyPatternCount {
+    var count = 0;
+    for (var i = 0; i < patternCount; i++) {
+      if (hasPattern(i)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /// Returns the indices of non-empty patterns.
+  List<int> get nonEmptyPatternIndices {
+    final indices = <int>[];
+    for (var i = 0; i < patternCount; i++) {
+      if (hasPattern(i)) {
+        indices.add(i);
+      }
+    }
+    return indices;
+  }
+}
+
+
+/// Generates a complete PRESETS.UF2 file from presets, sample metadata,
+/// and pattern quarters.
 ///
 /// [presets] is a list of 32 entries. Each entry is either the raw 1552-byte
 /// preset data or null for an empty slot.
 ///
 /// [sampleInfos] is a list of up to 8 SampleInfo byte arrays (1072 bytes
 /// each), indexed by Plinky sample slot. Null entries are skipped.
+///
+/// [patternQuarters] is an optional list of up to 96 entries (24 patterns ×
+/// 4 quarters). Each entry is either a 1792-byte `Uint8List` or null.
 Uint8List generatePresetsUf2({
   required List<Uint8List?> presets,
   required List<Uint8List?> sampleInfos,
+  List<Uint8List?>? patternQuarters,
 }) {
   assert(presets.length == presetCount);
   assert(sampleInfos.length <= sampleCount);
+  assert(
+    patternQuarters == null ||
+        patternQuarters.length <= _patternQuarterCount,
+  );
 
   // Create raw flash image: 256 pages × 2048 bytes, initialized to 0xFF
   // (erased flash state).
@@ -381,36 +519,122 @@ Uint8List generatePresetsUf2({
   }
 
   var seq = 1;
+  var pageIndex = 0;
 
-  // Pages 0-31: Presets.
+  // Presets (item IDs 0-31).
   for (var i = 0; i < presetCount; i++) {
     final presetData = presets[i] ?? Uint8List(presetSize);
-    _writePage(flashImage, i, presetData, i, seq++);
+    _writePage(flashImage, pageIndex++, presetData, i, seq++);
   }
 
-  // Pages 32-39: SampleInfo entries.
+  // Pattern quarters (item IDs 32-127).
+  if (patternQuarters != null) {
+    for (var i = 0; i < patternQuarters.length; i++) {
+      if (patternQuarters[i] != null) {
+        _writePage(
+          flashImage,
+          pageIndex,
+          patternQuarters[i]!,
+          _patternQuarterItemIdStart + i,
+          seq++,
+        );
+      }
+      pageIndex++;
+    }
+  } else {
+    pageIndex += _patternQuarterCount;
+  }
+
+  // SampleInfo entries (item IDs 128-135).
   for (var i = 0; i < sampleInfos.length; i++) {
     if (sampleInfos[i] != null) {
       _writePage(
         flashImage,
-        presetCount + i,
+        pageIndex,
         sampleInfos[i]!,
         _sampleInfoItemIdStart + i,
         seq++,
       );
     }
+    pageIndex++;
   }
 
-  // Page 40: Floating preset (copy of preset 0).
+  // Floating preset (item ID 136, copy of preset 0).
   final floatingPreset = presets[0] ?? Uint8List(presetSize);
   _writePage(
     flashImage,
-    presetCount + sampleCount,
+    pageIndex++,
     floatingPreset,
     _floatingPresetItemId,
     seq++,
   );
 
+  // Floating pattern quarters (item IDs 137-140, copy of pattern 0).
+  if (patternQuarters != null) {
+    for (var q = 0; q < _quartersPerPattern; q++) {
+      final quarterData = q < patternQuarters.length
+          ? patternQuarters[q]
+          : null;
+      if (quarterData != null) {
+        _writePage(
+          flashImage,
+          pageIndex,
+          quarterData,
+          _floatingPatternItemIdStart + q,
+          seq++,
+        );
+      }
+      pageIndex++;
+    }
+  }
+
   // Convert the flash image to UF2 format.
   return dataToUf2(flashImage, presetsBaseAddress);
+}
+
+/// Serializes a list of pattern quarters into a flat binary blob.
+///
+/// Each slot occupies [patternQuarterSize] bytes. Empty slots are filled
+/// with 0xFF (erased flash state). The blob is always 96 × 1792 bytes.
+Uint8List serializePatternQuarters(List<Uint8List?> quarters) {
+  const totalSize = _patternQuarterCount * patternQuarterSize;
+  final blob = Uint8List(totalSize);
+  // Fill with 0xFF (erased flash).
+  for (var i = 0; i < totalSize; i++) {
+    blob[i] = 0xFF;
+  }
+  for (var i = 0; i < quarters.length && i < _patternQuarterCount; i++) {
+    final quarter = quarters[i];
+    if (quarter != null) {
+      final offset = i * patternQuarterSize;
+      for (var j = 0; j < quarter.length && j < patternQuarterSize; j++) {
+        blob[offset + j] = quarter[j];
+      }
+    }
+  }
+  return blob;
+}
+
+/// Deserializes a flat binary blob back into a list of pattern quarters.
+///
+/// Returns a list of 96 entries. Slots that are all 0xFF are returned
+/// as null.
+List<Uint8List?> deserializePatternQuarters(Uint8List blob) {
+  final quarters = List<Uint8List?>.filled(_patternQuarterCount, null);
+  for (var i = 0; i < _patternQuarterCount; i++) {
+    final offset = i * patternQuarterSize;
+    if (offset + patternQuarterSize > blob.length) {
+      break;
+    }
+    final quarter = Uint8List.sublistView(
+      blob,
+      offset,
+      offset + patternQuarterSize,
+    );
+    final isEmpty = quarter.every((b) => b == 0xFF);
+    if (!isEmpty) {
+      quarters[i] = Uint8List.fromList(quarter);
+    }
+  }
+  return quarters;
 }

@@ -41,9 +41,9 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
   // Parsed data from Plinky.
   List<Uint8List?> _presetDataList = [];
   List<ParsedSampleInfo?> _sampleInfos = [];
+  List<Uint8List?> _patternQuarters = [];
   Map<int, Uint8List> _samplePcmData = {};
   Uint8List? _wavetableUf2Bytes;
-  Uint8List? _patternsUf2Bytes;
 
   // User-editable names and sharing toggles.
   final _packNameController = TextEditingController(
@@ -59,9 +59,11 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
   final _wavetableNameController = TextEditingController(
     text: 'Wavetable',
   );
+  final _wavetableDescriptionController = TextEditingController();
   final _patternNameController = TextEditingController(
     text: 'Patterns',
   );
+  final _patternDescriptionController = TextEditingController();
   bool _includeWavetableInPack = true;
   bool _includePatternsInPack = true;
 
@@ -72,7 +74,9 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     _packNameController.dispose();
     _packDescriptionController.dispose();
     _wavetableNameController.dispose();
+    _wavetableDescriptionController.dispose();
     _patternNameController.dispose();
+    _patternDescriptionController.dispose();
     for (final controller in _presetNames.values) {
       controller.dispose();
     }
@@ -107,9 +111,9 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       _errorMessage = null;
       _presetDataList = [];
       _sampleInfos = [];
+      _patternQuarters = [];
       _samplePcmData = {};
       _wavetableUf2Bytes = null;
-      _patternsUf2Bytes = null;
       _packNameController.text = '';
       _packDescriptionController.clear();
       _packIsPublic = true;
@@ -119,10 +123,17 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       _sampleNames.clear();
       _sampleDescriptions.clear();
       _wavetableNameController.text = 'Wavetable';
+      _wavetableDescriptionController.clear();
       _patternNameController.text = 'Patterns';
+      _patternDescriptionController.clear();
       _includeWavetableInPack = true;
       _includePatternsInPack = true;
     });
+  }
+
+  /// Returns true if the UF2 data is empty (all zeros or all 0xFF).
+  bool _isEmptyUf2(Uint8List data) {
+    return data.every((b) => b == 0) || data.every((b) => b == 0xFF);
   }
 
   /// Returns true if the PCM data is silent (all zeros, all 0xFF,
@@ -171,11 +182,19 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       setState(() {
         _statusMessage = 'Parsing presets...';
       });
-      _presetDataList = parsePresetsFromFlashImage(flashImage);
-      _sampleInfos = parseSampleInfosFromFlashImage(flashImage);
+      final parsed = parseFlashImage(flashImage);
+      _presetDataList = parsed.presets;
+      _sampleInfos = parsed.sampleInfos;
+      _patternQuarters = parsed.patternQuarters;
 
       _samplePcmData = {};
       for (var i = 0; i < sampleCount; i++) {
+        // Skip samples where the sample info indicates no data.
+        final sampleInfo = i < _sampleInfos.length ? _sampleInfos[i] : null;
+        if (sampleInfo == null) {
+          continue;
+        }
+
         setState(() {
           _statusMessage = 'Reading SAMPLE$i.UF2...';
         });
@@ -195,24 +214,15 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
         }
       }
 
-      if (_includeWavetableInPack) {
-        setState(() {
-          _statusMessage = 'Reading WAVETABLE.UF2...';
-        });
-        _wavetableUf2Bytes = await readFileFromDirectory(
-          directory,
-          'WAVETABLE.UF2',
-        );
-      }
-
-      if (_includePatternsInPack) {
-        setState(() {
-          _statusMessage = 'Reading PATTERNS.UF2...';
-        });
-        _patternsUf2Bytes = await readFileFromDirectory(
-          directory,
-          'PATTERNS.UF2',
-        );
+      setState(() {
+        _statusMessage = 'Reading WAVETABLE.UF2...';
+      });
+      _wavetableUf2Bytes = await readFileFromDirectory(
+        directory,
+        'WAVETABLE.UF2',
+      );
+      if (_wavetableUf2Bytes != null && _isEmptyUf2(_wavetableUf2Bytes!)) {
+        _wavetableUf2Bytes = null;
       }
 
       // Build editable names from parsed data.
@@ -225,6 +235,10 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
           continue;
         }
         final preset = Preset(presetBytes.buffer);
+        if (preset.isEmpty) {
+          _presetDataList[i] = null;
+          continue;
+        }
         final name = preset.name.isNotEmpty ? preset.name : 'Preset ${i + 1}';
         _presetNames[i] = TextEditingController(text: name);
         _presetDescriptions[i] = TextEditingController();
@@ -240,14 +254,19 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
         _sampleDescriptions[slotIndex] = TextEditingController();
       }
 
-      if (_wavetableUf2Bytes != null && _wavetableUf2Bytes!.isNotEmpty) {
+      final hasWavetable =
+          _wavetableUf2Bytes != null && _wavetableUf2Bytes!.isNotEmpty;
+      _includeWavetableInPack = hasWavetable;
+      if (hasWavetable) {
         _wavetableNameController.text = 'Wavetable';
-        _includeWavetableInPack = true;
+        _wavetableDescriptionController.clear();
       }
 
-      if (_patternsUf2Bytes != null && _patternsUf2Bytes!.isNotEmpty) {
+      final hasPatterns = parsed.nonEmptyPatternCount > 0;
+      _includePatternsInPack = hasPatterns;
+      if (hasPatterns) {
         _patternNameController.text = 'Patterns';
-        _includePatternsInPack = true;
+        _patternDescriptionController.clear();
       }
 
       setState(() {
@@ -336,7 +355,9 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
 
       // Upload wavetable.
       String? wavetableId;
-      if (_wavetableUf2Bytes != null && _wavetableUf2Bytes!.isNotEmpty) {
+      if (_includeWavetableInPack &&
+          _wavetableUf2Bytes != null &&
+          _wavetableUf2Bytes!.isNotEmpty) {
         setState(() {
           _statusMessage = 'Uploading wavetable...';
         });
@@ -356,6 +377,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
           userId: userId,
           name: _wavetableNameController.text.trim(),
           filePath: wavetablePath,
+          description: _wavetableDescriptionController.text.trim(),
           isPublic: _packIsPublic,
         );
 
@@ -367,21 +389,23 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
         wavetableId = wavetableResponse['id'] as String;
       }
 
-      // Upload patterns.
+      // Upload patterns (serialized pattern quarters from PRESETS.UF2).
       String? patternId;
-      if (_patternsUf2Bytes != null && _patternsUf2Bytes!.isNotEmpty) {
+      if (_includePatternsInPack &&
+          _patternQuarters.any((q) => q != null)) {
         setState(() {
           _statusMessage = 'Uploading patterns...';
         });
 
+        final patternBlob = serializePatternQuarters(_patternQuarters);
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final patternPath = '$userId/patterns_$timestamp.uf2';
+        final patternPath = '$userId/patterns_$timestamp.bin';
 
         await _supabase.storage
             .from('patterns')
             .uploadBinary(
               patternPath,
-              _patternsUf2Bytes!,
+              patternBlob,
               fileOptions: const FileOptions(upsert: true),
             );
 
@@ -389,6 +413,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
           userId: userId,
           name: _patternNameController.text.trim(),
           filePath: patternPath,
+          description: _patternDescriptionController.text.trim(),
           isPublic: _packIsPublic,
         );
 
@@ -529,12 +554,6 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
           child: switch (_step) {
             _LoadStep.select => _LoadSelectStep(
               onSelectDrive: _readFromPlinky,
-              includeWavetable: _includeWavetableInPack,
-              onIncludeWavetableChanged: (value) =>
-                  setState(() => _includeWavetableInPack = value),
-              includePatterns: _includePatternsInPack,
-              onIncludePatternsChanged: (value) =>
-                  setState(() => _includePatternsInPack = value),
             ),
             _LoadStep.review => _LoadReviewStep(
               presetNames: _presetNames,
@@ -549,11 +568,20 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
               onPackIsPublicChanged: (value) =>
                   setState(() => _packIsPublic = value),
               wavetableNameController: _wavetableNameController,
+              wavetableDescriptionController:
+                  _wavetableDescriptionController,
               hasWavetable:
                   _wavetableUf2Bytes != null && _wavetableUf2Bytes!.isNotEmpty,
+              includeWavetable: _includeWavetableInPack,
+              onIncludeWavetableChanged: (value) =>
+                  setState(() => _includeWavetableInPack = value),
               patternNameController: _patternNameController,
-              hasPatterns:
-                  _patternsUf2Bytes != null && _patternsUf2Bytes!.isNotEmpty,
+              patternDescriptionController:
+                  _patternDescriptionController,
+              hasPatterns: _patternQuarters.any((q) => q != null),
+              includePatterns: _includePatternsInPack,
+              onIncludePatternsChanged: (value) =>
+                  setState(() => _includePatternsInPack = value),
               onBack: _reset,
               onSave: _uploadAll,
               onChanged: () => setState(() {}),
@@ -578,17 +606,9 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
 class _LoadSelectStep extends StatelessWidget {
   const _LoadSelectStep({
     required this.onSelectDrive,
-    required this.includeWavetable,
-    required this.onIncludeWavetableChanged,
-    required this.includePatterns,
-    required this.onIncludePatternsChanged,
   });
 
   final VoidCallback onSelectDrive;
-  final bool includeWavetable;
-  final ValueChanged<bool> onIncludeWavetableChanged;
-  final bool includePatterns;
-  final ValueChanged<bool> onIncludePatternsChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -617,17 +637,6 @@ class _LoadSelectStep extends StatelessWidget {
           'drive on your computer',
         ),
         const SizedBox(height: 16),
-        SwitchListTile(
-          title: const Text('Include wavetable'),
-          value: includeWavetable,
-          onChanged: onIncludeWavetableChanged,
-        ),
-        SwitchListTile(
-          title: const Text('Include patterns'),
-          value: includePatterns,
-          onChanged: onIncludePatternsChanged,
-        ),
-        const SizedBox(height: 8),
         PlinkyButton(
           onPressed: onSelectDrive,
           icon: Icons.folder_open,
@@ -651,9 +660,15 @@ class _LoadReviewStep extends StatelessWidget {
     required this.packIsPublic,
     required this.onPackIsPublicChanged,
     required this.wavetableNameController,
+    required this.wavetableDescriptionController,
     required this.hasWavetable,
+    required this.includeWavetable,
+    required this.onIncludeWavetableChanged,
     required this.patternNameController,
+    required this.patternDescriptionController,
     required this.hasPatterns,
+    required this.includePatterns,
+    required this.onIncludePatternsChanged,
     required this.onBack,
     required this.onSave,
     required this.onChanged,
@@ -670,9 +685,15 @@ class _LoadReviewStep extends StatelessWidget {
   final bool packIsPublic;
   final ValueChanged<bool> onPackIsPublicChanged;
   final TextEditingController wavetableNameController;
+  final TextEditingController wavetableDescriptionController;
   final bool hasWavetable;
+  final bool includeWavetable;
+  final ValueChanged<bool> onIncludeWavetableChanged;
   final TextEditingController patternNameController;
+  final TextEditingController patternDescriptionController;
   final bool hasPatterns;
+  final bool includePatterns;
+  final ValueChanged<bool> onIncludePatternsChanged;
   final VoidCallback onBack;
   final VoidCallback onSave;
   final VoidCallback onChanged;
@@ -745,14 +766,17 @@ class _LoadReviewStep extends StatelessWidget {
             'Wavetable',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: wavetableNameController,
-            decoration: const InputDecoration(
-              labelText: 'Wavetable name',
-              border: OutlineInputBorder(),
-            ),
+          SwitchListTile(
+            title: const Text('Include in pack'),
+            value: includeWavetable,
+            onChanged: onIncludeWavetableChanged,
           ),
+          if (includeWavetable)
+            _NamedItemRow(
+              controller: wavetableNameController,
+              label: 'Wavetable name',
+              onEdit: () => _showWavetableEditDialog(context),
+            ),
         ],
         if (hasPatterns) ...[
           const SizedBox(height: 16),
@@ -760,14 +784,17 @@ class _LoadReviewStep extends StatelessWidget {
             'Patterns',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: patternNameController,
-            decoration: const InputDecoration(
-              labelText: 'Patterns name',
-              border: OutlineInputBorder(),
-            ),
+          SwitchListTile(
+            title: const Text('Include in pack'),
+            value: includePatterns,
+            onChanged: onIncludePatternsChanged,
           ),
+          if (includePatterns)
+            _NamedItemRow(
+              controller: patternNameController,
+              label: 'Patterns name',
+              onEdit: () => _showPatternEditDialog(context),
+            ),
         ],
         if (presetNames.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -816,9 +843,32 @@ class _LoadReviewStep extends StatelessWidget {
   ) {
     showDialog<void>(
       context: context,
-      builder: (context) => _SampleEditDialog(
+      builder: (context) => _NameDescriptionEditDialog(
+        title: 'Edit Sample',
         nameController: sampleNames[slotIndex]!,
         descriptionController: sampleDescriptions[slotIndex]!,
+      ),
+    );
+  }
+
+  void _showWavetableEditDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => _NameDescriptionEditDialog(
+        title: 'Edit Wavetable',
+        nameController: wavetableNameController,
+        descriptionController: wavetableDescriptionController,
+      ),
+    );
+  }
+
+  void _showPatternEditDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => _NameDescriptionEditDialog(
+        title: 'Edit Patterns',
+        nameController: patternNameController,
+        descriptionController: patternDescriptionController,
       ),
     );
   }
@@ -1005,19 +1055,21 @@ class _NamedItemRow extends StatelessWidget {
   }
 }
 
-class _SampleEditDialog extends StatelessWidget {
-  const _SampleEditDialog({
+class _NameDescriptionEditDialog extends StatelessWidget {
+  const _NameDescriptionEditDialog({
+    required this.title,
     required this.nameController,
     required this.descriptionController,
   });
 
+  final String title;
   final TextEditingController nameController;
   final TextEditingController descriptionController;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Edit Sample'),
+      title: Text(title),
       content: SizedBox(
         width: 400,
         child: Column(

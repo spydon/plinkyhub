@@ -8,19 +8,20 @@ block's address should be 256 bytes beyond the previous block's address.
 
 ## Memory Map
 
-| File        | Start Address | Size    |
-| ----------- | ------------- | ------- |
-| CURRENT UF2 | `0x08010000`  | 896 KB  |
-| PRESETS UF2 | `0x08080000`  | 1020 KB |
-| CALIB UF2   | `0x080FF800`  | 4 KB    |
-| SAMPLE0 UF2 | `0x40000000`  | 8 MB    |
-| SAMPLE1 UF2 | `0x40400000`  | 8 MB    |
-| SAMPLE2 UF2 | `0x40800000`  | 8 MB    |
-| SAMPLE3 UF2 | `0x40C00000`  | 8 MB    |
-| SAMPLE4 UF2 | `0x41000000`  | 8 MB    |
-| SAMPLE5 UF2 | `0x41400000`  | 8 MB    |
-| SAMPLE6 UF2 | `0x41800000`  | 8 MB    |
-| SAMPLE7 UF2 | `0x41C00000`  | 8 MB    |
+| File          | Start Address | Size    |
+| ------------- | ------------- | ------- |
+| CURRENT UF2   | `0x08010000`  | 896 KB  |
+| WAVETABLE UF2 | `0x08077000`  | 36 KB   |
+| PRESETS UF2   | `0x08080000`  | 1020 KB |
+| CALIB UF2     | `0x080FF800`  | 4 KB    |
+| SAMPLE0 UF2   | `0x40000000`  | 8 MB    |
+| SAMPLE1 UF2   | `0x40400000`  | 8 MB    |
+| SAMPLE2 UF2   | `0x40800000`  | 8 MB    |
+| SAMPLE3 UF2   | `0x40C00000`  | 8 MB    |
+| SAMPLE4 UF2   | `0x41000000`  | 8 MB    |
+| SAMPLE5 UF2   | `0x41400000`  | 8 MB    |
+| SAMPLE6 UF2   | `0x41800000`  | 8 MB    |
+| SAMPLE7 UF2   | `0x41C00000`  | 8 MB    |
 
 ## Samples
 
@@ -33,13 +34,13 @@ the sample and it will not have a waveform. For audio not recorded on Plinky, yo
 
 Plinky expects raw PCM with no file headers (no WAV/RIFF container):
 
-| Property    | Value                          |
-| ----------- | ------------------------------ |
-| Sample rate | 31,250 Hz                      |
-| Bit depth   | 16-bit                         |
-| Encoding    | Signed integer (s16)           |
-| Channels    | Mono                           |
-| Endianness  | Little-endian                  |
+| Property    | Value                |
+| ----------- | -------------------- |
+| Sample rate | 31,250 Hz            |
+| Bit depth   | 16-bit               |
+| Encoding    | Signed integer (s16) |
+| Channels    | Mono                 |
+| Endianness  | Little-endian        |
 
 The codec (WM8758) is configured for the closest standard rate (32 kHz), but the actual rate
 derived from the MCU clock dividers is 31,250 Hz.
@@ -85,16 +86,63 @@ example, value 48 = MIDI 60 = C4.
 
 **Loop modes** (2-bit field):
 
-| Value | Behaviour        |
-| ----- | ---------------- |
-| 0     | One-shot, slice  |
-| 1     | Loop, slice      |
-| 2     | One-shot, all    |
-| 3     | Loop, all        |
+| Value | Behaviour       |
+| ----- | --------------- |
+| 0     | One-shot, slice |
+| 1     | Loop, slice     |
+| 2     | One-shot, all   |
+| 3     | Loop, all       |
 
 ## Presets
 
-The Presets file contains presets, sequences, and `SampleInfo` structures. The pages inside the
-Presets file use flash wear leveling, which means they do not appear at predictable memory
-locations. You must create `SampleInfo` entries with the correct properties for Plinky to retrieve
-them.
+The Presets file contains presets, pattern quarters, and `SampleInfo` structures. The pages inside
+the Presets file use flash wear leveling, which means they do not appear at predictable memory
+locations. Each page has a `PageFooter` at the last 8 bytes containing the item ID, version, CRC,
+and a wear-leveling sequence number. When multiple pages share the same item ID, the one with the
+highest sequence number is the current version.
+
+### Page Structure
+
+Each 2048-byte flash page is laid out as:
+
+| Offset | Size | Content                                           |
+| ------ | ---- | ------------------------------------------------- |
+| 0      | 2024 | Item data (Preset, PatternQuarter, or SampleInfo) |
+| 2024   | 16   | SysParams                                         |
+| 2040   | 8    | PageFooter                                        |
+
+### Flash Item IDs
+
+| Item IDs | Count | Content                                                       | Size per item |
+| -------- | ----- | ------------------------------------------------------------- | ------------- |
+| 0-31     | 32    | Presets                                                       | 1552 bytes    |
+| 32-127   | 96    | Pattern quarters (24 patterns × 4 quarters)                   | 1792 bytes    |
+| 128-135  | 8     | SampleInfo                                                    | 1072 bytes    |
+| 136      | 1     | Floating preset (current working copy of preset 0)            | 1552 bytes    |
+| 137-140  | 4     | Floating pattern quarters (current working copy of pattern 0) | 1792 bytes    |
+
+### PageFooter (8 bytes)
+
+| Offset | Size | Field   | Description                                    |
+| ------ | ---- | ------- | ---------------------------------------------- |
+| 0      | 1    | idx     | Flash item ID                                  |
+| 1      | 1    | version | Footer version (currently 2)                   |
+| 2      | 2    | crc     | CRC-16 over the first 2040 bytes of the page   |
+| 3      | 4    | seq     | Wear-leveling sequence number (higher = newer) |
+
+You must create `SampleInfo` entries with the correct properties for Plinky to retrieve them.
+
+## Patterns
+
+Each of the 24 patterns is stored as 4 quarters (for a maximum of 64 steps: 16 steps per quarter).
+Pattern data lives inside PRESETS.UF2, **not** in a separate file. Each `PatternQuarter` is
+1792 bytes.
+
+### PatternQuarter Structure (1792 bytes)
+
+Each quarter holds 16 steps × 8 strings of sequencer data:
+
+| Offset | Size | Content                                                           |
+| ------ | ---- | ----------------------------------------------------------------- |
+| 0      | 1536 | Step data: 16 steps × 8 strings × (4 position + 8 pressure bytes) |
+| 1536   | 256  | Knob data: 16 steps × 8 substeps × 2 knob bytes                   |

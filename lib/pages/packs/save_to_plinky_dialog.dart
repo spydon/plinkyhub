@@ -191,10 +191,25 @@ class _SaveToPlinkyDialogState extends ConsumerState<SaveToPlinkyDialog> {
       presets[slot.slotNumber] = presetBytes;
     }
 
-    // Generate PRESETS.UF2.
+    // Fetch pattern quarter data if the pack has patterns.
+    List<Uint8List?>? patternQuarters;
+    if (widget.pack.patternId != null) {
+      setState(() => _statusMessage = 'Fetching patterns...');
+      final patternFilePath = await _fetchFilePath(
+        'patterns',
+        widget.pack.patternId!,
+      );
+      final patternBlob = await _supabase.storage
+          .from('patterns')
+          .download(patternFilePath);
+      patternQuarters = deserializePatternQuarters(patternBlob);
+    }
+
+    // Generate PRESETS.UF2 (includes presets, samples, and patterns).
     final presetsUf2 = generatePresetsUf2(
       presets: presets,
       sampleInfos: sampleInfos,
+      patternQuarters: patternQuarters,
     );
 
     // Write PRESETS.UF2 to the selected directory.
@@ -241,25 +256,6 @@ class _SaveToPlinkyDialogState extends ConsumerState<SaveToPlinkyDialog> {
       );
     }
 
-    // Write PATTERNS.UF2 if the pack has one.
-    if (widget.pack.patternId != null) {
-      setState(() {
-        _statusMessage = 'Writing PATTERNS.UF2...';
-      });
-
-      final patternFilePath = await _fetchFilePath(
-        'patterns',
-        widget.pack.patternId!,
-      );
-      final patternBytes = await _supabase.storage
-          .from('patterns')
-          .download(patternFilePath);
-      await writeFileToDirectory(
-        directory,
-        'PATTERNS.UF2',
-        patternBytes,
-      );
-    }
   }
 
   Future<String> _fetchFilePath(

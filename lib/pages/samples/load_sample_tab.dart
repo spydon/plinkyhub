@@ -115,7 +115,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
       if (presetsUf2Bytes != null) {
         try {
           final flashImage = uf2ToData(presetsUf2Bytes);
-          final sampleInfos = parseSampleInfosFromFlashImage(flashImage);
+          final sampleInfos = parseFlashImage(flashImage).sampleInfos;
           if (_selectedSlot < sampleInfos.length) {
             sampleInfo = sampleInfos[_selectedSlot];
           }

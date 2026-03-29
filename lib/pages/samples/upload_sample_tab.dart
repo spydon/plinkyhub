@@ -230,7 +230,7 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
       if (_presetsUf2Bytes != null) {
         try {
           final flashImage = uf2ToData(_presetsUf2Bytes!);
-          final sampleInfos = parseSampleInfosFromFlashImage(flashImage);
+          final sampleInfos = parseFlashImage(flashImage).sampleInfos;
           if (slotIndex >= 0 && slotIndex < sampleInfos.length) {
             sampleInfo = sampleInfos[slotIndex];
           }
