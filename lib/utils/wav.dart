@@ -223,6 +223,85 @@ void _writeFourCC(ByteData data, int offset, String fourCC) {
   }
 }
 
+/// Extracts waveform peak data from WAV bytes for visualization.
+///
+/// Returns a list of (min, max) amplitude pairs, one per display column.
+/// Each pair represents the amplitude envelope for that portion of the audio.
+/// The [bucketCount] determines the horizontal resolution.
+List<(double, double)> wavToWaveformPeaks(
+  Uint8List wavBytes, {
+  int bucketCount = 512,
+}) {
+  final data = ByteData.sublistView(wavBytes);
+  var offset = 0;
+
+  // RIFF header
+  if (_readFourCC(data, offset) != 'RIFF') {
+    return List.filled(bucketCount, (0.0, 0.0));
+  }
+  offset += 4;
+  offset += 4; // file size
+  if (_readFourCC(data, offset) != 'WAVE') {
+    return List.filled(bucketCount, (0.0, 0.0));
+  }
+  offset += 4;
+
+  int? channels;
+  int? bitsPerSample;
+  Uint8List? rawData;
+
+  while (offset < data.lengthInBytes - 8) {
+    final chunkId = _readFourCC(data, offset);
+    final chunkSize = data.getUint32(offset + 4, Endian.little);
+    offset += 8;
+
+    if (chunkId == 'fmt ') {
+      channels = data.getUint16(offset + 2, Endian.little);
+      bitsPerSample = data.getUint16(offset + 14, Endian.little);
+    } else if (chunkId == 'data') {
+      rawData = wavBytes.sublist(offset, offset + chunkSize);
+    }
+
+    offset += chunkSize;
+    if (chunkSize.isOdd) {
+      offset += 1;
+    }
+  }
+
+  if (channels == null || bitsPerSample == null || rawData == null) {
+    return List.filled(bucketCount, (0.0, 0.0));
+  }
+
+  final samples = _decodeSamples(rawData, channels, bitsPerSample);
+  if (samples.isEmpty) {
+    return List.filled(bucketCount, (0.0, 0.0));
+  }
+
+  final peaks = List<(double, double)>.filled(bucketCount, (0.0, 0.0));
+  final samplesPerBucket = samples.length / bucketCount;
+
+  for (var i = 0; i < bucketCount; i++) {
+    final start = (i * samplesPerBucket).floor();
+    final end = ((i + 1) * samplesPerBucket).floor().clamp(
+      start + 1,
+      samples.length,
+    );
+    var minValue = double.infinity;
+    var maxValue = double.negativeInfinity;
+    for (var j = start; j < end; j++) {
+      if (samples[j] < minValue) {
+        minValue = samples[j];
+      }
+      if (samples[j] > maxValue) {
+        maxValue = samples[j];
+      }
+    }
+    peaks[i] = (minValue, maxValue);
+  }
+
+  return peaks;
+}
+
 String _readFourCC(ByteData data, int offset) {
   return String.fromCharCodes([
     data.getUint8(offset),

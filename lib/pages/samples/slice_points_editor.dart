@@ -42,12 +42,29 @@ class _SlicePointsEditorState extends State<SlicePointsEditor> {
   SoundHandle? _activeHandle;
   int _playingSlice = -1;
   bool _loadingAudio = false;
+  List<(double, double)>? _waveformPeaks;
+
+  @override
+  void initState() {
+    super.initState();
+    _computeWaveformPeaks();
+  }
 
   @override
   void didUpdateWidget(SlicePointsEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.wavBytes != widget.wavBytes) {
       _disposeAudio();
+      _computeWaveformPeaks();
+    }
+  }
+
+  void _computeWaveformPeaks() {
+    final wavBytes = widget.wavBytes;
+    if (wavBytes != null) {
+      _waveformPeaks = wavToWaveformPeaks(wavBytes);
+    } else {
+      _waveformPeaks = null;
     }
   }
 
@@ -148,7 +165,7 @@ class _SlicePointsEditorState extends State<SlicePointsEditor> {
         ),
         const SizedBox(height: 4),
         SizedBox(
-          height: 60,
+          height: 80,
           child: CustomPaint(
             painter: SlicePointsPainter(
               slicePoints: widget.slicePoints,
@@ -156,8 +173,9 @@ class _SlicePointsEditorState extends State<SlicePointsEditor> {
               backgroundColor: Theme.of(
                 context,
               ).colorScheme.surfaceContainerHighest,
+              waveformPeaks: _waveformPeaks,
             ),
-            size: const Size(double.infinity, 60),
+            size: const Size(double.infinity, 80),
           ),
         ),
         const SizedBox(height: 8),
