@@ -63,7 +63,7 @@ If you run into any problems or have feature requests, you can:
 
 ### Prerequisites
 
-- Flutter SDK with Dart ^3.11.1
+- Flutter SDK 3.41.4 or newer
 - A Chromium-based browser (WebUSB and WebAssembly are required)
 - [Supabase CLI](https://supabase.com/docs/guides/local-development) if you
   want to run the backend locally
