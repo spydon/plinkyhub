@@ -48,8 +48,8 @@ If you run into any problems or have feature requests, you can:
 
 ## Tech stack
 
-- **Flutter Web** (Dart SDK ^3.11.1) compiled to **WebAssembly** (`--wasm`) for
-  near-native performance in the browser.
+- **Flutter Web** (Flutter SDK 3.41.4 or newer) compiled to **WebAssembly**
+  (`--wasm`) for near-native performance in the browser.
 - **Riverpod** for state management and **go_router** for routing.
 - **Supabase** (Postgres, Auth, Storage, Row-Level Security) as the backend,
   accessed via `supabase_flutter`.
@@ -63,7 +63,7 @@ If you run into any problems or have feature requests, you can:
 
 ### Prerequisites
 
-- Flutter SDK with Dart ^3.11.1
+- Flutter SDK 3.41.4 or newer
 - A Chromium-based browser (WebUSB and WebAssembly are required)
 - [Supabase CLI](https://supabase.com/docs/guides/local-development) if you
   want to run the backend locally
