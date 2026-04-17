@@ -70,12 +70,22 @@ GoRouter createRouter(ProviderContainer container) {
         }
         if (errorCode == 'otp_expired') {
           // Supabase uses otp_expired for both signup-confirmation and
-          // password-recovery expiries; keep the message generic.
-          notifier.setError(
-            'That link has expired. '
-            'Sign in to receive a new confirmation email, or use '
-            '"Forgot password?" to request a new password reset email.',
-          );
+          // password-recovery expiries. The URL itself carries no hint,
+          // so consult the persisted flow marker to word the message
+          // for whichever flow the user most recently started.
+          final flow = await AuthenticationNotifier.readLastAuthEmailFlow();
+          if (flow == AuthEmailFlow.recovery) {
+            notifier.setError(
+              'Your password reset link has expired. '
+              'Please request a new one using "Forgot password?".',
+            );
+          } else {
+            notifier.setError(
+              'Your confirmation link has expired. '
+              'Please sign in with your email and password to '
+              'receive a new confirmation email.',
+            );
+          }
         } else if (description != null) {
           notifier.setError(Uri.decodeComponent(description));
         }

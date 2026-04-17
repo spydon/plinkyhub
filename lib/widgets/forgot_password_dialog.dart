@@ -67,19 +67,6 @@ class _ForgotPasswordDialogState extends ConsumerState<ForgotPasswordDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_emailSent) ...[
-              Row(
-                children: [
-                  Icon(Icons.mark_email_read, color: colorScheme.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Check your email',
-                      style: theme.textTheme.titleMedium,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
               Text(
                 'If an account exists for '
                 '${_emailController.text.trim()}, we sent a link to '

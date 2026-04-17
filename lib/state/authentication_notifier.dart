@@ -3,7 +3,21 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/state/authentication_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Which email-link flow the user most recently started. Persisted to
+/// local storage so the router can tailor the "link expired" message
+/// when the user eventually clicks the link.
+enum AuthEmailFlow { signup, recovery }
+
+const _lastAuthEmailFlowKey = 'last_auth_email_flow';
+const _lastAuthEmailFlowTimestampKey = 'last_auth_email_flow_timestamp';
+
+/// Maximum age of a persisted flow marker we still trust — longer than
+/// any Supabase email-link lifetime, but short enough to avoid stale
+/// carry-over from weeks-old activity.
+const _lastAuthEmailFlowMaxAge = Duration(days: 2);
 
 final authenticationProvider =
     NotifierProvider<AuthenticationNotifier, AuthenticationState>(
@@ -90,6 +104,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
         password: password,
         data: {'username': username},
       );
+      await _recordLastAuthEmailFlow(AuthEmailFlow.signup);
       state = state.copyWith(
         user: response.user,
         username: username,
@@ -132,6 +147,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
     );
     try {
       await _supabase.auth.resend(type: OtpType.signup, email: email);
+      await _recordLastAuthEmailFlow(AuthEmailFlow.signup);
       state = state.copyWith(
         isLoading: false,
         infoMessage: 'Confirmation email sent! Please check your inbox.',
@@ -160,6 +176,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
         email,
         redirectTo: _passwordResetRedirectUrl(),
       );
+      await _recordLastAuthEmailFlow(AuthEmailFlow.recovery);
       state = state.copyWith(
         isLoading: false,
         infoMessage:
@@ -197,6 +214,43 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
         isLoading: false,
         errorMessage: friendlyAuthError(error.message),
       );
+    }
+  }
+
+  static Future<void> _recordLastAuthEmailFlow(AuthEmailFlow flow) async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.setString(_lastAuthEmailFlowKey, flow.name);
+      await preferences.setInt(
+        _lastAuthEmailFlowTimestampKey,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } on Object catch (error) {
+      debugPrint('Failed to record auth email flow: $error');
+    }
+  }
+
+  /// Returns the most recent [AuthEmailFlow] the user initiated, or
+  /// null if none is recorded (or the record is too old to trust).
+  static Future<AuthEmailFlow?> readLastAuthEmailFlow() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      final name = preferences.getString(_lastAuthEmailFlowKey);
+      final timestamp = preferences.getInt(_lastAuthEmailFlowTimestampKey);
+      if (name == null || timestamp == null) {
+        return null;
+      }
+      final recordedAt = DateTime.fromMillisecondsSinceEpoch(timestamp);
+      if (DateTime.now().difference(recordedAt) > _lastAuthEmailFlowMaxAge) {
+        return null;
+      }
+      return AuthEmailFlow.values.firstWhere(
+        (flow) => flow.name == name,
+        orElse: () => AuthEmailFlow.signup,
+      );
+    } on Object catch (error) {
+      debugPrint('Failed to read auth email flow: $error');
+      return null;
     }
   }
 

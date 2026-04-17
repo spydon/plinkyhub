@@ -105,7 +105,7 @@ void main() {
     await tester.tap(find.text('Send reset email'));
     await tester.pump();
 
-    expect(find.text('Check your email'), findsOneWidget);
+    expect(find.textContaining('we sent a link'), findsOneWidget);
     expect(find.text('Done'), findsOneWidget);
     expect(find.text('Send reset email'), findsNothing);
   });
