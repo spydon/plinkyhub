@@ -27,11 +27,15 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
       if (user != null) {
         username = await _fetchUsername(user.id);
       }
+      final isRecoveryEvent =
+          authState.event == AuthChangeEvent.passwordRecovery;
       state = state.copyWith(
         user: user,
         username: username,
         isLoading: false,
         errorMessage: null,
+        infoMessage: null,
+        isPasswordRecovery: isRecoveryEvent || state.isPasswordRecovery,
       );
     });
     ref.onDispose(() => _authSubscription?.cancel());
@@ -73,7 +77,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
       debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: _friendlyAuthError(error.message),
+        errorMessage: friendlyAuthError(error.message),
       );
     }
   }
@@ -95,13 +99,13 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
       debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: _friendlyAuthError(error.message),
+        errorMessage: friendlyAuthError(error.message),
       );
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: _friendlyAuthError(error.toString()),
+        errorMessage: friendlyAuthError(error.toString()),
       );
     }
   }
@@ -115,26 +119,94 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
       debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: _friendlyAuthError(error.message),
+        errorMessage: friendlyAuthError(error.message),
       );
     }
   }
 
   Future<void> resendConfirmationEmail(String email) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      infoMessage: null,
+    );
     try {
       await _supabase.auth.resend(type: OtpType.signup, email: email);
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Confirmation email sent! Please check your inbox.',
+        infoMessage: 'Confirmation email sent! Please check your inbox.',
       );
     } on AuthException catch (error) {
       debugPrint('$error');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: _friendlyAuthError(error.message),
+        errorMessage: friendlyAuthError(error.message),
       );
     }
+  }
+
+  /// Send a password-reset email to [email]. Supabase emails a link that,
+  /// when clicked, returns to the app with a recovery session that fires
+  /// [AuthChangeEvent.passwordRecovery]. The app then prompts the user for
+  /// a new password via [updatePassword].
+  Future<void> sendPasswordResetEmail(String email) async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      infoMessage: null,
+    );
+    try {
+      await _supabase.auth.resetPasswordForEmail(
+        email,
+        redirectTo: _passwordResetRedirectUrl(),
+      );
+      state = state.copyWith(
+        isLoading: false,
+        infoMessage:
+            'Password reset email sent! Check your inbox and click the '
+            'link to choose a new password.',
+      );
+    } on AuthException catch (error) {
+      debugPrint('$error');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: friendlyAuthError(error.message),
+      );
+    }
+  }
+
+  /// Set a new password for the currently signed-in user. Used both for
+  /// the password-recovery flow (after the user clicks the email link)
+  /// and for in-app password changes.
+  Future<void> updatePassword(String newPassword) async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      infoMessage: null,
+    );
+    try {
+      await _supabase.auth.updateUser(UserAttributes(password: newPassword));
+      state = state.copyWith(
+        isLoading: false,
+        isPasswordRecovery: false,
+        infoMessage: 'Your password has been updated.',
+      );
+    } on AuthException catch (error) {
+      debugPrint('$error');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: friendlyAuthError(error.message),
+      );
+    }
+  }
+
+  static String? _passwordResetRedirectUrl() {
+    if (!kIsWeb) {
+      return null;
+    }
+    // On Flutter Web, Uri.base reflects the current document URL;
+    // `origin` gives the scheme + host (+ port) without path/query.
+    return Uri.base.origin;
   }
 
   void clearError() {
@@ -145,6 +217,25 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
     state = state.copyWith(errorMessage: message);
   }
 
+  void clearInfo() {
+    state = state.copyWith(infoMessage: null);
+  }
+
+  void setInfo(String message) {
+    state = state.copyWith(infoMessage: message);
+  }
+
+  void clearMessages() {
+    state = state.copyWith(errorMessage: null, infoMessage: null);
+  }
+
+  /// Exit password-recovery mode. The user remains signed in with the
+  /// recovery session, but subsequent flows stop treating the session as
+  /// a recovery in progress.
+  void clearPasswordRecovery() {
+    state = state.copyWith(isPasswordRecovery: false);
+  }
+
   void setPrefillEmail(String email) {
     state = state.copyWith(prefillEmail: email);
   }
@@ -153,7 +244,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
     state = state.copyWith(prefillEmail: null);
   }
 
-  static String _friendlyAuthError(String message) {
+  static String friendlyAuthError(String message) {
     final lower = message.toLowerCase();
     if (lower.contains('invalid login credentials')) {
       return 'Incorrect email or password. Please try again.';
@@ -177,6 +268,17 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
     if (lower.contains('password') && lower.contains('at least')) {
       return 'Password is too short. '
           'Please use at least 6 characters.';
+    }
+    if (lower.contains('new password should be different') ||
+        lower.contains('password should be different') ||
+        lower.contains('same password')) {
+      return 'Your new password must be different from your old password.';
+    }
+    if (lower.contains('auth session missing') ||
+        lower.contains('session_not_found') ||
+        lower.contains('invalid refresh token')) {
+      return 'Your recovery link has expired. '
+          'Please request a new password reset email.';
     }
     if (lower.contains('unique') || lower.contains('duplicate')) {
       return 'That username is already taken. '

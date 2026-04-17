@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/routes.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/widgets/forgot_password_dialog.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/settings_dialog.dart';
 
@@ -198,6 +199,18 @@ class _SignInDialogState extends ConsumerState<SignInDialog> {
               obscureText: true,
               onSubmitted: (_) => _submit(),
             ),
+            if (!_isSignUp) ...[
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: authenticationState.isLoading
+                      ? null
+                      : () => _showForgotPassword(context, ref),
+                  child: const Text('Forgot password?'),
+                ),
+              ),
+            ],
             if (authenticationState.errorMessage != null) ...[
               const SizedBox(height: 12),
               Text(
@@ -220,13 +233,22 @@ class _SignInDialogState extends ConsumerState<SignInDialog> {
                 ),
               ],
             ],
+            if (authenticationState.infoMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                authenticationState.infoMessage!,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ],
           ],
         ),
       ),
       actions: [
         PlinkyButton(
           onPressed: () {
-            ref.read(authenticationProvider.notifier).clearError();
+            ref.read(authenticationProvider.notifier).clearMessages();
             setState(() => _isSignUp = !_isSignUp);
           },
           icon: Icons.swap_horiz,
@@ -236,7 +258,7 @@ class _SignInDialogState extends ConsumerState<SignInDialog> {
         ),
         PlinkyButton(
           onPressed: () {
-            ref.read(authenticationProvider.notifier).clearError();
+            ref.read(authenticationProvider.notifier).clearMessages();
             Navigator.of(context).pop();
           },
           icon: Icons.close,
@@ -275,6 +297,15 @@ class _SignInDialogState extends ConsumerState<SignInDialog> {
     return lower.contains('confirm') ||
         lower.contains('confirmation') ||
         lower.contains('expired');
+  }
+
+  void _showForgotPassword(BuildContext context, WidgetRef ref) {
+    final email = _emailController.text.trim();
+    ref.read(authenticationProvider.notifier).clearMessages();
+    showForgotPasswordDialog(
+      context,
+      prefillEmail: email.isEmpty ? null : email,
+    );
   }
 
   void _resendConfirmation(WidgetRef ref) {

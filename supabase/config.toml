@@ -13,6 +13,10 @@ major_version = 15
 content_path = "./supabase/templates/confirmation.html"
 subject = "Confirm your PlinkyHub account"
 
+[auth.email.template.recovery]
+content_path = "./supabase/templates/recovery.html"
+subject = "Reset your PlinkyHub password"
+
 [studio]
 enabled = true
 port = 54323

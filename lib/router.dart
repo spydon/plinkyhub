@@ -23,6 +23,7 @@ import 'package:plinkyhub/pages/wavetables/wavetable_page.dart';
 import 'package:plinkyhub/routes.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/widgets/navigation_sidebar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -30,24 +31,49 @@ GoRouter createRouter(ProviderContainer container) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoute.initial.path,
-    redirect: (context, state) {
+    redirect: (context, state) async {
+      final notifier = container.read(authenticationProvider.notifier);
+
+      // Supabase's PKCE email-confirmation and password-recovery links
+      // redirect back to the site root with a `?code=<uuid>` query
+      // parameter that must be exchanged for a session before the user
+      // is signed in.
+      final code = state.uri.queryParameters['code'];
+      if (code != null) {
+        try {
+          await Supabase.instance.client.auth.exchangeCodeForSession(code);
+        } on AuthException catch (error) {
+          notifier.setError(
+            AuthenticationNotifier.friendlyAuthError(error.message),
+          );
+        }
+        return AppRoute.initial.path;
+      }
+
       final errorCode = state.uri.queryParameters['error_code'];
       if (errorCode != null) {
         final description = state.uri.queryParameters['error_description'];
-        final notifier = container.read(authenticationProvider.notifier);
         final email = state.uri.queryParameters['email'];
         if (email != null) {
           notifier.setPrefillEmail(Uri.decodeComponent(email));
         }
         if (errorCode == 'otp_expired') {
+          // Supabase uses otp_expired for both signup-confirmation and
+          // password-recovery expiries; keep the message generic.
           notifier.setError(
-            'Your confirmation link has expired. '
-            'Please sign in with your email and password to '
-            'receive a new confirmation email.',
+            'That link has expired. '
+            'Sign in to receive a new confirmation email, or use '
+            '"Forgot password?" to request a new password reset email.',
           );
         } else if (description != null) {
           notifier.setError(Uri.decodeComponent(description));
         }
+        return AppRoute.initial.path;
+      }
+
+      // Bare "/" (no query params, no matching route) falls through to
+      // the initial tab instead of go_router's not-found screen.
+      if (state.uri.path == '/') {
         return AppRoute.initial.path;
       }
       return null;

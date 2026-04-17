@@ -9,6 +9,7 @@ import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/widgets/authentication_button.dart';
 import 'package:plinkyhub/widgets/navigation_sidebar.dart';
 import 'package:plinkyhub/widgets/terms_of_service_dialog.dart';
+import 'package:plinkyhub/widgets/update_password_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:web/web.dart' as web;
@@ -161,9 +162,16 @@ class _PlinkyHubShellState extends ConsumerState<PlinkyHubShell> {
       if (!hasAcceptedTermsOfService()) {
         showTermsOfServiceDialog(context);
       }
+      final authState = ref.read(authenticationProvider);
+      // If the user arrived via a password-recovery link, Supabase fires
+      // AuthChangeEvent.passwordRecovery synchronously during startup and
+      // we already have isPasswordRecovery set here.
+      if (authState.isPasswordRecovery) {
+        showUpdatePasswordDialog(context);
+        return;
+      }
       // If the router redirect set an auth error (e.g. expired confirmation
       // link), open the sign-in dialog so the user can act on it.
-      final authState = ref.read(authenticationProvider);
       if (authState.errorMessage != null && authState.user == null) {
         showSignInDialog(context);
       }
@@ -181,6 +189,12 @@ class _PlinkyHubShellState extends ConsumerState<PlinkyHubShell> {
             content: Text('Welcome, ${next.username}!'),
           ),
         );
+      }
+      // Supabase may fire the password-recovery event after initState,
+      // especially if the URL hash is parsed asynchronously.
+      if (previous?.isPasswordRecovery != true &&
+          next.isPasswordRecovery == true) {
+        showUpdatePasswordDialog(context);
       }
     });
 

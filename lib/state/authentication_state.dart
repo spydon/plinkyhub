@@ -10,6 +10,8 @@ abstract class AuthenticationState with _$AuthenticationState {
     User? user,
     String? username,
     String? errorMessage,
+    String? infoMessage,
     String? prefillEmail,
+    @Default(false) bool isPasswordRecovery,
   }) = _AuthenticationState;
 }
