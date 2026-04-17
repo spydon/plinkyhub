@@ -136,7 +136,7 @@ class _PlayPageState extends ConsumerState<PlayPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Shared controls — visible for both tabs.
+          // Shared controls, visible for both tabs.
           Row(
             children: [
               Expanded(

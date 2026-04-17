@@ -75,7 +75,7 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
 
     for (final slot in pack.slots) {
       if (slot.slotNumber < presetCount) {
-        // Preset slot (0-31) — resolve sample from preset's sample_id.
+        // Preset slot (0-31): resolve sample from preset's sample_id.
         _slots[slot.slotNumber] = (
           presetId: slot.presetId,
           sampleId: slot.presetId != null
@@ -86,7 +86,7 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
       } else if (slot.slotNumber >= patternSlotStart &&
           slot.slotNumber < sampleSlotStart &&
           slot.patternId != null) {
-        // Pattern slot — convert to pattern index.
+        // Pattern slot: convert to pattern index.
         final patternIndex = slot.slotNumber - patternSlotStart;
         _patternIds[patternIndex] = slot.patternId;
       }

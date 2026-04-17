@@ -268,7 +268,7 @@ GoRouter createRouter(ProviderContainer container) {
         ],
       ),
 
-      // Firmware detail page — not tied to a username.
+      // Firmware detail page, not tied to a username.
       GoRoute(
         path: '/firmware/:name',
         builder: (context, state) => _ItemPageShell(
@@ -280,7 +280,7 @@ GoRouter createRouter(ProviderContainer container) {
         ),
       ),
 
-      // Item detail pages — displayed within the shell via
+      // Item detail pages, displayed within the shell via
       // parentNavigatorKey so they show the sidebar.
       GoRoute(
         path: '/:username/preset/:name',
@@ -358,7 +358,7 @@ GoRouter createRouter(ProviderContainer container) {
         ),
       ),
 
-      // User profile deep link — catch-all for /<username>.
+      // User profile deep link, catch-all for /<username>.
       GoRoute(
         path: '/:username',
         builder: (context, state) {

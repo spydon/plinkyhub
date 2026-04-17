@@ -134,7 +134,7 @@ class ParsedWavetablePhase {
   final String? wavetableHash;
 }
 
-/// Phase 1: Parse PRESETS.UF2 — decodes flash image, extracts presets,
+/// Phase 1: Parse PRESETS.UF2. Decodes flash image, extracts presets,
 /// patterns, sample metadata, and computes preset/pattern hashes.
 ParsedPresetsPhase parsePresetsPhase(Uint8List presetsUf2) {
   final flashImage = uf2ToData(presetsUf2);
@@ -177,7 +177,7 @@ ParsedPresetsPhase parsePresetsPhase(Uint8List presetsUf2) {
   );
 }
 
-/// Phase 2: Parse samples — decodes UF2, trims PCM, detects silence,
+/// Phase 2: Parse samples. Decodes UF2, trims PCM, detects silence,
 /// and computes content hashes.
 ///
 /// If [onSampleParsing] is provided, it is called before each sample
@@ -230,7 +230,7 @@ Future<ParsedSamplesPhase> parseSamplesPhase(
   );
 }
 
-/// Phase 3: Check wavetable — detects presence and computes hash.
+/// Phase 3: Check wavetable. Detects presence and computes hash.
 ParsedWavetablePhase parseWavetablePhase(Uint8List? wavetableBytes) {
   final deviceHasWavetable =
       wavetableBytes != null &&

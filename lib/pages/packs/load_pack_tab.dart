@@ -681,7 +681,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       }
 
       // Upload wavetable file (skip if matched).
-      // Every pack must have a wavetable — fall back to the default.
+      // Every pack must have a wavetable, fall back to the default.
       PackUploadWavetable wavetableUpload;
       if (_includeWavetableInPack &&
           _wavetableUf2Bytes != null &&

@@ -403,7 +403,7 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
   /// timeout never fires against a single long SEND_DATA phase.
   ///
   /// When [chunkBytes] is null a single request is issued for the whole
-  /// region (original behavior — works for small regions like presets).
+  /// region (original behavior, works for small regions like presets).
   ///
   /// [onProgress] is called with a value between 0.0 and 1.0 against the
   /// total region size.

@@ -118,7 +118,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
             sampleInfo = sampleInfos[_selectedSlot];
           }
         } on FormatException {
-          // Ignore PRESETS.UF2 parse errors — metadata is optional.
+          // Ignore PRESETS.UF2 parse errors: metadata is optional.
         }
       }
 

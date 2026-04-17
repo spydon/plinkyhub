@@ -50,7 +50,7 @@ class SaveWavetableToPlinkyDialog extends ConsumerWidget {
 
           if (!verified) {
             throw Exception(
-              'Wavetable verification failed — the data on the device '
+              'Wavetable verification failed. The data on the device '
               'does not match what was sent. Check the browser console '
               'for details.',
             );

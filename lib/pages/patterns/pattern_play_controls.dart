@@ -11,7 +11,7 @@ import 'package:plinkyhub/widgets/plinky_button.dart';
 const _presetSlotCount = 32;
 
 /// Reusable play/stop + tempo + MIDI output + preset selector for a
-/// single pattern. The parent owns the [PatternData] snapshot — this
+/// single pattern. The parent owns the [PatternData] snapshot; this
 /// widget just drives `patternPlaybackProvider` for the given
 /// [patternId] and handles the input controls.
 class PatternPlayControls extends ConsumerStatefulWidget {

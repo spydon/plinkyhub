@@ -64,7 +64,7 @@ Color _inactiveDownbeatStringColor(int stringIndex, ColorScheme colorScheme) {
 /// Each row is one of the 64 Plinky pads (8 strings × 8 columns) sorted
 /// from highest to lowest pitch. Each column is one step. Tapping a
 /// cell places a note at that pitch and step; clicking again clears it.
-/// Per-string monophony is enforced — placing a note on a string at a
+/// Per-string monophony is enforced: placing a note on a string at a
 /// step automatically clears any other column the same string had at
 /// the same step.
 ///
@@ -170,7 +170,7 @@ class _PatternGridEditorState extends State<PatternGridEditor> {
     super.dispose();
   }
 
-  /// Returns true when the cell at (step, pad) should appear active —
+  /// Returns true when the cell at (step, pad) should appear active,
   /// i.e. the grid records this string playing this column at this step.
   bool _isCellActive(int step, PlinkyPad pad) {
     return widget.grid[step][pad.string] == pad.column + 1;
@@ -580,7 +580,7 @@ class _PadRow extends StatelessWidget {
 /// Watches `patternPlaybackProvider` for the matching pattern id and
 /// renders the vertical playhead bar for the active step. Lives
 /// inside the grid's horizontal scroll Stack so it scrolls with the
-/// cells but only this widget rebuilds on step changes — the cells
+/// cells but only this widget rebuilds on step changes; the cells
 /// themselves are unaffected, which matters for large grids.
 class _PlayheadOverlay extends ConsumerStatefulWidget {
   const _PlayheadOverlay({

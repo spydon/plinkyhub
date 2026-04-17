@@ -50,7 +50,7 @@ enum Handedness { left, right }
 
 /// Normalized distance threshold below which the thumb and index
 /// finger are considered to be pinching. Tuned for typical webcam
-/// hand sizes — roughly 6 % of the frame width.
+/// hand sizes, roughly 6 % of the frame width.
 const pinchThreshold = 0.06;
 
 /// Result of a pinch-gesture check for one hand.

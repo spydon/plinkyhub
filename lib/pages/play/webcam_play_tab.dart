@@ -286,7 +286,7 @@ class _WebcamPlayTabState extends ConsumerState<WebcamPlayTab> {
       _middlePinchWasActive[handIndex] = isActive;
 
       if (isActive && !wasActive) {
-        // Rising edge — latch the pad under the middle finger pinch
+        // Rising edge: latch the pad under the middle finger pinch
         // point. Use index pinch to unlatch.
         final mappedX = _remapX(middlePinch.x);
         final mappedY = _remapY(middlePinch.y);
@@ -339,7 +339,7 @@ class _WebcamPlayTabState extends ConsumerState<WebcamPlayTab> {
       final oldPad = _fingertipToPad[fingertipId];
 
       if (newPad == oldPad) {
-        // Same cell — just update pressure (sends aftertouch).
+        // Same cell, just update pressure (sends aftertouch).
         notifier.updatePadPressure(
           row: newPad ~/ 8,
           column: newPad % 8,

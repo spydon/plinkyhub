@@ -24,7 +24,7 @@ String computePresetContentHash(Uint8List presetBytes) {
 
 /// Computes a deterministic SHA-256 hash for a pack based on all its
 /// content hashes. The hash is stable regardless of the order items
-/// were parsed — preset and pattern hashes are sorted by slot/index
+/// were parsed: preset and pattern hashes are sorted by slot/index
 /// and sample hashes by slot index.
 ///
 /// The wavetable hash is intentionally excluded because the wavetable

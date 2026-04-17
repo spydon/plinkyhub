@@ -40,7 +40,7 @@ class _CreateDumpDialogState extends ConsumerState<CreateDumpDialog> {
   int? _capturedExternalExpectedSize;
 
   /// Which flash regions to read. Allowing each to be toggled separately
-  /// is useful for isolating firmware bugs — e.g. skipping internal to
+  /// is useful for isolating firmware bugs, e.g. skipping internal to
   /// see whether external alone behaves differently.
   bool _readInternal = true;
   bool _readExternal = true;

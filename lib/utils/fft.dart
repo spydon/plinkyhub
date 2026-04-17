@@ -124,7 +124,7 @@ void applyHarmonicsToSpectrum(
       complexSpectrum[2 * i] = real * scale;
       complexSpectrum[2 * i + 1] = imaginary * scale;
     } else {
-      // No existing phase — default to pure imaginary (90° phase).
+      // No existing phase: default to pure imaginary (90° phase).
       complexSpectrum[2 * i] = 0.0;
       complexSpectrum[2 * i + 1] = -newMagnitude;
     }

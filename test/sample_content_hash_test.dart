@@ -93,7 +93,7 @@ void main() {
         print('Trimmed size would be: ${sampleInfo.sampleLength * 2} bytes');
         print('Needs trimming: ${sampleInfo.sampleLength * 2 < rawPcm.length}');
       } else {
-        print('sampleInfo is null — no trimming applied');
+        print('sampleInfo is null, no trimming applied');
       }
 
       final trimmedPcm =
