@@ -43,8 +43,19 @@ GoRouter createRouter(ProviderContainer container) {
         try {
           await Supabase.instance.client.auth.exchangeCodeForSession(code);
         } on AuthException catch (error) {
+          debugPrint('Code exchange failed: $error');
           notifier.setError(
             AuthenticationNotifier.friendlyAuthError(error.message),
+          );
+        } on Object catch (error) {
+          // exchangeCodeForSession can throw StorageException or generic
+          // errors when the PKCE verifier is missing (e.g. different
+          // browser). Always fall through to the initial route so the
+          // user sees a usable screen.
+          debugPrint('Code exchange failed: $error');
+          notifier.setError(
+            'Unable to complete that link. '
+            'Please try requesting a new one.',
           );
         }
         return AppRoute.initial.path;
