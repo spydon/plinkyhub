@@ -46,6 +46,87 @@ If you run into any problems or have feature requests, you can:
 - [Open an issue](https://github.com/spydon/plinkyhub/issues) on GitHub
 - Reach out to **spydon** on the [Plinky Discord](https://discord.gg/pHzcVnBt3A)
 
+## Tech stack
+
+- **Flutter Web** (Dart SDK ^3.11.1) compiled to **WebAssembly** (`--wasm`) for
+  near-native performance in the browser.
+- **Riverpod** for state management and **go_router** for routing.
+- **Supabase** (Postgres, Auth, Storage, Row-Level Security) as the backend,
+  accessed via `supabase_flutter`.
+- **WebUSB** for direct communication with Plinky in Tunnel of Lights mode.
+- **flutter_soloud** for audio playback and **MediaPipe Hands** for the
+  webcam-based play tab.
+- **freezed** + **json_serializable** for immutable models, generated via
+  `build_runner`.
+
+## Running locally
+
+### Prerequisites
+
+- Flutter SDK with Dart ^3.11.1
+- A Chromium-based browser (WebUSB and WebAssembly are required)
+- [Supabase CLI](https://supabase.com/docs/guides/local-development) if you
+  want to run the backend locally
+
+### Configure environment
+
+Copy `.env.template` to `.env` and fill in the Supabase credentials you want
+to use:
+
+```bash
+cp .env.template .env
+```
+
+### Install dependencies and generate code
+
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+```
+
+### Run against a remote Supabase project
+
+Point `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env` at your hosted project,
+then launch the app in Chrome with WebAssembly enabled:
+
+```bash
+flutter run -d chrome --wasm
+```
+
+### Run against local Supabase
+
+Start the local Supabase stack (Postgres, Auth, Studio, etc.) from the repo
+root:
+
+```bash
+supabase start
+```
+
+The CLI prints a local `API URL` and `anon key`. Put those into `.env`:
+
+```
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_ANON_KEY=<anon key printed by supabase start>
+```
+
+Migrations under `supabase/migrations/` are applied automatically on
+`supabase start`. Then run the app the same way:
+
+```bash
+flutter run -d chrome --wasm
+```
+
+Stop the stack with `supabase stop` when you are done.
+
+### Building for production
+
+```bash
+flutter build web --wasm --release
+```
+
+The output in `build/web/` is a static site that can be served from any
+static host.
+
 ## WebUSB on Linux
 
 If you get a `SecurityError: Failed to execute 'open' on 'USBDevice': Access denied`
