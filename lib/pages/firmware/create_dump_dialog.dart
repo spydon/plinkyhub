@@ -26,7 +26,7 @@ class CreateDumpDialog extends ConsumerStatefulWidget {
 class _CreateDumpDialogState extends ConsumerState<CreateDumpDialog> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _chunkSizeController = TextEditingController();
+  final _chunkSizeController = TextEditingController(text: '4096');
   _CreateDumpStep _step = _CreateDumpStep.form;
   String _statusMessage = '';
   double _progress = 0;
