@@ -407,13 +407,23 @@ class _DumpDoneView extends StatelessWidget {
       );
     }
     final theme = Theme.of(context);
+    final hasInternal = internalBytes != null;
+    final hasExternal = externalBytes != null;
+    final String what;
+    if (hasInternal && !hasExternal) {
+      what = 'Only the internal flash was read';
+    } else if (hasExternal && !hasInternal) {
+      what = 'Only the external flash was read';
+    } else {
+      what = 'Partial selection was read';
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Dump finished. Partial selection was read, so it was not '
-          'uploaded — download the bytes directly:',
+          'Dump finished. $what, so it was not uploaded. '
+          'Download the bytes directly:',
           style: theme.textTheme.bodyMedium,
         ),
         const SizedBox(height: 12),

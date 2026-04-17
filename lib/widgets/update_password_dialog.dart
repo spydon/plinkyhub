@@ -161,7 +161,7 @@ class _UpdatePasswordDialogState extends ConsumerState<UpdatePasswordDialog> {
           ),
           PlinkyButton(
             onPressed: authenticationState.isLoading ? null : _submit,
-            icon: Icons.lock_reset,
+            icon: Icons.save,
             label: 'Update password',
           ),
         ],

@@ -14,7 +14,7 @@ enum AuthEmailFlow { signup, recovery }
 const _lastAuthEmailFlowKey = 'last_auth_email_flow';
 const _lastAuthEmailFlowTimestampKey = 'last_auth_email_flow_timestamp';
 
-/// Maximum age of a persisted flow marker we still trust — longer than
+/// Maximum age of a persisted flow marker we still trust. Longer than
 /// any Supabase email-link lifetime, but short enough to avoid stale
 /// carry-over from weeks-old activity.
 const _lastAuthEmailFlowMaxAge = Duration(days: 2);
