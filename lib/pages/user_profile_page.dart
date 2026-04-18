@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/pages/packs/pack_card.dart';
 import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/pages/samples/sample_card.dart';
+import 'package:plinkyhub/routes.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/user_profile_notifier.dart';
 import 'package:plinkyhub/state/user_profile_state.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 
+enum UserProfileTab { presets, packs, samples }
+
 class UserProfilePage extends ConsumerWidget {
-  const UserProfilePage({this.username, super.key});
+  const UserProfilePage({this.username, this.initialTab, super.key});
 
   final String? username;
+  final String? initialTab;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,6 +31,7 @@ class UserProfilePage extends ConsumerWidget {
         error: (error, _) => Center(child: Text('$error')),
         data: (profileState) => UserProfileContent(
           profileState: profileState,
+          initialTab: initialTab,
           onRefresh: () => ref.refresh(
             userProfileByUsernameProvider(username).future,
           ),
@@ -42,6 +48,7 @@ class UserProfilePage extends ConsumerWidget {
 
     return UserProfileContent(
       profileState: profileState,
+      initialTab: initialTab,
       onRefresh: () => ref
           .read(userProfileProvider.notifier)
           .loadUserProfile(
@@ -56,11 +63,13 @@ class UserProfileContent extends ConsumerStatefulWidget {
   const UserProfileContent({
     required this.profileState,
     required this.onRefresh,
+    this.initialTab,
     super.key,
   });
 
   final UserProfileState profileState;
   final Future<void> Function() onRefresh;
+  final String? initialTab;
 
   @override
   ConsumerState<UserProfileContent> createState() => _UserProfileContentState();
@@ -73,11 +82,52 @@ class _UserProfileContentState extends ConsumerState<UserProfileContent>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    final initialIndex = widget.initialTab != null
+        ? UserProfileTab.values
+              .firstWhere(
+                (tab) => tab.name == widget.initialTab,
+                orElse: () => UserProfileTab.presets,
+              )
+              .index
+        : 0;
+    _tabController = TabController(
+      length: UserProfileTab.values.length,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
+    _tabController.addListener(_handleTabChange);
+  }
+
+  @override
+  void didUpdateWidget(UserProfileContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != null &&
+        widget.initialTab != oldWidget.initialTab) {
+      final tab = UserProfileTab.values.firstWhere(
+        (entry) => entry.name == widget.initialTab,
+        orElse: () => UserProfileTab.presets,
+      );
+      if (_tabController.index != tab.index) {
+        _tabController.animateTo(tab.index);
+      }
+    }
+  }
+
+  void _handleTabChange() {
+    if (!_tabController.indexIsChanging) {
+      final tabName = UserProfileTab.values[_tabController.index].name;
+      final username = widget.profileState.username;
+      if (username.isEmpty) {
+        context.go(AppRoute.profileTab(tabName));
+      } else {
+        context.go(AppRoute.userPageTab(username, tabName));
+      }
+    }
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     super.dispose();
   }

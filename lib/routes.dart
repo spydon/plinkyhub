@@ -48,4 +48,13 @@ enum AppRoute {
 
   /// Path to a user's profile page.
   static String userPage(String username) => '/$username';
+
+  /// Path to a user's profile page on a specific tab (e.g. packs).
+  /// Uses a query parameter so it can't collide with other routes that
+  /// share the `/<username>/<segment>` shape.
+  static String userPageTab(String username, String tabName) =>
+      '/$username?tab=$tabName';
+
+  /// Path to the signed-in user's own profile page on a specific tab.
+  static String profileTab(String tabName) => '/profile?tab=$tabName';
 }

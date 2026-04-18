@@ -233,6 +233,14 @@ GoRouter createRouter(ProviderContainer container) {
               GoRoute(
                 path: AppRoute.users.path,
                 builder: (context, state) => const UsersPage(),
+                routes: [
+                  GoRoute(
+                    path: ':tab',
+                    builder: (context, state) => UsersPage(
+                      initialTab: state.pathParameters['tab'],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -241,7 +249,9 @@ GoRouter createRouter(ProviderContainer container) {
             routes: [
               GoRoute(
                 path: AppRoute.profile.path,
-                builder: (context, state) => const UserProfilePage(),
+                builder: (context, state) => UserProfilePage(
+                  initialTab: state.uri.queryParameters['tab'],
+                ),
               ),
             ],
           ),
@@ -364,7 +374,10 @@ GoRouter createRouter(ProviderContainer container) {
         builder: (context, state) {
           final username = state.pathParameters['username']!;
           return _ItemPageShell(
-            child: UserProfilePage(username: username),
+            child: UserProfilePage(
+              username: username,
+              initialTab: state.uri.queryParameters['tab'],
+            ),
           );
         },
       ),

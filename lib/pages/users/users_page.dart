@@ -6,8 +6,12 @@ import 'package:plinkyhub/routes.dart';
 import 'package:plinkyhub/state/users_search_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 
+enum UsersTab { search, highscore }
+
 class UsersPage extends ConsumerStatefulWidget {
-  const UsersPage({super.key});
+  const UsersPage({this.initialTab, super.key});
+
+  final String? initialTab;
 
   @override
   ConsumerState<UsersPage> createState() => _UsersPageState();
@@ -21,14 +25,50 @@ class _UsersPageState extends ConsumerState<UsersPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    final initialIndex = widget.initialTab != null
+        ? UsersTab.values
+              .firstWhere(
+                (tab) => tab.name == widget.initialTab,
+                orElse: () => UsersTab.search,
+              )
+              .index
+        : 0;
+    _tabController = TabController(
+      length: UsersTab.values.length,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
+    _tabController.addListener(_handleTabChange);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(usersSearchProvider.notifier).search('');
     });
   }
 
   @override
+  void didUpdateWidget(UsersPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != null &&
+        widget.initialTab != oldWidget.initialTab) {
+      final tab = UsersTab.values.firstWhere(
+        (entry) => entry.name == widget.initialTab,
+        orElse: () => UsersTab.search,
+      );
+      if (_tabController.index != tab.index) {
+        _tabController.animateTo(tab.index);
+      }
+    }
+  }
+
+  void _handleTabChange() {
+    if (!_tabController.indexIsChanging) {
+      final tabName = UsersTab.values[_tabController.index].name;
+      context.go(AppRoute.users.tab(tabName));
+    }
+  }
+
+  @override
   void dispose() {
+    _tabController.removeListener(_handleTabChange);
     _searchController.dispose();
     _tabController.dispose();
     super.dispose();
