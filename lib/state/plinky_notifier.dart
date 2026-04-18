@@ -576,9 +576,13 @@ class PlinkyNotifier extends Notifier<PlinkyState> {
       return dumpBytes;
     } on Exception catch (error) {
       debugPrint('$error');
+      // Flash dump failures are handled by the caller's own UI (e.g. the
+      // create-dump dialog's partial-bytes recovery). The device itself
+      // is still connected, so keep the global connection state intact
+      // rather than surfacing this as a top-level Preset Editor error.
       state = state.copyWith(
-        connectionState: PlinkyConnectionState.error,
-        errorMessage: error.toString(),
+        connectionState: PlinkyConnectionState.connected,
+        errorMessage: null,
       );
       rethrow;
     }
