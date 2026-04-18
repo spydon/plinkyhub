@@ -281,6 +281,7 @@ GoRouter createRouter(ProviderContainer container) {
       // Firmware detail page, not tied to a username.
       GoRoute(
         path: '/firmware/:name',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: FirmwareDetailPage(
             firmwareName: Uri.decodeComponent(
@@ -290,10 +291,12 @@ GoRouter createRouter(ProviderContainer container) {
         ),
       ),
 
-      // Item detail pages, displayed within the shell via
-      // parentNavigatorKey so they show the sidebar.
+      // Item detail pages. parentNavigatorKey pins them to the root
+      // navigator so pushing them from inside a shell branch updates
+      // the browser URL instead of staying on the branch's URL.
       GoRoute(
         path: '/:username/preset/:name',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: PresetPage(
             username: state.pathParameters['username']!,
@@ -305,6 +308,7 @@ GoRouter createRouter(ProviderContainer container) {
       ),
       GoRoute(
         path: '/:username/pack/:name',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: PackPage(
             username: state.pathParameters['username']!,
@@ -316,6 +320,7 @@ GoRouter createRouter(ProviderContainer container) {
       ),
       GoRoute(
         path: '/:username/sample/:name',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: SamplePage(
             username: state.pathParameters['username']!,
@@ -327,6 +332,7 @@ GoRouter createRouter(ProviderContainer container) {
       ),
       GoRoute(
         path: '/:username/sample/:name/edit',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: SavedSamplesPage(
             editSampleName: Uri.decodeComponent(
@@ -337,6 +343,7 @@ GoRouter createRouter(ProviderContainer container) {
       ),
       GoRoute(
         path: '/:username/wavetable/:name',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: WavetablePage(
             username: state.pathParameters['username']!,
@@ -348,6 +355,7 @@ GoRouter createRouter(ProviderContainer container) {
       ),
       GoRoute(
         path: '/:username/wavetable/:name/edit',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: SavedWavetablesPage(
             editWavetableName: Uri.decodeComponent(
@@ -358,6 +366,7 @@ GoRouter createRouter(ProviderContainer container) {
       ),
       GoRoute(
         path: '/:username/pattern/:name',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: PatternPage(
             username: state.pathParameters['username']!,
@@ -371,6 +380,7 @@ GoRouter createRouter(ProviderContainer container) {
       // User profile deep link, catch-all for /<username>.
       GoRoute(
         path: '/:username',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
           final username = state.pathParameters['username']!;
           return _ItemPageShell(
