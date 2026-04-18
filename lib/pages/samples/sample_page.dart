@@ -53,10 +53,22 @@ class _SamplePageState extends ConsumerState<SamplePage> {
           .maybeSingle();
 
       if (response != null) {
+        final userId = ref.read(authenticationProvider).user?.id;
+        var isStarred = false;
+        if (userId != null) {
+          final star = await Supabase.instance.client
+              .from('sample_stars')
+              .select('sample_id')
+              .eq('sample_id', response['id'] as String)
+              .eq('user_id', userId)
+              .maybeSingle();
+          isStarred = star != null;
+        }
         setState(() {
-          _sample = SavedSample.fromJson(
-            response,
-          );
+          _sample = SavedSample.fromJson({
+            ...response,
+            'is_starred': isStarred,
+          });
           _isLoading = false;
         });
       } else {

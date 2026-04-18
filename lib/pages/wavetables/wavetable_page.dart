@@ -53,9 +53,20 @@ class _WavetablePageState extends ConsumerState<WavetablePage> {
           .maybeSingle();
 
       if (response != null) {
+        final userId = ref.read(authenticationProvider).user?.id;
+        var isStarred = false;
+        if (userId != null) {
+          final star = await Supabase.instance.client
+              .from('wavetable_stars')
+              .select('wavetable_id')
+              .eq('wavetable_id', response['id'] as String)
+              .eq('user_id', userId)
+              .maybeSingle();
+          isStarred = star != null;
+        }
         setState(() {
           _wavetable = SavedWavetable.fromJson(
-            response,
+            {...response, 'is_starred': isStarred},
           );
           _isLoading = false;
         });

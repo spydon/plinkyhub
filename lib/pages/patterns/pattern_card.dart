@@ -51,7 +51,7 @@ class PatternCard extends StatelessWidget {
 /// Pattern metadata + action buttons shared by the list-card and the
 /// detail page. Renders without any surrounding Card/InkWell so it
 /// can be embedded in either context.
-class PatternHeader extends ConsumerWidget {
+class PatternHeader extends ConsumerStatefulWidget {
   const PatternHeader({
     required this.pattern,
     required this.isOwned,
@@ -64,8 +64,46 @@ class PatternHeader extends ConsumerWidget {
   final VoidCallback? onDeleted;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PatternHeader> createState() => _PatternHeaderState();
+}
+
+class _PatternHeaderState extends ConsumerState<PatternHeader> {
+  late bool _isStarred;
+  late int _starCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _isStarred = widget.pattern.isStarred;
+    _starCount = widget.pattern.starCount;
+  }
+
+  @override
+  void didUpdateWidget(PatternHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.pattern.isStarred != _isStarred) {
+      _isStarred = widget.pattern.isStarred;
+      _starCount = widget.pattern.starCount;
+    }
+  }
+
+  void _toggleStar() {
+    final wasStarred = _isStarred;
+    setState(() {
+      _isStarred = !wasStarred;
+      _starCount += wasStarred ? -1 : 1;
+    });
+    ref
+        .read(savedPatternsProvider.notifier)
+        .toggleStar(
+          widget.pattern.copyWith(isStarred: wasStarred),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pattern = widget.pattern;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,10 +140,9 @@ class PatternHeader extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
             StarButton(
-              isStarred: pattern.isStarred,
-              starCount: pattern.starCount,
-              onToggle: () =>
-                  ref.read(savedPatternsProvider.notifier).toggleStar(pattern),
+              isStarred: _isStarred,
+              starCount: _starCount,
+              onToggle: _toggleStar,
             ),
             if (pattern.username.isNotEmpty)
               ShareLinkButton(
@@ -114,7 +151,7 @@ class PatternHeader extends ConsumerWidget {
                 itemName: pattern.name,
               ),
             const Spacer(),
-            if (isOwned) ...[
+            if (widget.isOwned) ...[
               IconButton(
                 icon: Icon(
                   pattern.isPublic ? Icons.public : Icons.public_off,
@@ -130,12 +167,9 @@ class PatternHeader extends ConsumerWidget {
                 },
               ),
               IconButton(
-                icon: const Icon(
-                  Icons.delete_outline,
-                  size: 20,
-                ),
+                icon: const Icon(Icons.delete_outline, size: 20),
                 tooltip: 'Delete pattern',
-                onPressed: () => _confirmDelete(context, ref),
+                onPressed: () => _confirmDelete(context),
               ),
             ],
           ],
@@ -144,8 +178,11 @@ class PatternHeader extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final referencingPacks = await findPacksUsingPattern(ref, pattern.id);
+  Future<void> _confirmDelete(BuildContext context) async {
+    final referencingPacks = await findPacksUsingPattern(
+      ref,
+      widget.pattern.id,
+    );
     if (!context.mounted) {
       return;
     }
@@ -161,11 +198,11 @@ class PatternHeader extends ConsumerWidget {
     final confirmed = await showConfirmDeleteDialog(
       context,
       itemType: 'pattern',
-      itemName: pattern.name,
+      itemName: widget.pattern.name,
     );
     if (confirmed) {
-      ref.read(savedPatternsProvider.notifier).deleteItem(pattern.id);
-      onDeleted?.call();
+      ref.read(savedPatternsProvider.notifier).deleteItem(widget.pattern.id);
+      widget.onDeleted?.call();
     }
   }
 }

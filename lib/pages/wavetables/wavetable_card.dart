@@ -13,7 +13,7 @@ import 'package:plinkyhub/widgets/star_button.dart';
 import 'package:plinkyhub/widgets/username_date_line.dart';
 import 'package:plinkyhub/widgets/youtube_embed.dart';
 
-class WavetableCard extends ConsumerWidget {
+class WavetableCard extends ConsumerStatefulWidget {
   const WavetableCard({
     required this.wavetable,
     required this.isOwned,
@@ -26,8 +26,46 @@ class WavetableCard extends ConsumerWidget {
   final VoidCallback? onDeleted;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WavetableCard> createState() => _WavetableCardState();
+}
+
+class _WavetableCardState extends ConsumerState<WavetableCard> {
+  late bool _isStarred;
+  late int _starCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _isStarred = widget.wavetable.isStarred;
+    _starCount = widget.wavetable.starCount;
+  }
+
+  @override
+  void didUpdateWidget(WavetableCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.wavetable.isStarred != _isStarred) {
+      _isStarred = widget.wavetable.isStarred;
+      _starCount = widget.wavetable.starCount;
+    }
+  }
+
+  void _toggleStar() {
+    final wasStarred = _isStarred;
+    setState(() {
+      _isStarred = !wasStarred;
+      _starCount += wasStarred ? -1 : 1;
+    });
+    ref
+        .read(savedWavetablesProvider.notifier)
+        .toggleStar(
+          widget.wavetable.copyWith(isStarred: wasStarred),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final wavetable = widget.wavetable;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -77,11 +115,9 @@ class WavetableCard extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   StarButton(
-                    isStarred: wavetable.isStarred,
-                    starCount: wavetable.starCount,
-                    onToggle: () => ref
-                        .read(savedWavetablesProvider.notifier)
-                        .toggleStar(wavetable),
+                    isStarred: _isStarred,
+                    starCount: _starCount,
+                    onToggle: _toggleStar,
                   ),
                   if (wavetable.username.isNotEmpty)
                     ShareLinkButton(
@@ -90,7 +126,7 @@ class WavetableCard extends ConsumerWidget {
                       itemName: wavetable.name,
                     ),
                   const Spacer(),
-                  if (isOwned) ...[
+                  if (widget.isOwned) ...[
                     IconButton(
                       icon: const Icon(Icons.edit, size: 20),
                       tooltip: 'Edit wavetable',
@@ -120,12 +156,9 @@ class WavetableCard extends ConsumerWidget {
                       },
                     ),
                     IconButton(
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        size: 20,
-                      ),
+                      icon: const Icon(Icons.delete_outline, size: 20),
                       tooltip: 'Delete wavetable',
-                      onPressed: () => _confirmDelete(context, ref),
+                      onPressed: () => _confirmDelete(context),
                     ),
                   ],
                 ],
@@ -141,12 +174,16 @@ class WavetableCard extends ConsumerWidget {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => SaveWavetableToPlinkyDialog(wavetable: wavetable),
+      builder: (context) =>
+          SaveWavetableToPlinkyDialog(wavetable: widget.wavetable),
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final referencingPacks = await findPacksUsingWavetable(ref, wavetable.id);
+  Future<void> _confirmDelete(BuildContext context) async {
+    final referencingPacks = await findPacksUsingWavetable(
+      ref,
+      widget.wavetable.id,
+    );
     if (!context.mounted) {
       return;
     }
@@ -162,11 +199,13 @@ class WavetableCard extends ConsumerWidget {
     final confirmed = await showConfirmDeleteDialog(
       context,
       itemType: 'wavetable',
-      itemName: wavetable.name,
+      itemName: widget.wavetable.name,
     );
     if (confirmed) {
-      ref.read(savedWavetablesProvider.notifier).deleteItem(wavetable.id);
-      onDeleted?.call();
+      ref
+          .read(savedWavetablesProvider.notifier)
+          .deleteItem(widget.wavetable.id);
+      widget.onDeleted?.call();
     }
   }
 }

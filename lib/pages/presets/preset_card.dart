@@ -13,7 +13,7 @@ import 'package:plinkyhub/widgets/star_button.dart';
 import 'package:plinkyhub/widgets/username_date_line.dart';
 import 'package:plinkyhub/widgets/youtube_embed.dart';
 
-class PresetCard extends ConsumerWidget {
+class PresetCard extends ConsumerStatefulWidget {
   const PresetCard({
     required this.preset,
     required this.isOwned,
@@ -25,11 +25,49 @@ class PresetCard extends ConsumerWidget {
   final bool isOwned;
   final VoidCallback? onDeleted;
 
-  bool get _hasSample => preset.sampleName != null;
+  @override
+  ConsumerState<PresetCard> createState() => _PresetCardState();
+}
+
+class _PresetCardState extends ConsumerState<PresetCard> {
+  late bool _isStarred;
+  late int _starCount;
+
+  bool get _hasSample => widget.preset.sampleName != null;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    _isStarred = widget.preset.isStarred;
+    _starCount = widget.preset.starCount;
+  }
+
+  @override
+  void didUpdateWidget(PresetCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.preset.isStarred != _isStarred) {
+      _isStarred = widget.preset.isStarred;
+      _starCount = widget.preset.starCount;
+    }
+  }
+
+  void _toggleStar() {
+    final wasStarred = _isStarred;
+    setState(() {
+      _isStarred = !wasStarred;
+      _starCount += wasStarred ? -1 : 1;
+    });
+    ref
+        .read(savedPresetsProvider.notifier)
+        .toggleStar(
+          widget.preset.copyWith(isStarred: wasStarred),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final preset = widget.preset;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -122,11 +160,9 @@ class PresetCard extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   StarButton(
-                    isStarred: preset.isStarred,
-                    starCount: preset.starCount,
-                    onToggle: () => ref
-                        .read(savedPresetsProvider.notifier)
-                        .toggleStar(preset),
+                    isStarred: _isStarred,
+                    starCount: _starCount,
+                    onToggle: _toggleStar,
                   ),
                   if (preset.username.isNotEmpty)
                     ShareLinkButton(
@@ -145,7 +181,7 @@ class PresetCard extends ConsumerWidget {
                     },
                   ),
                   const Spacer(),
-                  if (isOwned) ...[
+                  if (widget.isOwned) ...[
                     IconButton(
                       icon: Icon(
                         preset.isPublic ? Icons.public : Icons.public_off,
@@ -164,7 +200,7 @@ class PresetCard extends ConsumerWidget {
                     IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
                       tooltip: 'Delete preset',
-                      onPressed: () => _confirmDelete(context, ref),
+                      onPressed: () => _confirmDelete(context),
                     ),
                   ],
                 ],
@@ -180,12 +216,12 @@ class PresetCard extends ConsumerWidget {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => SavePresetToPlinkyDialog(preset: preset),
+      builder: (context) => SavePresetToPlinkyDialog(preset: widget.preset),
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final referencingPacks = await findPacksUsingPreset(ref, preset.id);
+  Future<void> _confirmDelete(BuildContext context) async {
+    final referencingPacks = await findPacksUsingPreset(ref, widget.preset.id);
     if (!context.mounted) {
       return;
     }
@@ -201,11 +237,11 @@ class PresetCard extends ConsumerWidget {
     final confirmed = await showConfirmDeleteDialog(
       context,
       itemType: 'preset',
-      itemName: preset.name,
+      itemName: widget.preset.name,
     );
     if (confirmed) {
-      ref.read(savedPresetsProvider.notifier).deleteItem(preset.id);
-      onDeleted?.call();
+      ref.read(savedPresetsProvider.notifier).deleteItem(widget.preset.id);
+      widget.onDeleted?.call();
     }
   }
 }

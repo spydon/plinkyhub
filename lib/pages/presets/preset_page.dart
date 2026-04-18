@@ -53,10 +53,22 @@ class _PresetPageState extends ConsumerState<PresetPage> {
           .maybeSingle();
 
       if (response != null) {
+        final userId = ref.read(authenticationProvider).user?.id;
+        var isStarred = false;
+        if (userId != null) {
+          final star = await Supabase.instance.client
+              .from('preset_stars')
+              .select('preset_id')
+              .eq('preset_id', response['id'] as String)
+              .eq('user_id', userId)
+              .maybeSingle();
+          isStarred = star != null;
+        }
         setState(() {
-          _preset = SavedPreset.fromJson(
-            response,
-          );
+          _preset = SavedPreset.fromJson({
+            ...response,
+            'is_starred': isStarred,
+          });
           _isLoading = false;
         });
       } else {

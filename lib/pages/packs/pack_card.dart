@@ -14,7 +14,7 @@ import 'package:plinkyhub/widgets/star_button.dart';
 import 'package:plinkyhub/widgets/username_date_line.dart';
 import 'package:plinkyhub/widgets/youtube_embed.dart';
 
-class PackCard extends ConsumerWidget {
+class PackCard extends ConsumerStatefulWidget {
   const PackCard({
     required this.pack,
     required this.isOwned,
@@ -29,8 +29,46 @@ class PackCard extends ConsumerWidget {
   final VoidCallback? onEdit;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PackCard> createState() => _PackCardState();
+}
+
+class _PackCardState extends ConsumerState<PackCard> {
+  late bool _isStarred;
+  late int _starCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _isStarred = widget.pack.isStarred;
+    _starCount = widget.pack.starCount;
+  }
+
+  @override
+  void didUpdateWidget(PackCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.pack.isStarred != _isStarred) {
+      _isStarred = widget.pack.isStarred;
+      _starCount = widget.pack.starCount;
+    }
+  }
+
+  void _toggleStar() {
+    final wasStarred = _isStarred;
+    setState(() {
+      _isStarred = !wasStarred;
+      _starCount += wasStarred ? -1 : 1;
+    });
+    ref
+        .read(savedPacksProvider.notifier)
+        .toggleStar(
+          widget.pack.copyWith(isStarred: wasStarred),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pack = widget.pack;
     final filledSlots = pack.slots
         .where((slot) => slot.presetId != null)
         .length;
@@ -93,10 +131,9 @@ class PackCard extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   StarButton(
-                    isStarred: pack.isStarred,
-                    starCount: pack.starCount,
-                    onToggle: () =>
-                        ref.read(savedPacksProvider.notifier).toggleStar(pack),
+                    isStarred: _isStarred,
+                    starCount: _starCount,
+                    onToggle: _toggleStar,
                   ),
                   if (pack.username.isNotEmpty)
                     ShareLinkButton(
@@ -105,7 +142,7 @@ class PackCard extends ConsumerWidget {
                       itemName: pack.name,
                     ),
                   const Spacer(),
-                  if (isOwned) ...[
+                  if (widget.isOwned) ...[
                     IconButton(
                       icon: const Icon(Icons.edit, size: 20),
                       tooltip: 'Edit pack',
@@ -113,7 +150,7 @@ class PackCard extends ConsumerWidget {
                         ref
                             .read(savedPacksProvider.notifier)
                             .startEditing(pack);
-                        onEdit?.call();
+                        widget.onEdit?.call();
                       },
                     ),
                     IconButton(
@@ -122,12 +159,12 @@ class PackCard extends ConsumerWidget {
                         size: 20,
                       ),
                       tooltip: pack.isPublic ? 'Make private' : 'Make public',
-                      onPressed: () => _togglePublic(context, ref),
+                      onPressed: () => _togglePublic(context),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
                       tooltip: 'Delete pack',
-                      onPressed: () => _confirmDelete(context, ref),
+                      onPressed: () => _confirmDelete(context),
                     ),
                   ],
                 ],
@@ -139,17 +176,12 @@ class PackCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _togglePublic(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _togglePublic(BuildContext context) async {
+    final pack = widget.pack;
     if (pack.isPublic) {
       ref
           .read(savedPacksProvider.notifier)
-          .updatePack(
-            pack.id,
-            isPublic: false,
-          );
+          .updatePack(pack.id, isPublic: false);
       return;
     }
 
@@ -172,10 +204,7 @@ class PackCard extends ConsumerWidget {
       );
 
       if (summary.hasPrivateItems) {
-        final result = await showSharingConflictDialog(
-          context,
-          summary,
-        );
+        final result = await showSharingConflictDialog(context, summary);
         if (result == null) {
           return;
         }
@@ -187,31 +216,26 @@ class PackCard extends ConsumerWidget {
       }
     }
 
-    ref
-        .read(savedPacksProvider.notifier)
-        .updatePack(
-          pack.id,
-          isPublic: true,
-        );
+    ref.read(savedPacksProvider.notifier).updatePack(pack.id, isPublic: true);
   }
 
   void _saveToPlinky(BuildContext context) {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => SaveToPlinkyDialog(pack: pack),
+      builder: (context) => SaveToPlinkyDialog(pack: widget.pack),
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmDelete(BuildContext context) async {
     final confirmed = await showConfirmDeleteDialog(
       context,
       itemType: 'pack',
-      itemName: pack.name,
+      itemName: widget.pack.name,
     );
     if (confirmed) {
-      ref.read(savedPacksProvider.notifier).deleteItem(pack.id);
-      onDeleted?.call();
+      ref.read(savedPacksProvider.notifier).deleteItem(widget.pack.id);
+      widget.onDeleted?.call();
     }
   }
 }

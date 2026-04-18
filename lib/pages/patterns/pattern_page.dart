@@ -67,7 +67,21 @@ class _PatternPageState extends ConsumerState<PatternPage> {
         return;
       }
 
-      final pattern = SavedPattern.fromJson(response);
+      final userId = ref.read(authenticationProvider).user?.id;
+      var isStarred = false;
+      if (userId != null) {
+        final star = await Supabase.instance.client
+            .from('pattern_stars')
+            .select('pattern_id')
+            .eq('pattern_id', response['id'] as String)
+            .eq('user_id', userId)
+            .maybeSingle();
+        isStarred = star != null;
+      }
+      final pattern = SavedPattern.fromJson({
+        ...response,
+        'is_starred': isStarred,
+      });
       if (!mounted) {
         return;
       }

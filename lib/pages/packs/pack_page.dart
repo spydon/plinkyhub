@@ -54,10 +54,19 @@ class _PackPageState extends ConsumerState<PackPage> {
           .maybeSingle();
 
       if (response != null) {
+        final userId = ref.read(authenticationProvider).user?.id;
+        var isStarred = false;
+        if (userId != null) {
+          final star = await Supabase.instance.client
+              .from('pack_stars')
+              .select('pack_id')
+              .eq('pack_id', response['id'] as String)
+              .eq('user_id', userId)
+              .maybeSingle();
+          isStarred = star != null;
+        }
         setState(() {
-          _pack = SavedPack.fromJson(
-            response,
-          );
+          _pack = SavedPack.fromJson({...response, 'is_starred': isStarred});
           _isLoading = false;
         });
       } else {
