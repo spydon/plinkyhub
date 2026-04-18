@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/main.dart';
+import 'package:plinkyhub/models/midi_state.dart';
 import 'package:plinkyhub/pages/play/providers/midi_play_notifier.dart';
 import 'package:plinkyhub/pages/play/webcam_play_tab.dart';
-import 'package:plinkyhub/routes.dart';
-import 'package:plinkyhub/state/midi_notifier.dart';
-import 'package:plinkyhub/state/midi_state.dart';
+import 'package:plinkyhub/providers/midi_notifier.dart';
+import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/utils/pitch.dart';
 
 const _noteNames = [

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/saved_items_state.dart';
 import 'package:plinkyhub/models/searchable.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/saved_items_state.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Base notifier for any saved-item type (presets, samples, patterns,

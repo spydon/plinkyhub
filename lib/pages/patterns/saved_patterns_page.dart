@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/pages/patterns/create_pattern_tab.dart';
 import 'package:plinkyhub/pages/patterns/pattern_card.dart';
 import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
-import 'package:plinkyhub/routes.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
 

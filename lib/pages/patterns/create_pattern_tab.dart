@@ -10,8 +10,8 @@ import 'package:plinkyhub/pages/patterns/pattern_grid_editor.dart';
 import 'package:plinkyhub/pages/patterns/pattern_play_controls.dart';
 import 'package:plinkyhub/pages/patterns/providers/pattern_playback_notifier.dart';
 import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/utils/midi_import.dart';
+import 'package:plinkyhub/pages/patterns/utils/midi_import.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/utils/pitch.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 

@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/plinky_state.dart';
 import 'package:plinkyhub/pages/firmware/providers/dumps_notifier.dart';
-import 'package:plinkyhub/state/plinky_notifier.dart';
-import 'package:plinkyhub/state/plinky_state.dart';
+import 'package:plinkyhub/providers/plinky_notifier.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:plinkyhub/utils/waveform_effects.dart';
+import 'package:plinkyhub/pages/wavetables/utils/waveform_effects.dart';
 
 /// Panel displaying labeled sliders for all waveform effects.
 class WaveformEffectsPanel extends StatelessWidget {

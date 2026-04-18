@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/firmware/models/saved_dump.dart';
 import 'package:plinkyhub/pages/firmware/providers/dumps_notifier.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 

@@ -20,8 +20,8 @@ import 'package:plinkyhub/pages/users/user_profile_page.dart';
 import 'package:plinkyhub/pages/users/users_page.dart';
 import 'package:plinkyhub/pages/wavetables/saved_wavetables_page.dart';
 import 'package:plinkyhub/pages/wavetables/wavetable_page.dart';
-import 'package:plinkyhub/routes.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/widgets/navigation_sidebar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/pages/users/highscore_tab.dart';
 import 'package:plinkyhub/pages/users/providers/users_search_notifier.dart';
-import 'package:plinkyhub/routes.dart';
+import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 
 enum UsersTab { search, highscore }

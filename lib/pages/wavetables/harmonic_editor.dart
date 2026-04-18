@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:plinkyhub/utils/fft.dart';
+import 'package:plinkyhub/pages/wavetables/utils/fft.dart';
 
 /// Interactive bar chart for editing harmonic magnitudes.
 ///

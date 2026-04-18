@@ -7,8 +7,8 @@ import 'package:plinkyhub/pages/packs/pattern_section.dart';
 import 'package:plinkyhub/pages/packs/preset_slots_grid.dart';
 import 'package:plinkyhub/pages/packs/samples_section.dart';
 import 'package:plinkyhub/pages/packs/wavetable_section.dart';
-import 'package:plinkyhub/routes.dart';
-import 'package:plinkyhub/state/plinky_notifier.dart';
+import 'package:plinkyhub/providers/plinky_notifier.dart';
+import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/widgets/linked_item_icon.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 

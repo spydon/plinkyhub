@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/pages/firmware/dump_tab.dart';
 import 'package:plinkyhub/pages/firmware/firmware_list_tab.dart';
-import 'package:plinkyhub/routes.dart';
+import 'package:plinkyhub/routing/routes.dart';
 
 enum FirmwareTab {
   firmware,

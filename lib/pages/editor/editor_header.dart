@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/plinky_state.dart';
 import 'package:plinkyhub/pages/editor/connect_button.dart';
 import 'package:plinkyhub/pages/editor/create_preset_button.dart';
 import 'package:plinkyhub/pages/editor/widgets/linux_webusb_instructions.dart';
 import 'package:plinkyhub/pages/editor/widgets/preset_controls.dart';
 import 'package:plinkyhub/services/webusb_service.dart';
-import 'package:plinkyhub/state/plinky_state.dart';
 
 class EditorHeader extends ConsumerWidget {
   const EditorHeader({

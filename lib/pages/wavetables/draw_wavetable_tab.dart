@@ -4,13 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/pages/wavetables/harmonic_editor.dart';
 import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
+import 'package:plinkyhub/pages/wavetables/utils/waveform_effects.dart';
 import 'package:plinkyhub/pages/wavetables/waveform_drawer.dart';
 import 'package:plinkyhub/pages/wavetables/waveform_effects_panel.dart';
 import 'package:plinkyhub/pages/wavetables/waveform_thumbnail.dart';
-import 'package:plinkyhub/routes.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/utils/uf2.dart';
-import 'package:plinkyhub/utils/waveform_effects.dart';
 import 'package:plinkyhub/utils/wavetable.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 

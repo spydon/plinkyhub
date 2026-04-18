@@ -8,7 +8,7 @@ import 'package:plinkyhub/pages/packs/sample_picker_dialog.dart';
 import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
 import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/widgets/linked_item_icon.dart';
 
 enum _SlotMenuAction { edit, pickPreset, pickSample, clear }

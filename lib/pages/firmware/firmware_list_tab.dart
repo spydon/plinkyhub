@@ -4,7 +4,7 @@ import 'package:plinkyhub/pages/firmware/firmware_admins.dart';
 import 'package:plinkyhub/pages/firmware/firmware_card.dart';
 import 'package:plinkyhub/pages/firmware/providers/firmwares_notifier.dart';
 import 'package:plinkyhub/pages/firmware/upload_firmware_dialog.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 

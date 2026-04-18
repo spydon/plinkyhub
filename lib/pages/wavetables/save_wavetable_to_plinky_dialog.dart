@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
-import 'package:plinkyhub/state/plinky_notifier.dart';
+import 'package:plinkyhub/providers/plinky_notifier.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/widgets/plinky_transfer_dialog.dart';

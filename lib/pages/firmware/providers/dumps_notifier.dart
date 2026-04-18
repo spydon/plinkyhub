@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/firmware/firmware_admins.dart';
 import 'package:plinkyhub/pages/firmware/models/dumps_state.dart';
 import 'package:plinkyhub/pages/firmware/models/saved_dump.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final dumpsProvider = NotifierProvider<DumpsNotifier, DumpsState>(

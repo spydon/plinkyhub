@@ -4,7 +4,7 @@ import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/users/models/user_profile_state.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final userProfileProvider =

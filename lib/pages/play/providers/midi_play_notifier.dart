@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/state/midi_notifier.dart';
+import 'package:plinkyhub/providers/midi_notifier.dart';
 import 'package:plinkyhub/utils/pitch.dart';
 
 /// Per-pad state for the WebMIDI play page. Tracks each held pad's

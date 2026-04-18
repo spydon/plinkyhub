@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:plinkyhub/utils/fft.dart';
+import 'package:plinkyhub/pages/wavetables/utils/fft.dart';
 
 /// All effect parameters for a single waveform, each in [0.0, 1.0].
 class WaveformEffects {

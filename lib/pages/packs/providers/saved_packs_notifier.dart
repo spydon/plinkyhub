@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/saved_items_state.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/pages/packs/models/pack_slot_write.dart';
 import 'package:plinkyhub/pages/packs/models/pack_write.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/saved_items_notifier.dart';
-import 'package:plinkyhub/state/saved_items_state.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/utils/constants.dart';
 
 /// A slot entry for creating or updating a pack.

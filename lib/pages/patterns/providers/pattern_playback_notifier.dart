@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/patterns/models/pattern_data.dart';
 import 'package:plinkyhub/pages/patterns/models/pattern_playback_state.dart';
-import 'package:plinkyhub/state/midi_notifier.dart';
+import 'package:plinkyhub/providers/midi_notifier.dart';
 import 'package:plinkyhub/utils/pitch.dart';
 
 final patternPlaybackProvider =

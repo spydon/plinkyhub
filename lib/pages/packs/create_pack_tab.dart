@@ -8,7 +8,7 @@ import 'package:plinkyhub/pages/packs/providers/saved_packs_notifier.dart';
 import 'package:plinkyhub/pages/packs/samples_section.dart';
 import 'package:plinkyhub/pages/packs/wavetable_section.dart';
 import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/utils/constants.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plinkyhub/routes.dart';
+import 'package:plinkyhub/routing/routes.dart';
 
 void main() {
   group('AppRoute URL helpers', () {

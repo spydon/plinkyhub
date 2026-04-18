@@ -4,7 +4,7 @@ import 'package:plinkyhub/pages/packs/wavetable_picker_dialog.dart';
 import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/pages/wavetables/wavetable_card.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/widgets/linked_item_icon.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 

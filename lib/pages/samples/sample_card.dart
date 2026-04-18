@@ -9,7 +9,7 @@ import 'package:plinkyhub/pages/samples/report_sample_dialog.dart';
 import 'package:plinkyhub/pages/samples/sample_mode_selector.dart';
 import 'package:plinkyhub/pages/samples/save_sample_to_plinky_dialog.dart';
 import 'package:plinkyhub/pages/samples/slice_points_editor.dart';
-import 'package:plinkyhub/routes.dart';
+import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/utils/note_names.dart';
 import 'package:plinkyhub/utils/wav.dart';
 import 'package:plinkyhub/widgets/confirm_delete_dialog.dart';

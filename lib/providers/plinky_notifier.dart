@@ -4,9 +4,9 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/category.dart';
+import 'package:plinkyhub/models/plinky_state.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/services/webusb_service.dart';
-import 'package:plinkyhub/state/plinky_state.dart';
 import 'package:plinkyhub/utils/compress.dart';
 import 'package:plinkyhub/utils/wavetable.dart';
 

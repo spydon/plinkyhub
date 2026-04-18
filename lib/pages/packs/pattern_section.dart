@@ -4,7 +4,7 @@ import 'package:plinkyhub/pages/packs/pattern_picker_dialog.dart';
 import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
 import 'package:plinkyhub/pages/patterns/pattern_card.dart';
 import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/widgets/linked_item_icon.dart';
 

@@ -7,7 +7,7 @@ import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/samples/slice_note_dropdown.dart';
 import 'package:plinkyhub/pages/samples/slice_points_painter.dart';
-import 'package:plinkyhub/state/sound_service.dart';
+import 'package:plinkyhub/services/sound_service.dart';
 import 'package:plinkyhub/utils/wav.dart';
 
 class SlicePointsEditor extends ConsumerStatefulWidget {

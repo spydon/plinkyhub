@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/midi_state.dart';
 import 'package:plinkyhub/services/webmidi_service.dart';
-import 'package:plinkyhub/state/midi_state.dart';
 
 final midiProvider = NotifierProvider<MidiNotifier, MidiState>(
   MidiNotifier.new,
