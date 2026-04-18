@@ -9,8 +9,10 @@ import 'package:plinkyhub/pages/packs/providers/saved_packs_notifier.dart';
 import 'package:plinkyhub/pages/packs/samples_section.dart';
 import 'package:plinkyhub/pages/packs/save_to_plinky_dialog.dart';
 import 'package:plinkyhub/pages/packs/wavetable_section.dart';
+import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/widgets/confirm_delete_dialog.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/share_link_button.dart';
@@ -230,26 +232,51 @@ class _PackCardState extends ConsumerState<PackCard> {
   }
 }
 
-class _PackContentsSection extends StatelessWidget {
+class _PackContentsSection extends ConsumerWidget {
   const _PackContentsSection({required this.pack});
 
   final SavedPack pack;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final allPresets = ref.watch(
+      savedPresetsProvider.select(
+        (s) => [...s.userItems, ...s.publicItems],
+      ),
+    );
+
+    // Sample IDs live in sample slots (56-63), not in preset slots.
+    // Derive sampleId per preset slot the same way the edit tab does.
+    final packSampleIds = pack.slots
+        .where((s) => s.slotNumber >= sampleSlotStart && s.sampleId != null)
+        .map((s) => s.sampleId!)
+        .toSet();
+
+    final presetSampleMap = <String, String>{};
+    for (final preset in allPresets) {
+      if (preset.sampleId != null && packSampleIds.contains(preset.sampleId)) {
+        presetSampleMap[preset.id] = preset.sampleId!;
+      }
+    }
+
     final presetSlots = List.generate(32, (i) {
       final slot = pack.slots.where((s) => s.slotNumber == i).firstOrNull;
+      final presetId = slot?.presetId;
       return (
-        presetId: slot?.presetId,
-        sampleId: slot?.sampleId,
+        presetId: presetId,
+        sampleId: presetId != null ? presetSampleMap[presetId] : null,
         patternId: slot?.patternId,
       );
     });
 
     final patternIds = Map.fromEntries(
       pack.slots
-          .where((s) => s.slotNumber >= 32 && s.slotNumber < 56)
-          .map((s) => MapEntry(s.slotNumber - 32, s.patternId)),
+          .where(
+            (s) =>
+                s.slotNumber >= patternSlotStart &&
+                s.slotNumber < sampleSlotStart,
+          )
+          .map((s) => MapEntry(s.slotNumber - patternSlotStart, s.patternId)),
     );
 
     return Column(
