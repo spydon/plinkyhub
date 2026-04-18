@@ -13,7 +13,10 @@ class StarButton extends ConsumerStatefulWidget {
 
   final bool isStarred;
   final int starCount;
-  final VoidCallback onToggle;
+
+  /// Called with the pre-toggle value of [isStarred] so the caller can pass
+  /// the correct state to the notifier's `toggleStar`.
+  final void Function({required bool wasStarred}) onToggle;
 
   @override
   ConsumerState<StarButton> createState() => _StarButtonState();
@@ -21,12 +24,16 @@ class StarButton extends ConsumerStatefulWidget {
 
 class _StarButtonState extends ConsumerState<StarButton>
     with SingleTickerProviderStateMixin {
+  late bool _isStarred;
+  late int _starCount;
   late final AnimationController _pulseController;
   late final Animation<double> _pulseScale;
 
   @override
   void initState() {
     super.initState();
+    _isStarred = widget.isStarred;
+    _starCount = widget.starCount;
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 320),
@@ -52,6 +59,12 @@ class _StarButtonState extends ConsumerState<StarButton>
   @override
   void didUpdateWidget(covariant StarButton oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.isStarred != _isStarred) {
+      setState(() {
+        _isStarred = widget.isStarred;
+        _starCount = widget.starCount;
+      });
+    }
     if (widget.isStarred && !oldWidget.isStarred) {
       _pulseController.forward(from: 0);
     }
@@ -61,6 +74,18 @@ class _StarButtonState extends ConsumerState<StarButton>
   void dispose() {
     _pulseController.dispose();
     super.dispose();
+  }
+
+  void _toggle() {
+    final wasStarred = _isStarred;
+    setState(() {
+      _isStarred = !wasStarred;
+      _starCount += wasStarred ? -1 : 1;
+    });
+    if (!wasStarred) {
+      _pulseController.forward(from: 0);
+    }
+    widget.onToggle(wasStarred: wasStarred);
   }
 
   @override
@@ -80,20 +105,19 @@ class _StarButtonState extends ConsumerState<StarButton>
                 child: FadeTransition(opacity: animation, child: child),
               ),
               child: Icon(
-                widget.isStarred ? Icons.star : Icons.star_border,
-                key: ValueKey<bool>(widget.isStarred),
+                _isStarred ? Icons.star : Icons.star_border,
+                key: ValueKey<bool>(_isStarred),
                 size: 20,
-                color: widget.isStarred ? Colors.amber : null,
+                color: _isStarred ? Colors.amber : null,
               ),
             ),
           ),
-          tooltip: widget.isStarred ? 'Remove star' : 'Star',
-          onPressed: () =>
-              isSignedIn ? widget.onToggle() : showSignInDialog(context),
+          tooltip: _isStarred ? 'Remove star' : 'Star',
+          onPressed: () => isSignedIn ? _toggle() : showSignInDialog(context),
         ),
-        if (widget.starCount > 0)
+        if (_starCount > 0)
           Text(
-            '${widget.starCount}',
+            '$_starCount',
             style: Theme.of(context).textTheme.bodySmall,
           ),
       ],

@@ -1,4 +1,4 @@
-import 'package:plinkyhub/state/authentication_notifier.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:test/test.dart';
 
 void main() {

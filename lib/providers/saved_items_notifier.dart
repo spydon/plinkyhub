@@ -215,6 +215,37 @@ abstract class SavedItemsNotifier<T extends Searchable>
       return;
     }
 
+    final savedState = state;
+    final delta = item.isStarred ? -1 : 1;
+    final newIsStarred = !item.isStarred;
+
+    // Optimistic update
+    state = state.copyWith(
+      userItems: _updateStarInList(
+        state.userItems,
+        item.id,
+        newIsStarred,
+        delta,
+      ),
+      starredItems: newIsStarred
+          ? [
+              ...state.starredItems,
+              if (item.userId != userId)
+                withStarUpdate(
+                  item,
+                  isStarred: true,
+                  starCount: item.starCount + delta,
+                ),
+            ]
+          : state.starredItems.where((i) => i.id != item.id).toList(),
+      publicItems: _updateStarInList(
+        state.publicItems,
+        item.id,
+        newIsStarred,
+        delta,
+      ),
+    );
+
     try {
       if (item.isStarred) {
         await supabase
@@ -228,38 +259,9 @@ abstract class SavedItemsNotifier<T extends Searchable>
           'user_id': userId,
         });
       }
-
-      final delta = item.isStarred ? -1 : 1;
-      final newIsStarred = !item.isStarred;
-      final updatedStarred = newIsStarred
-          ? [
-              ...state.starredItems,
-              if (item.userId != userId)
-                withStarUpdate(
-                  item,
-                  isStarred: true,
-                  starCount: item.starCount + delta,
-                ),
-            ]
-          : state.starredItems.where((i) => i.id != item.id).toList();
-      state = state.copyWith(
-        userItems: _updateStarInList(
-          state.userItems,
-          item.id,
-          newIsStarred,
-          delta,
-        ),
-        starredItems: updatedStarred,
-        publicItems: _updateStarInList(
-          state.publicItems,
-          item.id,
-          newIsStarred,
-          delta,
-        ),
-      );
     } on Exception catch (error) {
       debugPrint('$error');
-      state = state.copyWith(errorMessage: error.toString);
+      state = savedState.copyWith(errorMessage: error.toString);
     }
   }
 
@@ -302,4 +304,26 @@ abstract class SavedItemsNotifier<T extends Searchable>
     await fetchUserItems();
     await fetchPublicItems();
   }
+}
+
+/// Returns whether the signed-in user has starred the given item.
+///
+/// [starTableName] is the star join table (e.g. `'preset_stars'`).
+/// [idColumn] is the item FK column (e.g. `'preset_id'`).
+Future<bool> fetchIsStarred({
+  required String starTableName,
+  required String idColumn,
+  required String itemId,
+  required String? userId,
+}) async {
+  if (userId == null) {
+    return false;
+  }
+  final result = await Supabase.instance.client
+      .from(starTableName)
+      .select(idColumn)
+      .eq(idColumn, itemId)
+      .eq('user_id', userId)
+      .maybeSingle();
+  return result != null;
 }

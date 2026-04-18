@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/authentication_state.dart';
+import 'package:plinkyhub/models/authentication_state.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/widgets/forgot_password_dialog.dart';
 
 class _FakeAuthenticationNotifier extends AuthenticationNotifier {

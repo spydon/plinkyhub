@@ -33,38 +33,6 @@ class PackCard extends ConsumerStatefulWidget {
 }
 
 class _PackCardState extends ConsumerState<PackCard> {
-  late bool _isStarred;
-  late int _starCount;
-
-  @override
-  void initState() {
-    super.initState();
-    _isStarred = widget.pack.isStarred;
-    _starCount = widget.pack.starCount;
-  }
-
-  @override
-  void didUpdateWidget(PackCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.pack.isStarred != _isStarred) {
-      _isStarred = widget.pack.isStarred;
-      _starCount = widget.pack.starCount;
-    }
-  }
-
-  void _toggleStar() {
-    final wasStarred = _isStarred;
-    setState(() {
-      _isStarred = !wasStarred;
-      _starCount += wasStarred ? -1 : 1;
-    });
-    ref
-        .read(savedPacksProvider.notifier)
-        .toggleStar(
-          widget.pack.copyWith(isStarred: wasStarred),
-        );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -131,9 +99,11 @@ class _PackCardState extends ConsumerState<PackCard> {
                   ),
                   const SizedBox(width: 8),
                   StarButton(
-                    isStarred: _isStarred,
-                    starCount: _starCount,
-                    onToggle: _toggleStar,
+                    isStarred: pack.isStarred,
+                    starCount: pack.starCount,
+                    onToggle: ({required bool wasStarred}) => ref
+                        .read(savedPacksProvider.notifier)
+                        .toggleStar(pack.copyWith(isStarred: wasStarred)),
                   ),
                   if (pack.username.isNotEmpty)
                     ShareLinkButton(

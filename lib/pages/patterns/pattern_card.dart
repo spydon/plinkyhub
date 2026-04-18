@@ -68,38 +68,6 @@ class PatternHeader extends ConsumerStatefulWidget {
 }
 
 class _PatternHeaderState extends ConsumerState<PatternHeader> {
-  late bool _isStarred;
-  late int _starCount;
-
-  @override
-  void initState() {
-    super.initState();
-    _isStarred = widget.pattern.isStarred;
-    _starCount = widget.pattern.starCount;
-  }
-
-  @override
-  void didUpdateWidget(PatternHeader oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.pattern.isStarred != _isStarred) {
-      _isStarred = widget.pattern.isStarred;
-      _starCount = widget.pattern.starCount;
-    }
-  }
-
-  void _toggleStar() {
-    final wasStarred = _isStarred;
-    setState(() {
-      _isStarred = !wasStarred;
-      _starCount += wasStarred ? -1 : 1;
-    });
-    ref
-        .read(savedPatternsProvider.notifier)
-        .toggleStar(
-          widget.pattern.copyWith(isStarred: wasStarred),
-        );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -140,9 +108,11 @@ class _PatternHeaderState extends ConsumerState<PatternHeader> {
             ),
             const SizedBox(width: 8),
             StarButton(
-              isStarred: _isStarred,
-              starCount: _starCount,
-              onToggle: _toggleStar,
+              isStarred: pattern.isStarred,
+              starCount: pattern.starCount,
+              onToggle: ({required bool wasStarred}) => ref
+                  .read(savedPatternsProvider.notifier)
+                  .toggleStar(pattern.copyWith(isStarred: wasStarred)),
             ),
             if (pattern.username.isNotEmpty)
               ShareLinkButton(

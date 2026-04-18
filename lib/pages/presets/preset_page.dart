@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -53,17 +54,12 @@ class _PresetPageState extends ConsumerState<PresetPage> {
           .maybeSingle();
 
       if (response != null) {
-        final userId = ref.read(authenticationProvider).user?.id;
-        var isStarred = false;
-        if (userId != null) {
-          final star = await Supabase.instance.client
-              .from('preset_stars')
-              .select('preset_id')
-              .eq('preset_id', response['id'] as String)
-              .eq('user_id', userId)
-              .maybeSingle();
-          isStarred = star != null;
-        }
+        final isStarred = await fetchIsStarred(
+          starTableName: 'preset_stars',
+          idColumn: 'preset_id',
+          itemId: response['id'] as String,
+          userId: ref.read(authenticationProvider).user?.id,
+        );
         setState(() {
           _preset = SavedPreset.fromJson({
             ...response,

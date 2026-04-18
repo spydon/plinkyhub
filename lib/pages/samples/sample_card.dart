@@ -48,17 +48,12 @@ class _SampleCardState extends ConsumerState<SampleCard> {
   late List<double> _slicePoints;
   late bool _pitched;
   late List<int> _sliceNotes;
-  late bool _isStarred;
-  late int _starCount;
-
   @override
   void initState() {
     super.initState();
     _slicePoints = List.of(widget.sample.slicePoints);
     _pitched = widget.sample.pitched;
     _sliceNotes = List.of(widget.sample.sliceNotes);
-    _isStarred = widget.sample.isStarred;
-    _starCount = widget.sample.starCount;
     if (_expanded) {
       _loadWav();
     }
@@ -71,27 +66,9 @@ class _SampleCardState extends ConsumerState<SampleCard> {
       _slicePoints = List.of(widget.sample.slicePoints);
       _pitched = widget.sample.pitched;
       _sliceNotes = List.of(widget.sample.sliceNotes);
-      _isStarred = widget.sample.isStarred;
-      _starCount = widget.sample.starCount;
       _wavBytes = null;
       _expanded = false;
-    } else if (widget.sample.isStarred != _isStarred) {
-      _isStarred = widget.sample.isStarred;
-      _starCount = widget.sample.starCount;
     }
-  }
-
-  void _toggleStar() {
-    final wasStarred = _isStarred;
-    setState(() {
-      _isStarred = !wasStarred;
-      _starCount += wasStarred ? -1 : 1;
-    });
-    ref
-        .read(savedSamplesProvider.notifier)
-        .toggleStar(
-          widget.sample.copyWith(isStarred: wasStarred),
-        );
   }
 
   Future<void> _loadWav() async {
@@ -229,9 +206,11 @@ class _SampleCardState extends ConsumerState<SampleCard> {
                     const SizedBox(width: 8),
                   ],
                   StarButton(
-                    isStarred: _isStarred,
-                    starCount: _starCount,
-                    onToggle: _toggleStar,
+                    isStarred: sample.isStarred,
+                    starCount: sample.starCount,
+                    onToggle: ({required bool wasStarred}) => ref
+                        .read(savedSamplesProvider.notifier)
+                        .toggleStar(sample.copyWith(isStarred: wasStarred)),
                   ),
                   if (sample.username.isNotEmpty)
                     ShareLinkButton(

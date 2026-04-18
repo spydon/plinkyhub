@@ -30,38 +30,6 @@ class WavetableCard extends ConsumerStatefulWidget {
 }
 
 class _WavetableCardState extends ConsumerState<WavetableCard> {
-  late bool _isStarred;
-  late int _starCount;
-
-  @override
-  void initState() {
-    super.initState();
-    _isStarred = widget.wavetable.isStarred;
-    _starCount = widget.wavetable.starCount;
-  }
-
-  @override
-  void didUpdateWidget(WavetableCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.wavetable.isStarred != _isStarred) {
-      _isStarred = widget.wavetable.isStarred;
-      _starCount = widget.wavetable.starCount;
-    }
-  }
-
-  void _toggleStar() {
-    final wasStarred = _isStarred;
-    setState(() {
-      _isStarred = !wasStarred;
-      _starCount += wasStarred ? -1 : 1;
-    });
-    ref
-        .read(savedWavetablesProvider.notifier)
-        .toggleStar(
-          widget.wavetable.copyWith(isStarred: wasStarred),
-        );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -115,9 +83,13 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
                   ),
                   const SizedBox(width: 8),
                   StarButton(
-                    isStarred: _isStarred,
-                    starCount: _starCount,
-                    onToggle: _toggleStar,
+                    isStarred: wavetable.isStarred,
+                    starCount: wavetable.starCount,
+                    onToggle: ({required bool wasStarred}) => ref
+                        .read(savedWavetablesProvider.notifier)
+                        .toggleStar(
+                          wavetable.copyWith(isStarred: wasStarred),
+                        ),
                   ),
                   if (wavetable.username.isNotEmpty)
                     ShareLinkButton(

@@ -30,39 +30,7 @@ class PresetCard extends ConsumerStatefulWidget {
 }
 
 class _PresetCardState extends ConsumerState<PresetCard> {
-  late bool _isStarred;
-  late int _starCount;
-
   bool get _hasSample => widget.preset.sampleName != null;
-
-  @override
-  void initState() {
-    super.initState();
-    _isStarred = widget.preset.isStarred;
-    _starCount = widget.preset.starCount;
-  }
-
-  @override
-  void didUpdateWidget(PresetCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.preset.isStarred != _isStarred) {
-      _isStarred = widget.preset.isStarred;
-      _starCount = widget.preset.starCount;
-    }
-  }
-
-  void _toggleStar() {
-    final wasStarred = _isStarred;
-    setState(() {
-      _isStarred = !wasStarred;
-      _starCount += wasStarred ? -1 : 1;
-    });
-    ref
-        .read(savedPresetsProvider.notifier)
-        .toggleStar(
-          widget.preset.copyWith(isStarred: wasStarred),
-        );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,9 +128,11 @@ class _PresetCardState extends ConsumerState<PresetCard> {
                   ),
                   const SizedBox(width: 8),
                   StarButton(
-                    isStarred: _isStarred,
-                    starCount: _starCount,
-                    onToggle: _toggleStar,
+                    isStarred: preset.isStarred,
+                    starCount: preset.starCount,
+                    onToggle: ({required bool wasStarred}) => ref
+                        .read(savedPresetsProvider.notifier)
+                        .toggleStar(preset.copyWith(isStarred: wasStarred)),
                   ),
                   if (preset.username.isNotEmpty)
                     ShareLinkButton(

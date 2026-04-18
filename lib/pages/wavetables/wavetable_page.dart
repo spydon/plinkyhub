@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/wavetable_card.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -53,17 +54,12 @@ class _WavetablePageState extends ConsumerState<WavetablePage> {
           .maybeSingle();
 
       if (response != null) {
-        final userId = ref.read(authenticationProvider).user?.id;
-        var isStarred = false;
-        if (userId != null) {
-          final star = await Supabase.instance.client
-              .from('wavetable_stars')
-              .select('wavetable_id')
-              .eq('wavetable_id', response['id'] as String)
-              .eq('user_id', userId)
-              .maybeSingle();
-          isStarred = star != null;
-        }
+        final isStarred = await fetchIsStarred(
+          starTableName: 'wavetable_stars',
+          idColumn: 'wavetable_id',
+          itemId: response['id'] as String,
+          userId: ref.read(authenticationProvider).user?.id,
+        );
         setState(() {
           _wavetable = SavedWavetable.fromJson(
             {...response, 'is_starred': isStarred},

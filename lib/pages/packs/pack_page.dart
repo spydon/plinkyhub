@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/pages/packs/pack_card.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -54,17 +55,12 @@ class _PackPageState extends ConsumerState<PackPage> {
           .maybeSingle();
 
       if (response != null) {
-        final userId = ref.read(authenticationProvider).user?.id;
-        var isStarred = false;
-        if (userId != null) {
-          final star = await Supabase.instance.client
-              .from('pack_stars')
-              .select('pack_id')
-              .eq('pack_id', response['id'] as String)
-              .eq('user_id', userId)
-              .maybeSingle();
-          isStarred = star != null;
-        }
+        final isStarred = await fetchIsStarred(
+          starTableName: 'pack_stars',
+          idColumn: 'pack_id',
+          itemId: response['id'] as String,
+          userId: ref.read(authenticationProvider).user?.id,
+        );
         setState(() {
           _pack = SavedPack.fromJson({...response, 'is_starred': isStarred});
           _isLoading = false;
