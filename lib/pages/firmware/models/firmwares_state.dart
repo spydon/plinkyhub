@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:plinkyhub/models/saved_firmware.dart';
+import 'package:plinkyhub/pages/firmware/models/saved_firmware.dart';
 
 part 'firmwares_state.freezed.dart';
 

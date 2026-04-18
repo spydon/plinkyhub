@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/pattern_write.dart';
-import 'package:plinkyhub/models/saved_pattern.dart';
+import 'package:plinkyhub/pages/patterns/models/pattern_write.dart';
+import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
 import 'package:plinkyhub/state/saved_items_notifier.dart';
 import 'package:plinkyhub/state/saved_items_state.dart';
 import 'package:plinkyhub/utils/content_hash.dart';

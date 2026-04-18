@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plinkyhub/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/harmonic_editor.dart';
+import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
+import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/pages/wavetables/waveform_drawer.dart';
 import 'package:plinkyhub/pages/wavetables/waveform_effects_panel.dart';
 import 'package:plinkyhub/pages/wavetables/waveform_thumbnail.dart';
 import 'package:plinkyhub/routes.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/utils/waveform_effects.dart';
 import 'package:plinkyhub/utils/wavetable.dart';

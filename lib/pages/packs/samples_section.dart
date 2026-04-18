@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
+import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
 import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/saved_samples_notifier.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/widgets/linked_item_icon.dart';
 

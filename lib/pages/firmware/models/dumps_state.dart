@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:plinkyhub/models/saved_dump.dart';
+import 'package:plinkyhub/pages/firmware/models/saved_dump.dart';
 
 part 'dumps_state.freezed.dart';
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/state/saved_patterns_notifier.dart';
-import 'package:plinkyhub/state/saved_presets_notifier.dart';
-import 'package:plinkyhub/state/saved_samples_notifier.dart';
-import 'package:plinkyhub/state/saved_wavetables_notifier.dart';
+import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
+import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
+import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
+import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

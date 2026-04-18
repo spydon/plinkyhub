@@ -4,10 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/pages/packs/pack_card.dart';
 import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/pages/samples/sample_card.dart';
+import 'package:plinkyhub/pages/users/models/user_profile_state.dart';
+import 'package:plinkyhub/pages/users/providers/user_profile_notifier.dart';
 import 'package:plinkyhub/routes.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/user_profile_notifier.dart';
-import 'package:plinkyhub/state/user_profile_state.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 

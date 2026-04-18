@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/state/my_plinky_notifier.dart';
+import 'package:plinkyhub/pages/my_plinky/providers/my_plinky_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class MyPlinkyErrorView extends ConsumerWidget {

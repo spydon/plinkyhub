@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plinkyhub/models/saved_wavetable.dart';
+import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
+import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/pages/wavetables/save_wavetable_to_plinky_dialog.dart';
 import 'package:plinkyhub/routes.dart';
-import 'package:plinkyhub/state/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/widgets/confirm_delete_dialog.dart';
 import 'package:plinkyhub/widgets/pack_usage_check.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';

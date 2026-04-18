@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
-import 'package:plinkyhub/state/my_plinky_state.dart';
+import 'package:plinkyhub/pages/my_plinky/models/my_plinky_state.dart';
 import 'package:plinkyhub/utils/constants.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';

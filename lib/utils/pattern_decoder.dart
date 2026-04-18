@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:plinkyhub/models/pattern_data.dart';
+import 'package:plinkyhub/pages/patterns/models/pattern_data.dart';
 
 /// Number of strings on the Plinky (rows in a pattern).
 const _stringCount = 8;

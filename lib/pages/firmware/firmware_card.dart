@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plinkyhub/models/saved_firmware.dart';
 import 'package:plinkyhub/pages/firmware/edit_firmware_dialog.dart';
 import 'package:plinkyhub/pages/firmware/flash_firmware_dialog.dart';
-import 'package:plinkyhub/state/firmwares_notifier.dart';
-import 'package:plinkyhub/widgets/firmware_share_link_button.dart';
+import 'package:plinkyhub/pages/firmware/models/saved_firmware.dart';
+import 'package:plinkyhub/pages/firmware/providers/firmwares_notifier.dart';
+import 'package:plinkyhub/pages/firmware/widgets/firmware_share_link_button.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class FirmwareCard extends ConsumerWidget {

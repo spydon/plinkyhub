@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:plinkyhub/models/saved_wavetable.dart';
+import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/widgets/searchable_picker_dialog.dart';
 
 class WavetablePickerDialog extends StatelessWidget {

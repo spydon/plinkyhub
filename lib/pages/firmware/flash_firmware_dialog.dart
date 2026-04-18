@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_firmware.dart';
+import 'package:plinkyhub/pages/firmware/models/saved_firmware.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/plinky_save_dialog_views.dart';

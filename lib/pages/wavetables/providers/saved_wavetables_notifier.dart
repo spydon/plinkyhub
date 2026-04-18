@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_wavetable.dart';
-import 'package:plinkyhub/models/wavetable_write.dart';
+import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
+import 'package:plinkyhub/pages/wavetables/models/wavetable_write.dart';
 import 'package:plinkyhub/state/saved_items_notifier.dart';
 import 'package:plinkyhub/state/saved_items_state.dart';
 import 'package:plinkyhub/utils/content_hash.dart';

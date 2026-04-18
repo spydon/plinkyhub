@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plinkyhub/pages/my_plinky/providers/my_plinky_notifier.dart';
 import 'package:plinkyhub/pages/my_plinky/save_my_plinky_dialog.dart';
 import 'package:plinkyhub/pages/packs/pattern_section.dart';
 import 'package:plinkyhub/pages/packs/preset_slots_grid.dart';
 import 'package:plinkyhub/pages/packs/samples_section.dart';
 import 'package:plinkyhub/pages/packs/wavetable_section.dart';
 import 'package:plinkyhub/routes.dart';
-import 'package:plinkyhub/state/my_plinky_notifier.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/widgets/linked_item_icon.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';

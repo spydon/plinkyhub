@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/pattern_data.dart';
-import 'package:plinkyhub/models/saved_pattern.dart';
+import 'package:plinkyhub/pages/patterns/models/pattern_data.dart';
+import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
 import 'package:plinkyhub/pages/patterns/pattern_grid_editor.dart';
 import 'package:plinkyhub/pages/patterns/pattern_play_controls.dart';
 import 'package:plinkyhub/utils/pitch.dart';

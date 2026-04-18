@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/pattern_data.dart';
+import 'package:plinkyhub/pages/patterns/models/pattern_data.dart';
+import 'package:plinkyhub/pages/patterns/providers/pattern_playback_notifier.dart';
 import 'package:plinkyhub/state/midi_notifier.dart';
 import 'package:plinkyhub/state/midi_state.dart';
-import 'package:plinkyhub/state/pattern_playback_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 /// Total number of preset slots on the Plinky (patterns are 0-31).

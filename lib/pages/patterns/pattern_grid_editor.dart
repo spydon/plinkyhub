@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/state/pattern_playback_notifier.dart';
+import 'package:plinkyhub/pages/patterns/providers/pattern_playback_notifier.dart';
 import 'package:plinkyhub/utils/pitch.dart';
 
 const _noteNames = [

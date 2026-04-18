@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/firmware/firmware_admins.dart';
 import 'package:plinkyhub/pages/firmware/firmware_card.dart';
+import 'package:plinkyhub/pages/firmware/providers/firmwares_notifier.dart';
 import 'package:plinkyhub/pages/firmware/upload_firmware_dialog.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/firmwares_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 

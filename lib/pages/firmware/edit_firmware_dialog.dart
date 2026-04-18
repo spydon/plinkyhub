@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_firmware.dart';
-import 'package:plinkyhub/state/firmwares_notifier.dart';
+import 'package:plinkyhub/pages/firmware/models/saved_firmware.dart';
+import 'package:plinkyhub/pages/firmware/providers/firmwares_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class EditFirmwareDialog extends ConsumerStatefulWidget {

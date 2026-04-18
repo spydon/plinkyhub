@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plinkyhub/models/saved_firmware.dart';
 import 'package:plinkyhub/pages/firmware/firmware_card.dart';
+import 'package:plinkyhub/pages/firmware/models/saved_firmware.dart';
 import 'package:plinkyhub/routes.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';

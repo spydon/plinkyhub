@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_pattern.dart';
-import 'package:plinkyhub/state/saved_patterns_notifier.dart';
+import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
+import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/widgets/plinky_save_dialog_views.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plinkyhub/pages/users/providers/highscores_notifier.dart';
 import 'package:plinkyhub/routes.dart';
-import 'package:plinkyhub/state/highscores_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 
 enum HighscoreSortField { stars, uploads }

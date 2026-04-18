@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:plinkyhub/models/saved_pattern.dart';
+import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
 import 'package:plinkyhub/widgets/searchable_picker_dialog.dart';
 
 class PatternPickerDialog extends StatelessWidget {

@@ -2,11 +2,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/sample_write.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
+import 'package:plinkyhub/pages/samples/models/sample_write.dart';
+import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
 import 'package:plinkyhub/pages/samples/sample_metadata_form.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/saved_samples_notifier.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/wav.dart';

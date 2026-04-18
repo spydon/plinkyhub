@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_firmware.dart';
+import 'package:plinkyhub/pages/firmware/models/firmwares_state.dart';
+import 'package:plinkyhub/pages/firmware/models/saved_firmware.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/firmwares_state.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final firmwaresProvider = NotifierProvider<FirmwaresNotifier, FirmwaresState>(

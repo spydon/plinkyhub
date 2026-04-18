@@ -6,15 +6,15 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
+import 'package:plinkyhub/pages/my_plinky/providers/my_plinky_notifier.dart';
 import 'package:plinkyhub/pages/my_plinky/save_device_sample_dialog.dart';
 import 'package:plinkyhub/pages/packs/sample_picker_dialog.dart';
+import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
+import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
 import 'package:plinkyhub/routes.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/my_plinky_notifier.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/state/plinky_state.dart';
-import 'package:plinkyhub/state/saved_presets_notifier.dart';
-import 'package:plinkyhub/state/saved_samples_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class PresetDetailsHeader extends ConsumerWidget {

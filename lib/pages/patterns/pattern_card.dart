@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plinkyhub/models/saved_pattern.dart';
+import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
+import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
 import 'package:plinkyhub/pages/patterns/save_pattern_to_plinky_dialog.dart';
 import 'package:plinkyhub/routes.dart';
-import 'package:plinkyhub/state/saved_patterns_notifier.dart';
 import 'package:plinkyhub/widgets/confirm_delete_dialog.dart';
 import 'package:plinkyhub/widgets/pack_usage_check.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';

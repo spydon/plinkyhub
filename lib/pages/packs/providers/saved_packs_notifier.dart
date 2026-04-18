@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/pack_slot_write.dart';
-import 'package:plinkyhub/models/pack_write.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
+import 'package:plinkyhub/pages/packs/models/pack_slot_write.dart';
+import 'package:plinkyhub/pages/packs/models/pack_write.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
 import 'package:plinkyhub/state/saved_items_notifier.dart';
 import 'package:plinkyhub/state/saved_items_state.dart';

@@ -3,8 +3,8 @@ import 'dart:ui_web' as ui_web;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/pages/play/providers/midi_play_notifier.dart';
 import 'package:plinkyhub/services/mediapipe_hands_service.dart';
-import 'package:plinkyhub/state/midi_play_notifier.dart';
 import 'package:plinkyhub/utils/pitch.dart';
 import 'package:web/web.dart' as web;
 

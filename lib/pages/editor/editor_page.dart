@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/editor/editor_header.dart';
+import 'package:plinkyhub/pages/editor/widgets/parameter_tile.dart';
+import 'package:plinkyhub/pages/editor/widgets/preset_details.dart';
 import 'package:plinkyhub/state/plinky_notifier.dart';
 import 'package:plinkyhub/state/plinky_state.dart';
-import 'package:plinkyhub/widgets/parameter_tile.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
-import 'package:plinkyhub/widgets/preset_details.dart';
 
 class EditorPage extends ConsumerStatefulWidget {
   const EditorPage({this.presetData, super.key});

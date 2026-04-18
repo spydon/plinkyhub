@@ -3,9 +3,9 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/models/saved_wavetable.dart';
+import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
+import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/state/authentication_notifier.dart';
-import 'package:plinkyhub/state/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class UploadWavetableTab extends ConsumerStatefulWidget {
