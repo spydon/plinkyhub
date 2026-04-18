@@ -12,6 +12,17 @@ Never use `_build*` helper methods to construct UI subtrees. Extract them into s
 
 Always run `dart format .` before committing to ensure consistent formatting. Then run `dart analyze`. There must be zero issues (errors, warnings, or infos) in any code you write or modify, including in files you did not change. ALL analyze issues must be fixed, even `info`-level hints. Run `dart fix --apply` first to auto-fix what it can, then resolve any remaining issues manually.
 
+## Routing
+
+Use `context.go(path)` for all in-app navigation, never `context.push`.
+
+Why: the app's top-level routes live inside a `StatefulShellRoute.indexedStack`, and all item detail routes (e.g. `/<username>/preset/<name>`) live outside the shell. When you call `context.push` from inside a shell branch, go_router pushes onto that branch's nested navigator, so the page renders but the browser URL stays on the branch's URL (e.g. `/users/highscore`). Setting `parentNavigatorKey: _rootNavigatorKey` on the target route does not fix this. `context.go` replaces the location cleanly, updates the browser URL, and records a history entry so browser-back still works.
+
+How to apply:
+- In-app back navigation: always use `context.go(parentPath)`. Do not rely on `context.canPop()` / `context.pop()`, since `go` does not leave anything to pop.
+- Dialog dismissal via `Navigator.of(dialogContext).pop()` is fine and unrelated — that pops the dialog route, not the app navigation.
+- The one `BackButton` in `_ItemPageShell` (in `lib/router.dart`) derives its target from `_parentRouteFor(currentPath)`. If you add a new item/detail route, extend `_parentRouteFor` so back navigation lands somewhere sensible.
+
 ## Database
 
 **IMPORTANT:** All DDL and schema changes **must be** written as migration files under `supabase/migrations/` (named `YYYYMMDDHHMMSS_description.sql`). Never apply DDL directly via `execute_sql` or the `apply_migration` MCP tool. Always create a migration file first. Migrations are applied automatically by the CI/CD pipeline and should not be applied manually.

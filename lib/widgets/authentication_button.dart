@@ -64,7 +64,7 @@ class AuthenticationButton extends ConsumerWidget {
         switch (action) {
           case _AccountMenuAction.viewProfile:
             if (username != null) {
-              context.push(AppRoute.userPage(username));
+              context.go(AppRoute.userPage(username));
             }
           case _AccountMenuAction.settings:
             showDialog<void>(

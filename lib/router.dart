@@ -292,8 +292,9 @@ GoRouter createRouter(ProviderContainer container) {
       ),
 
       // Item detail pages. parentNavigatorKey pins them to the root
-      // navigator so pushing them from inside a shell branch updates
-      // the browser URL instead of staying on the branch's URL.
+      // navigator so they render outside the shell. Navigation to
+      // these routes uses `context.go` (see AGENTS.md) so the URL
+      // always reflects the current page.
       GoRoute(
         path: '/:username/preset/:name',
         parentNavigatorKey: _rootNavigatorKey,
@@ -421,7 +422,11 @@ class _ItemPageShell extends ConsumerWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: BackButton(
-                    onPressed: () => _onBackPressed(context),
+                    onPressed: () => context.go(
+                      _parentRouteFor(
+                        GoRouterState.of(context).uri.path,
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(child: child),
@@ -431,20 +436,6 @@ class _ItemPageShell extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  void _onBackPressed(BuildContext context) {
-    // In-app navigation uses `context.push(...)`, so popping the
-    // navigator gets us back to whatever page the user came from.
-    // For direct deep-links there's no history to pop, so derive a
-    // sensible parent route from the current URL instead of falling
-    // back to the home tab.
-    if (context.canPop()) {
-      context.pop();
-      return;
-    }
-    final location = GoRouterState.of(context).uri.path;
-    context.go(_parentRouteFor(location));
   }
 }
 

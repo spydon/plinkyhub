@@ -128,7 +128,7 @@ void showItemUsageDialog(
               onTap: pack.username.isNotEmpty
                   ? () {
                       Navigator.of(dialogContext).pop();
-                      dialogContext.push(
+                      dialogContext.go(
                         AppRoute.packs.itemPage(pack.username, pack.name),
                       );
                     }
@@ -141,7 +141,7 @@ void showItemUsageDialog(
               onTap: preset.username.isNotEmpty
                   ? () {
                       Navigator.of(dialogContext).pop();
-                      dialogContext.push(
+                      dialogContext.go(
                         AppRoute.presets.itemPage(
                           preset.username,
                           preset.name,

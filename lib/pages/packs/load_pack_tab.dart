@@ -565,7 +565,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
             PlinkyButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                context.push(
+                context.go(
                   AppRoute.packs.itemPage(
                     pack.username,
                     pack.name,
@@ -1158,7 +1158,7 @@ class _LoadReviewStep extends StatelessWidget {
                     ),
                     if (matchedPack!.username.isNotEmpty)
                       LinkedItemIcon(
-                        onTap: () => context.push(
+                        onTap: () => context.go(
                           AppRoute.packs.itemPage(
                             matchedPack!.username,
                             matchedPack!.name,

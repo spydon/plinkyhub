@@ -36,7 +36,7 @@ class PresetCard extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: preset.username.isNotEmpty
-            ? () => context.push(
+            ? () => context.go(
                 AppRoute.presets.itemPage(preset.username, preset.name),
               )
             : null,
@@ -84,7 +84,7 @@ class PresetCard extends ConsumerWidget {
                 const SizedBox(height: 4),
                 GestureDetector(
                   onTap: preset.sampleUsername != null
-                      ? () => context.push(
+                      ? () => context.go(
                           AppRoute.samples.itemPage(
                             preset.sampleUsername!,
                             preset.sampleName!,

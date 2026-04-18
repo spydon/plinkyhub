@@ -51,7 +51,7 @@ class MyPlinkyDeviceView extends ConsumerWidget {
                       ),
                       if (matchedPack.username.isNotEmpty)
                         LinkedItemIcon(
-                          onTap: () => context.push(
+                          onTap: () => context.go(
                             AppRoute.packs.itemPage(
                               matchedPack.username,
                               matchedPack.name,

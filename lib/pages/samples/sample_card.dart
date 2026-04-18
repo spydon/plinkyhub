@@ -153,7 +153,7 @@ class _SampleCardState extends ConsumerState<SampleCard> {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: sample.username.isNotEmpty
-            ? () => context.push(
+            ? () => context.go(
                 AppRoute.samples.itemPage(sample.username, sample.name),
               )
             : null,
@@ -235,7 +235,7 @@ class _SampleCardState extends ConsumerState<SampleCard> {
                     IconButton(
                       icon: const Icon(Icons.edit, size: 20),
                       tooltip: 'Edit sample',
-                      onPressed: () => context.push(
+                      onPressed: () => context.go(
                         AppRoute.sampleEditPage(
                           sample.username,
                           sample.name,

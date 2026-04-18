@@ -31,7 +31,7 @@ class PatternCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: pattern.username.isNotEmpty
-            ? () => context.push(
+            ? () => context.go(
                 AppRoute.patterns.itemPage(pattern.username, pattern.name),
               )
             : null,

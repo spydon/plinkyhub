@@ -157,7 +157,7 @@ class _HighscoreTile extends StatelessWidget {
             ),
           ],
         ),
-        onTap: () => context.push(AppRoute.userPage(entry.username)),
+        onTap: () => context.go(AppRoute.userPage(entry.username)),
       ),
     );
   }
