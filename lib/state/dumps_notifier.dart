@@ -57,26 +57,37 @@ class DumpsNotifier extends Notifier<DumpsState> {
   Future<SavedDump?> uploadDump({
     required String title,
     required String description,
-    required Uint8List internalFlashBytes,
-    required Uint8List externalFlashBytes,
+    Uint8List? internalFlashBytes,
+    Uint8List? externalFlashBytes,
   }) async {
     final userId = ref.read(authenticationProvider).user?.id;
     if (userId == null) {
+      return null;
+    }
+    if (internalFlashBytes == null && externalFlashBytes == null) {
       return null;
     }
 
     final uniqueSuffix = DateTime.now().microsecondsSinceEpoch.toRadixString(
       36,
     );
-    final internalPath = '$userId/${uniqueSuffix}_int.bin';
-    final externalPath = '$userId/${uniqueSuffix}_ext.bin';
+    final internalPath = internalFlashBytes != null
+        ? '$userId/${uniqueSuffix}_int.bin'
+        : null;
+    final externalPath = externalFlashBytes != null
+        ? '$userId/${uniqueSuffix}_ext.bin'
+        : null;
 
-    await _supabase.storage
-        .from('dumps')
-        .uploadBinary(internalPath, internalFlashBytes);
-    await _supabase.storage
-        .from('dumps')
-        .uploadBinary(externalPath, externalFlashBytes);
+    if (internalPath != null && internalFlashBytes != null) {
+      await _supabase.storage
+          .from('dumps')
+          .uploadBinary(internalPath, internalFlashBytes);
+    }
+    if (externalPath != null && externalFlashBytes != null) {
+      await _supabase.storage
+          .from('dumps')
+          .uploadBinary(externalPath, externalFlashBytes);
+    }
 
     final inserted = await _supabase
         .from('dumps')
@@ -86,8 +97,8 @@ class DumpsNotifier extends Notifier<DumpsState> {
           'description': description,
           'internal_flash_path': internalPath,
           'external_flash_path': externalPath,
-          'internal_flash_size': internalFlashBytes.length,
-          'external_flash_size': externalFlashBytes.length,
+          'internal_flash_size': internalFlashBytes?.length ?? 0,
+          'external_flash_size': externalFlashBytes?.length ?? 0,
         })
         .select('*, profiles(username)')
         .single();
@@ -99,10 +110,13 @@ class DumpsNotifier extends Notifier<DumpsState> {
 
   Future<void> deleteDump(SavedDump dump) async {
     try {
-      await _supabase.storage.from('dumps').remove([
-        dump.internalFlashPath,
-        dump.externalFlashPath,
-      ]);
+      final paths = <String>[
+        if (dump.internalFlashPath != null) dump.internalFlashPath!,
+        if (dump.externalFlashPath != null) dump.externalFlashPath!,
+      ];
+      if (paths.isNotEmpty) {
+        await _supabase.storage.from('dumps').remove(paths);
+      }
       await _supabase.from('dumps').delete().eq('id', dump.id);
       state = state.copyWith(
         dumps: state.dumps.where((entry) => entry.id != dump.id).toList(),

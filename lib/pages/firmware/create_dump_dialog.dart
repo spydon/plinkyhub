@@ -46,8 +46,8 @@ class _CreateDumpDialogState extends ConsumerState<CreateDumpDialog> {
   bool _readExternal = true;
 
   /// True once the dump has actually been uploaded to the backend; false
-  /// for debug paths (partial selection or non-null chunk size) that skip
-  /// the upload and just offer local downloads.
+  /// for debug paths (non-null chunk size) that skip the upload and just
+  /// offer local downloads.
   bool _wasUploaded = false;
 
   @override
@@ -166,7 +166,7 @@ class _CreateDumpDialogState extends ConsumerState<CreateDumpDialog> {
         _capturedExternalBytes = externalBytes;
       }
 
-      final shouldUpload = internalBytes != null && externalBytes != null;
+      final shouldUpload = internalBytes != null || externalBytes != null;
       if (shouldUpload) {
         setState(() {
           _step = _CreateDumpStep.uploading;
@@ -318,7 +318,6 @@ class _DumpFormView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bothSelected = readInternal && readExternal;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,8 +326,8 @@ class _DumpFormView extends StatelessWidget {
           'Give this dump a title so you can find it later. '
           'The external flash is 32 MB and can take a '
           'few minutes to transfer.\n'
-          'Deselect one region to skip it; the partial read is offered as '
-          'a direct download instead of being uploaded to your account.',
+          'Deselect one region to skip it; the selected region is still '
+          'uploaded to your account.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 12),
@@ -349,7 +348,6 @@ class _DumpFormView extends StatelessWidget {
           ),
           minLines: 3,
           maxLines: null,
-          enabled: bothSelected,
         ),
         const SizedBox(height: 12),
         TextField(

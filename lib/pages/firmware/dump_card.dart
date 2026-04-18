@@ -32,6 +32,9 @@ class _DumpCardState extends ConsumerState<DumpCard> {
       final filePath = external
           ? widget.dump.externalFlashPath
           : widget.dump.internalFlashPath;
+      if (filePath == null) {
+        return;
+      }
       final bytes = await ref
           .read(dumpsProvider.notifier)
           .downloadFlash(filePath: filePath);
@@ -137,26 +140,28 @@ class _DumpCardState extends ConsumerState<DumpCard> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                PlinkyButton(
-                  onPressed: _isDownloadingInternal
-                      ? null
-                      : () => _download(external: false),
-                  icon: Icons.download,
-                  label: _isDownloadingInternal
-                      ? 'Downloading...'
-                      : 'Internal flash '
-                            '(${_formatBytes(dump.internalFlashSize)})',
-                ),
-                PlinkyButton(
-                  onPressed: _isDownloadingExternal
-                      ? null
-                      : () => _download(external: true),
-                  icon: Icons.download,
-                  label: _isDownloadingExternal
-                      ? 'Downloading...'
-                      : 'External flash '
-                            '(${_formatBytes(dump.externalFlashSize)})',
-                ),
+                if (dump.internalFlashPath != null)
+                  PlinkyButton(
+                    onPressed: _isDownloadingInternal
+                        ? null
+                        : () => _download(external: false),
+                    icon: Icons.download,
+                    label: _isDownloadingInternal
+                        ? 'Downloading...'
+                        : 'Internal flash '
+                              '(${_formatBytes(dump.internalFlashSize)})',
+                  ),
+                if (dump.externalFlashPath != null)
+                  PlinkyButton(
+                    onPressed: _isDownloadingExternal
+                        ? null
+                        : () => _download(external: true),
+                    icon: Icons.download,
+                    label: _isDownloadingExternal
+                        ? 'Downloading...'
+                        : 'External flash '
+                              '(${_formatBytes(dump.externalFlashSize)})',
+                  ),
                 if (isOwner)
                   PlinkyButton(
                     onPressed: _confirmDelete,

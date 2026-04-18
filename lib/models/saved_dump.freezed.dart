@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SavedDump {
 
- String get id; String get userId; String get title; String get internalFlashPath; String get externalFlashPath; DateTime get createdAt; DateTime get updatedAt; String get description; int get internalFlashSize; int get externalFlashSize;@JsonKey(readValue: _readUsername) String get username;
+ String get id; String get userId; String get title; DateTime get createdAt; DateTime get updatedAt; String? get internalFlashPath; String? get externalFlashPath; String get description; int get internalFlashSize; int get externalFlashSize;@JsonKey(readValue: _readUsername) String get username;
 /// Create a copy of SavedDump
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SavedDumpCopyWith<SavedDump> get copyWith => _$SavedDumpCopyWithImpl<SavedDump>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SavedDump&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.internalFlashPath, internalFlashPath) || other.internalFlashPath == internalFlashPath)&&(identical(other.externalFlashPath, externalFlashPath) || other.externalFlashPath == externalFlashPath)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.description, description) || other.description == description)&&(identical(other.internalFlashSize, internalFlashSize) || other.internalFlashSize == internalFlashSize)&&(identical(other.externalFlashSize, externalFlashSize) || other.externalFlashSize == externalFlashSize)&&(identical(other.username, username) || other.username == username));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SavedDump&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.internalFlashPath, internalFlashPath) || other.internalFlashPath == internalFlashPath)&&(identical(other.externalFlashPath, externalFlashPath) || other.externalFlashPath == externalFlashPath)&&(identical(other.description, description) || other.description == description)&&(identical(other.internalFlashSize, internalFlashSize) || other.internalFlashSize == internalFlashSize)&&(identical(other.externalFlashSize, externalFlashSize) || other.externalFlashSize == externalFlashSize)&&(identical(other.username, username) || other.username == username));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,title,internalFlashPath,externalFlashPath,createdAt,updatedAt,description,internalFlashSize,externalFlashSize,username);
+int get hashCode => Object.hash(runtimeType,id,userId,title,createdAt,updatedAt,internalFlashPath,externalFlashPath,description,internalFlashSize,externalFlashSize,username);
 
 @override
 String toString() {
-  return 'SavedDump(id: $id, userId: $userId, title: $title, internalFlashPath: $internalFlashPath, externalFlashPath: $externalFlashPath, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, internalFlashSize: $internalFlashSize, externalFlashSize: $externalFlashSize, username: $username)';
+  return 'SavedDump(id: $id, userId: $userId, title: $title, createdAt: $createdAt, updatedAt: $updatedAt, internalFlashPath: $internalFlashPath, externalFlashPath: $externalFlashPath, description: $description, internalFlashSize: $internalFlashSize, externalFlashSize: $externalFlashSize, username: $username)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SavedDumpCopyWith<$Res>  {
   factory $SavedDumpCopyWith(SavedDump value, $Res Function(SavedDump) _then) = _$SavedDumpCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String title, String internalFlashPath, String externalFlashPath, DateTime createdAt, DateTime updatedAt, String description, int internalFlashSize, int externalFlashSize,@JsonKey(readValue: _readUsername) String username
+ String id, String userId, String title, DateTime createdAt, DateTime updatedAt, String? internalFlashPath, String? externalFlashPath, String description, int internalFlashSize, int externalFlashSize,@JsonKey(readValue: _readUsername) String username
 });
 
 
@@ -65,16 +65,16 @@ class _$SavedDumpCopyWithImpl<$Res>
 
 /// Create a copy of SavedDump
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? internalFlashPath = null,Object? externalFlashPath = null,Object? createdAt = null,Object? updatedAt = null,Object? description = null,Object? internalFlashSize = null,Object? externalFlashSize = null,Object? username = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? createdAt = null,Object? updatedAt = null,Object? internalFlashPath = freezed,Object? externalFlashPath = freezed,Object? description = null,Object? internalFlashSize = null,Object? externalFlashSize = null,Object? username = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,internalFlashPath: null == internalFlashPath ? _self.internalFlashPath : internalFlashPath // ignore: cast_nullable_to_non_nullable
-as String,externalFlashPath: null == externalFlashPath ? _self.externalFlashPath : externalFlashPath // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as DateTime,internalFlashPath: freezed == internalFlashPath ? _self.internalFlashPath : internalFlashPath // ignore: cast_nullable_to_non_nullable
+as String?,externalFlashPath: freezed == externalFlashPath ? _self.externalFlashPath : externalFlashPath // ignore: cast_nullable_to_non_nullable
+as String?,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,internalFlashSize: null == internalFlashSize ? _self.internalFlashSize : internalFlashSize // ignore: cast_nullable_to_non_nullable
 as int,externalFlashSize: null == externalFlashSize ? _self.externalFlashSize : externalFlashSize // ignore: cast_nullable_to_non_nullable
 as int,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
@@ -163,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  String internalFlashPath,  String externalFlashPath,  DateTime createdAt,  DateTime updatedAt,  String description,  int internalFlashSize,  int externalFlashSize, @JsonKey(readValue: _readUsername)  String username)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  DateTime createdAt,  DateTime updatedAt,  String? internalFlashPath,  String? externalFlashPath,  String description,  int internalFlashSize,  int externalFlashSize, @JsonKey(readValue: _readUsername)  String username)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SavedDump() when $default != null:
-return $default(_that.id,_that.userId,_that.title,_that.internalFlashPath,_that.externalFlashPath,_that.createdAt,_that.updatedAt,_that.description,_that.internalFlashSize,_that.externalFlashSize,_that.username);case _:
+return $default(_that.id,_that.userId,_that.title,_that.createdAt,_that.updatedAt,_that.internalFlashPath,_that.externalFlashPath,_that.description,_that.internalFlashSize,_that.externalFlashSize,_that.username);case _:
   return orElse();
 
 }
@@ -184,10 +184,10 @@ return $default(_that.id,_that.userId,_that.title,_that.internalFlashPath,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  String internalFlashPath,  String externalFlashPath,  DateTime createdAt,  DateTime updatedAt,  String description,  int internalFlashSize,  int externalFlashSize, @JsonKey(readValue: _readUsername)  String username)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  DateTime createdAt,  DateTime updatedAt,  String? internalFlashPath,  String? externalFlashPath,  String description,  int internalFlashSize,  int externalFlashSize, @JsonKey(readValue: _readUsername)  String username)  $default,) {final _that = this;
 switch (_that) {
 case _SavedDump():
-return $default(_that.id,_that.userId,_that.title,_that.internalFlashPath,_that.externalFlashPath,_that.createdAt,_that.updatedAt,_that.description,_that.internalFlashSize,_that.externalFlashSize,_that.username);case _:
+return $default(_that.id,_that.userId,_that.title,_that.createdAt,_that.updatedAt,_that.internalFlashPath,_that.externalFlashPath,_that.description,_that.internalFlashSize,_that.externalFlashSize,_that.username);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +204,10 @@ return $default(_that.id,_that.userId,_that.title,_that.internalFlashPath,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String title,  String internalFlashPath,  String externalFlashPath,  DateTime createdAt,  DateTime updatedAt,  String description,  int internalFlashSize,  int externalFlashSize, @JsonKey(readValue: _readUsername)  String username)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String title,  DateTime createdAt,  DateTime updatedAt,  String? internalFlashPath,  String? externalFlashPath,  String description,  int internalFlashSize,  int externalFlashSize, @JsonKey(readValue: _readUsername)  String username)?  $default,) {final _that = this;
 switch (_that) {
 case _SavedDump() when $default != null:
-return $default(_that.id,_that.userId,_that.title,_that.internalFlashPath,_that.externalFlashPath,_that.createdAt,_that.updatedAt,_that.description,_that.internalFlashSize,_that.externalFlashSize,_that.username);case _:
+return $default(_that.id,_that.userId,_that.title,_that.createdAt,_that.updatedAt,_that.internalFlashPath,_that.externalFlashPath,_that.description,_that.internalFlashSize,_that.externalFlashSize,_that.username);case _:
   return null;
 
 }
@@ -219,16 +219,16 @@ return $default(_that.id,_that.userId,_that.title,_that.internalFlashPath,_that.
 @JsonSerializable()
 
 class _SavedDump implements SavedDump {
-  const _SavedDump({required this.id, required this.userId, required this.title, required this.internalFlashPath, required this.externalFlashPath, required this.createdAt, required this.updatedAt, this.description = '', this.internalFlashSize = 0, this.externalFlashSize = 0, @JsonKey(readValue: _readUsername) this.username = ''});
+  const _SavedDump({required this.id, required this.userId, required this.title, required this.createdAt, required this.updatedAt, this.internalFlashPath, this.externalFlashPath, this.description = '', this.internalFlashSize = 0, this.externalFlashSize = 0, @JsonKey(readValue: _readUsername) this.username = ''});
   factory _SavedDump.fromJson(Map<String, dynamic> json) => _$SavedDumpFromJson(json);
 
 @override final  String id;
 @override final  String userId;
 @override final  String title;
-@override final  String internalFlashPath;
-@override final  String externalFlashPath;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
+@override final  String? internalFlashPath;
+@override final  String? externalFlashPath;
 @override@JsonKey() final  String description;
 @override@JsonKey() final  int internalFlashSize;
 @override@JsonKey() final  int externalFlashSize;
@@ -247,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavedDump&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.internalFlashPath, internalFlashPath) || other.internalFlashPath == internalFlashPath)&&(identical(other.externalFlashPath, externalFlashPath) || other.externalFlashPath == externalFlashPath)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.description, description) || other.description == description)&&(identical(other.internalFlashSize, internalFlashSize) || other.internalFlashSize == internalFlashSize)&&(identical(other.externalFlashSize, externalFlashSize) || other.externalFlashSize == externalFlashSize)&&(identical(other.username, username) || other.username == username));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavedDump&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.internalFlashPath, internalFlashPath) || other.internalFlashPath == internalFlashPath)&&(identical(other.externalFlashPath, externalFlashPath) || other.externalFlashPath == externalFlashPath)&&(identical(other.description, description) || other.description == description)&&(identical(other.internalFlashSize, internalFlashSize) || other.internalFlashSize == internalFlashSize)&&(identical(other.externalFlashSize, externalFlashSize) || other.externalFlashSize == externalFlashSize)&&(identical(other.username, username) || other.username == username));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,title,internalFlashPath,externalFlashPath,createdAt,updatedAt,description,internalFlashSize,externalFlashSize,username);
+int get hashCode => Object.hash(runtimeType,id,userId,title,createdAt,updatedAt,internalFlashPath,externalFlashPath,description,internalFlashSize,externalFlashSize,username);
 
 @override
 String toString() {
-  return 'SavedDump(id: $id, userId: $userId, title: $title, internalFlashPath: $internalFlashPath, externalFlashPath: $externalFlashPath, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, internalFlashSize: $internalFlashSize, externalFlashSize: $externalFlashSize, username: $username)';
+  return 'SavedDump(id: $id, userId: $userId, title: $title, createdAt: $createdAt, updatedAt: $updatedAt, internalFlashPath: $internalFlashPath, externalFlashPath: $externalFlashPath, description: $description, internalFlashSize: $internalFlashSize, externalFlashSize: $externalFlashSize, username: $username)';
 }
 
 
@@ -267,7 +267,7 @@ abstract mixin class _$SavedDumpCopyWith<$Res> implements $SavedDumpCopyWith<$Re
   factory _$SavedDumpCopyWith(_SavedDump value, $Res Function(_SavedDump) _then) = __$SavedDumpCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String title, String internalFlashPath, String externalFlashPath, DateTime createdAt, DateTime updatedAt, String description, int internalFlashSize, int externalFlashSize,@JsonKey(readValue: _readUsername) String username
+ String id, String userId, String title, DateTime createdAt, DateTime updatedAt, String? internalFlashPath, String? externalFlashPath, String description, int internalFlashSize, int externalFlashSize,@JsonKey(readValue: _readUsername) String username
 });
 
 
@@ -284,16 +284,16 @@ class __$SavedDumpCopyWithImpl<$Res>
 
 /// Create a copy of SavedDump
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? internalFlashPath = null,Object? externalFlashPath = null,Object? createdAt = null,Object? updatedAt = null,Object? description = null,Object? internalFlashSize = null,Object? externalFlashSize = null,Object? username = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? createdAt = null,Object? updatedAt = null,Object? internalFlashPath = freezed,Object? externalFlashPath = freezed,Object? description = null,Object? internalFlashSize = null,Object? externalFlashSize = null,Object? username = null,}) {
   return _then(_SavedDump(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,internalFlashPath: null == internalFlashPath ? _self.internalFlashPath : internalFlashPath // ignore: cast_nullable_to_non_nullable
-as String,externalFlashPath: null == externalFlashPath ? _self.externalFlashPath : externalFlashPath // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as DateTime,internalFlashPath: freezed == internalFlashPath ? _self.internalFlashPath : internalFlashPath // ignore: cast_nullable_to_non_nullable
+as String?,externalFlashPath: freezed == externalFlashPath ? _self.externalFlashPath : externalFlashPath // ignore: cast_nullable_to_non_nullable
+as String?,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,internalFlashSize: null == internalFlashSize ? _self.internalFlashSize : internalFlashSize // ignore: cast_nullable_to_non_nullable
 as int,externalFlashSize: null == externalFlashSize ? _self.externalFlashSize : externalFlashSize // ignore: cast_nullable_to_non_nullable
 as int,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
