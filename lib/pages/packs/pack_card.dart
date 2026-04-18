@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/pages/packs/pack_sharing_check.dart';
+import 'package:plinkyhub/pages/packs/pattern_section.dart';
+import 'package:plinkyhub/pages/packs/preset_slots_grid.dart';
 import 'package:plinkyhub/pages/packs/providers/saved_packs_notifier.dart';
+import 'package:plinkyhub/pages/packs/samples_section.dart';
 import 'package:plinkyhub/pages/packs/save_to_plinky_dialog.dart';
+import 'package:plinkyhub/pages/packs/wavetable_section.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/widgets/confirm_delete_dialog.dart';
@@ -33,6 +37,8 @@ class PackCard extends ConsumerStatefulWidget {
 }
 
 class _PackCardState extends ConsumerState<PackCard> {
+  bool _expanded = false;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -137,8 +143,22 @@ class _PackCardState extends ConsumerState<PackCard> {
                       onPressed: () => _confirmDelete(context),
                     ),
                   ],
+                  IconButton(
+                    icon: Icon(
+                      _expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 20,
+                    ),
+                    tooltip: _expanded ? 'Hide contents' : 'Show contents',
+                    onPressed: () => setState(() => _expanded = !_expanded),
+                  ),
                 ],
               ),
+              if (_expanded) ...[
+                const SizedBox(height: 8),
+                const Divider(height: 1),
+                const SizedBox(height: 8),
+                _PackContentsSection(pack: pack),
+              ],
             ],
           ),
         ),
@@ -207,5 +227,55 @@ class _PackCardState extends ConsumerState<PackCard> {
       ref.read(savedPacksProvider.notifier).deleteItem(widget.pack.id);
       widget.onDeleted?.call();
     }
+  }
+}
+
+class _PackContentsSection extends StatelessWidget {
+  const _PackContentsSection({required this.pack});
+
+  final SavedPack pack;
+
+  @override
+  Widget build(BuildContext context) {
+    final presetSlots = List.generate(32, (i) {
+      final slot = pack.slots.where((s) => s.slotNumber == i).firstOrNull;
+      return (
+        presetId: slot?.presetId,
+        sampleId: slot?.sampleId,
+        patternId: slot?.patternId,
+      );
+    });
+
+    final patternIds = Map.fromEntries(
+      pack.slots
+          .where((s) => s.slotNumber >= 32 && s.slotNumber < 56)
+          .map((s) => MapEntry(s.slotNumber - 32, s.patternId)),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PresetSlotsGrid(
+          slots: presetSlots,
+          onPresetChanged: (_, __) {},
+          onSampleChanged: (_, __) {},
+          readOnly: true,
+        ),
+        const SizedBox(height: 16),
+        SamplesSection(slots: presetSlots),
+        const SizedBox(height: 16),
+        PatternSection(
+          patternIds: patternIds,
+          onPatternChanged: (_, __) {},
+          readOnly: true,
+        ),
+        const SizedBox(height: 16),
+        WavetableSection(
+          wavetableId: pack.wavetableId,
+          onChanged: (_) {},
+          readOnly: true,
+        ),
+      ],
+    );
   }
 }

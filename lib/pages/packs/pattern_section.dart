@@ -14,6 +14,7 @@ class PatternSection extends StatelessWidget {
     required this.onPatternChanged,
     this.devicePatternIndices = const {},
     this.dirtyPatterns = const {},
+    this.readOnly = false,
     super.key,
   });
 
@@ -21,6 +22,7 @@ class PatternSection extends StatelessWidget {
   final void Function(int patternIndex, String? patternId) onPatternChanged;
   final Set<int> devicePatternIndices;
   final Set<int> dirtyPatterns;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +55,7 @@ class PatternSection extends StatelessWidget {
               isDirty: dirtyPatterns.contains(patternIndex),
               onChanged: (patternId) =>
                   onPatternChanged(patternIndex, patternId),
+              readOnly: readOnly,
             );
           },
         ),
@@ -68,6 +71,7 @@ class _PatternTile extends ConsumerWidget {
     required this.patternId,
     required this.onChanged,
     this.isDirty = false,
+    this.readOnly = false,
   });
 
   final int patternIndex;
@@ -75,6 +79,7 @@ class _PatternTile extends ConsumerWidget {
   final String? patternId;
   final ValueChanged<String?> onChanged;
   final bool isDirty;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -103,7 +108,7 @@ class _PatternTile extends ConsumerWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => _showPatternPicker(context, ref),
+        onTap: readOnly ? null : () => _showPatternPicker(context, ref),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,

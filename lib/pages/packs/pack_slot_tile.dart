@@ -23,6 +23,7 @@ class PackSlotTile extends ConsumerWidget {
     this.devicePreset,
     this.onEditPressed,
     this.isDirty = false,
+    this.readOnly = false,
     super.key,
   });
 
@@ -34,6 +35,7 @@ class PackSlotTile extends ConsumerWidget {
   final Preset? devicePreset;
   final VoidCallback? onEditPressed;
   final bool isDirty;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,7 +70,7 @@ class PackSlotTile extends ConsumerWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => _showPresetPicker(context, ref, presets),
+        onTap: readOnly ? null : () => _showPresetPicker(context, ref, presets),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,
@@ -146,42 +148,43 @@ class PackSlotTile extends ConsumerWidget {
                   ],
                 ),
               ),
-              PopupMenuButton<_SlotMenuAction>(
-                icon: const Icon(Icons.more_vert, size: 16),
-                itemBuilder: (context) => [
-                  if (onEditPressed != null)
+              if (!readOnly)
+                PopupMenuButton<_SlotMenuAction>(
+                  icon: const Icon(Icons.more_vert, size: 16),
+                  itemBuilder: (context) => [
+                    if (onEditPressed != null)
+                      const PopupMenuItem(
+                        value: _SlotMenuAction.edit,
+                        child: Text('Edit'),
+                      ),
                     const PopupMenuItem(
-                      value: _SlotMenuAction.edit,
-                      child: Text('Edit'),
+                      value: _SlotMenuAction.pickPreset,
+                      child: Text('Pick preset'),
                     ),
-                  const PopupMenuItem(
-                    value: _SlotMenuAction.pickPreset,
-                    child: Text('Pick preset'),
-                  ),
-                  const PopupMenuItem(
-                    value: _SlotMenuAction.pickSample,
-                    child: Text('Pick sample'),
-                  ),
-                  if (presetId != null || sampleId != null)
                     const PopupMenuItem(
-                      value: _SlotMenuAction.clear,
-                      child: Text('Clear slot'),
+                      value: _SlotMenuAction.pickSample,
+                      child: Text('Pick sample'),
                     ),
-                ],
-                onSelected: (action) {
-                  switch (action) {
-                    case _SlotMenuAction.edit:
-                      onEditPressed?.call();
-                    case _SlotMenuAction.pickPreset:
-                      _showPresetPicker(context, ref, presets);
-                    case _SlotMenuAction.pickSample:
-                      _showSamplePicker(context, ref, samples);
-                    case _SlotMenuAction.clear:
-                      onPresetChanged(null);
-                      onSampleChanged(null);
-                  }
-                },
-              ),
+                    if (presetId != null || sampleId != null)
+                      const PopupMenuItem(
+                        value: _SlotMenuAction.clear,
+                        child: Text('Clear slot'),
+                      ),
+                  ],
+                  onSelected: (action) {
+                    switch (action) {
+                      case _SlotMenuAction.edit:
+                        onEditPressed?.call();
+                      case _SlotMenuAction.pickPreset:
+                        _showPresetPicker(context, ref, presets);
+                      case _SlotMenuAction.pickSample:
+                        _showSamplePicker(context, ref, samples);
+                      case _SlotMenuAction.clear:
+                        onPresetChanged(null);
+                        onSampleChanged(null);
+                    }
+                  },
+                ),
             ],
           ),
         ),

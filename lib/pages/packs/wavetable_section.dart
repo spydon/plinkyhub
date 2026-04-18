@@ -15,6 +15,7 @@ class WavetableSection extends ConsumerWidget {
     this.deviceHasWavetable = false,
     this.showUnknownWhenEmpty = false,
     this.isDirty = false,
+    this.readOnly = false,
     super.key,
   });
 
@@ -22,6 +23,7 @@ class WavetableSection extends ConsumerWidget {
   final bool deviceHasWavetable;
   final bool showUnknownWhenEmpty;
   final bool isDirty;
+  final bool readOnly;
   final ValueChanged<String?> onChanged;
 
   @override
@@ -118,33 +120,34 @@ class WavetableSection extends ConsumerWidget {
                     'we can detect which wavetable that is being used.',
                 child: Icon(Icons.info_outline, size: 20),
               ),
-            if (wavetableId != null)
+            if (!readOnly && wavetableId != null)
               IconButton(
                 icon: const Icon(Icons.clear, size: 20),
                 tooltip: 'Remove wavetable',
                 onPressed: () => onChanged(null),
               ),
-            PlinkyButton(
-              onPressed: () async {
-                final authState = ref.read(authenticationProvider);
-                final allWavetables = {
-                  ...wavetablesState.userItems,
-                  ...wavetablesState.publicItems,
-                }.toList();
-                final selected = await showDialog<SavedWavetable>(
-                  context: context,
-                  builder: (context) => WavetablePickerDialog(
-                    wavetables: allWavetables,
-                    currentUserId: authState.user?.id,
-                  ),
-                );
-                if (selected != null) {
-                  onChanged(selected.id);
-                }
-              },
-              icon: Icons.waves,
-              label: 'Choose',
-            ),
+            if (!readOnly)
+              PlinkyButton(
+                onPressed: () async {
+                  final authState = ref.read(authenticationProvider);
+                  final allWavetables = {
+                    ...wavetablesState.userItems,
+                    ...wavetablesState.publicItems,
+                  }.toList();
+                  final selected = await showDialog<SavedWavetable>(
+                    context: context,
+                    builder: (context) => WavetablePickerDialog(
+                      wavetables: allWavetables,
+                      currentUserId: authState.user?.id,
+                    ),
+                  );
+                  if (selected != null) {
+                    onChanged(selected.id);
+                  }
+                },
+                icon: Icons.waves,
+                label: 'Choose',
+              ),
           ],
         ),
       ],
