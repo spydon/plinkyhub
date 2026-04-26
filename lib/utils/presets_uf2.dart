@@ -140,6 +140,41 @@ Map<int, Uint8List> _scanFlashPages(Uint8List flashImage) {
   return bestPage;
 }
 
+/// Sets the SysParams version byte to 0 in every existing flash page in
+/// [flashImage] (modified in place) and recomputes each affected page's CRC.
+///
+/// On boot, the firmware compares each page's stored SysParams version to
+/// LPE_SYS_PARAMS_VERSION; setting it to 0 forces the firmware to reset
+/// persistent settings (volume, MIDI channels, etc.) to defaults.
+///
+/// Pages with an unwritten footer (item ID 0xFF) or an unknown footer
+/// version are skipped.
+void clearSysParamsVersionInFlashImage(Uint8List flashImage) {
+  for (var pageIndex = 0; pageIndex < flashPageCount; pageIndex++) {
+    final pageOffset = pageIndex * flashPageSize;
+    if (pageOffset + flashPageSize > flashImage.length) {
+      break;
+    }
+
+    final footerOffset = pageOffset + flashPageSize - _pageFooterSize;
+    final itemId = flashImage[footerOffset];
+    final footerVersion = flashImage[footerOffset + 1];
+
+    if (itemId == 0xFF || footerVersion != _footerVersion) {
+      continue;
+    }
+
+    // SysParams version is the last byte of SysParams, which sits in the
+    // 16 bytes immediately preceding the footer.
+    flashImage[footerOffset - 1] = 0;
+
+    final pageSlice = Uint8List.sublistView(flashImage, pageOffset);
+    final crc = computeFlashHash(pageSlice, flashPageSize - _pageFooterSize);
+    flashImage[footerOffset + 2] = crc & 0xFF;
+    flashImage[footerOffset + 3] = (crc >> 8) & 0xFF;
+  }
+}
+
 /// Computes the firmware flash hash (CRC) over [length] bytes of [data].
 ///
 /// Matches the firmware's `compute_hash()` function.
