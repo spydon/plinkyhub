@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/samples/slice_note_dropdown.dart';
 import 'package:plinkyhub/pages/samples/slice_points_painter.dart';
@@ -44,7 +43,6 @@ class SlicePointsEditor extends ConsumerStatefulWidget {
 
 class _SlicePointsEditorState extends ConsumerState<SlicePointsEditor>
     with SingleTickerProviderStateMixin {
-  AudioSource? _audioSource;
   int? _playingSlice;
   int? _pausedSlice;
   int? _loadingSliceIndex;
@@ -71,7 +69,6 @@ class _SlicePointsEditorState extends ConsumerState<SlicePointsEditor>
   void didUpdateWidget(SlicePointsEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.wavBytes != widget.wavBytes) {
-      _audioSource = null;
       _stopProgressTracking();
       _computeWaveformPeaks();
     }
@@ -142,7 +139,6 @@ class _SlicePointsEditorState extends ConsumerState<SlicePointsEditor>
   void dispose() {
     ref.read(soundServiceProvider).stopPreview();
     _progressTicker.dispose();
-    _audioSource = null;
     _playingSlice = null;
     _pausedSlice = null;
     super.dispose();
@@ -164,9 +160,9 @@ class _SlicePointsEditorState extends ConsumerState<SlicePointsEditor>
   }
 
   Future<void> _resumeSlice() async {
-    final source = _audioSource;
+    final wavBytes = widget.wavBytes;
     final pausedSlice = _pausedSlice;
-    if (source == null || pausedSlice == null) {
+    if (wavBytes == null || pausedSlice == null) {
       return;
     }
     final pausedElapsed = _pausedElapsed ?? Duration.zero;
@@ -185,7 +181,8 @@ class _SlicePointsEditorState extends ConsumerState<SlicePointsEditor>
 
     final soundService = ref.read(soundServiceProvider);
     await soundService.playSlice(
-      source,
+      key: '${widget.sampleName}.wav',
+      wavBytes: wavBytes,
       startFraction: resumeStartFraction,
       endFraction: _playbackEndFraction,
     );
@@ -209,40 +206,29 @@ class _SlicePointsEditorState extends ConsumerState<SlicePointsEditor>
     try {
       final soundService = ref.read(soundServiceProvider);
 
-      // Load audio if needed
-      if (_audioSource == null) {
-        setState(() => _loadingSliceIndex = sliceIndex);
-        _audioSource = await soundService.loadSource(
-          '${widget.sampleName}.wav',
-          wavBytes,
-        );
-        if (mounted) {
-          setState(() => _loadingSliceIndex = null);
-        } else {
-          return;
-        }
-      }
-
-      final source = _audioSource!;
       final startFraction = widget.slicePoints[sliceIndex];
       final endFraction = sliceIndex < 7
           ? widget.slicePoints[sliceIndex + 1]
           : 1.0;
 
-      await soundService.playSlice(
-        source,
+      setState(() => _loadingSliceIndex = sliceIndex);
+      final result = await soundService.playSlice(
+        key: '${widget.sampleName}.wav',
+        wavBytes: wavBytes,
         startFraction: startFraction,
         endFraction: endFraction,
       );
-
-      final totalDuration = soundService.getLength(source);
-      final sliceDuration = totalDuration * (endFraction - startFraction);
-
-      setState(() => _playingSlice = sliceIndex);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _loadingSliceIndex = null;
+        _playingSlice = sliceIndex;
+      });
       _startProgressTracking(
         startFraction: startFraction,
         endFraction: endFraction,
-        sliceDuration: sliceDuration,
+        sliceDuration: result.sliceDuration,
       );
     } on Exception catch (error) {
       debugPrint('Failed to play slice: $error');
