@@ -104,10 +104,11 @@ class _FlashFirmwareDialogState extends ConsumerState<FlashFirmwareDialog> {
               const SizedBox(height: 8),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Clear settings'),
+                title: const Text('Reset Settings Version'),
                 subtitle: const Text(
-                  'Reset persistent settings (volume, MIDI channels, etc.) '
-                  'to defaults on next boot.',
+                  'This forces Lucky Phoenix firmware to reinitialize all '
+                  'new system settings and is only needed the first time '
+                  'you load a Lucky Phoenix firmware',
                 ),
                 value: _clearSettings,
                 onChanged: (value) => setState(() => _clearSettings = value),
