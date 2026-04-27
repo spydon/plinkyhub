@@ -58,10 +58,9 @@ class SoundService {
     final startTime = totalDuration * startFraction;
     final sliceDuration = totalDuration * (endFraction - startFraction);
 
-    final handle = await _soloud.play(source, paused: true, volume: 0);
+    final handle = await _soloud.play(source, paused: true);
     _soloud.seek(handle, startTime);
     _soloud.setPause(handle, false);
-    _soloud.setVolume(handle, 1);
 
     if (sliceDuration > Duration.zero) {
       _soloud.scheduleStop(handle, sliceDuration);
