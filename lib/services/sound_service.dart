@@ -66,25 +66,15 @@ class SoundService {
     return handle;
   }
 
-  /// Pause or resume the currently playing preview.
-  void setPaused({required bool paused}) {
-    final handle = _activeHandle;
-    if (handle != null) {
-      _soloud.setPause(handle, paused);
-    }
-  }
-
   /// Stop the currently playing preview.
   ///
-  /// Mutes the handle and unpauses it before stopping so that SoLoud's
-  /// internal stop fade-out does not briefly play any residual audio from
-  /// a paused handle.
+  /// Mutes the handle before stopping so that any residual audio in SoLoud's
+  /// internal output buffer is silent.
   Future<void> stopPreview() async {
     final handle = _activeHandle;
     if (handle != null) {
       try {
         _soloud.setVolume(handle, 0);
-        _soloud.setPause(handle, false);
         _soloud.stop(handle);
       } on Exception catch (_) {}
       _activeHandle = null;

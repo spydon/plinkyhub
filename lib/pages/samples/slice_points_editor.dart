@@ -150,7 +150,6 @@ class _SlicePointsEditorState extends ConsumerState<SlicePointsEditor>
 
   void _pauseSlice() {
     final soundService = ref.read(soundServiceProvider);
-    soundService.setPaused(paused: true);
     _pausedElapsed = _playbackStartTime != null
         ? DateTime.now().difference(_playbackStartTime!)
         : Duration.zero;
@@ -161,22 +160,41 @@ class _SlicePointsEditorState extends ConsumerState<SlicePointsEditor>
       _pausedSlice = _playingSlice;
       _playingSlice = null;
     });
+    soundService.stopPreview();
   }
 
-  void _resumeSlice() {
+  Future<void> _resumeSlice() async {
+    final source = _audioSource;
+    final pausedSlice = _pausedSlice;
+    if (source == null || pausedSlice == null) {
+      return;
+    }
+    final pausedElapsed = _pausedElapsed ?? Duration.zero;
+    final sliceMicroseconds = _playbackSliceDuration.inMicroseconds;
+    final progressFraction = sliceMicroseconds > 0
+        ? (pausedElapsed.inMicroseconds / sliceMicroseconds).clamp(0.0, 1.0)
+        : 0.0;
+    final range = _playbackEndFraction - _playbackStartFraction;
+    final resumeStartFraction =
+        _playbackStartFraction + range * progressFraction;
+
+    setState(() {
+      _playingSlice = pausedSlice;
+      _pausedSlice = null;
+    });
+
     final soundService = ref.read(soundServiceProvider);
-    soundService.setPaused(paused: false);
-    _playbackStartTime = DateTime.now().subtract(
-      _pausedElapsed ?? Duration.zero,
+    await soundService.playSlice(
+      source,
+      startFraction: resumeStartFraction,
+      endFraction: _playbackEndFraction,
     );
+
+    _playbackStartTime = DateTime.now().subtract(pausedElapsed);
     _pausedElapsed = null;
     if (!_progressTicker.isActive) {
       _progressTicker.start();
     }
-    setState(() {
-      _playingSlice = _pausedSlice;
-      _pausedSlice = null;
-    });
   }
 
   Future<void> _playSlice(int sliceIndex) async {
