@@ -101,6 +101,7 @@ class SoundService {
   /// residual audio in SoLoud's output buffer is displaced before the next
   /// slice starts.
   Future<void> _flushOutputBufferWithSilence() async {
+    await _ensureInitialized();
     final source = _silenceSource ??= await _soloud.loadMem(
       _silenceKey,
       _buildSilenceWav(_silenceDuration),
