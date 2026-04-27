@@ -140,6 +140,7 @@ class _SlicePointsEditorState extends ConsumerState<SlicePointsEditor>
 
   @override
   void dispose() {
+    ref.read(soundServiceProvider).stopPreview();
     _progressTicker.dispose();
     _audioSource = null;
     _playingSlice = null;
