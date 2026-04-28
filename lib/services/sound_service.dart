@@ -8,9 +8,11 @@ class SoundService {
   final _loadedSources = <String, AudioSource>{};
   SoundHandle? _activeHandle;
   AudioSource? _silenceSource;
+  bool _warmedUp = false;
 
-  static const _silenceKey = '_silence_50ms';
-  static const _silenceDuration = Duration(milliseconds: 50);
+  static const _silenceKey = '_silence';
+  static const _flushDuration = Duration(milliseconds: 50);
+  static const _warmupDuration = Duration(milliseconds: 200);
 
   SoLoud get _soloud => SoLoud.instance;
 
@@ -96,17 +98,25 @@ class SoundService {
   /// The duration of a loaded source.
   Duration getLength(AudioSource source) => _soloud.getLength(source);
 
-  /// Plays [_silenceDuration] of zeros and waits for it to drain so that any
-  /// residual audio in SoLoud's output buffer is displaced before the next
-  /// slice starts.
+  /// Plays zeros and waits for them to drain so that any residual audio in
+  /// SoLoud's output buffer is displaced before the next slice starts. The
+  /// first call uses a longer window to fully warm up the WebAudio context;
+  /// subsequent calls use a short window just to flush the buffer.
+  ///
+  /// SoLoud's web backend lets audio output go idle when no voice is active,
+  /// so a plain delay is not sufficient: we need an active voice pushing
+  /// zeros through the pipeline.
   Future<void> _flushOutputBufferWithSilence() async {
     await _ensureInitialized();
     final source = _silenceSource ??= await _soloud.loadMem(
       _silenceKey,
-      _buildSilenceWav(_silenceDuration),
+      _buildSilenceWav(_warmupDuration),
     );
-    await _soloud.play(source);
-    await Future<void>.delayed(_silenceDuration);
+    final duration = _warmedUp ? _flushDuration : _warmupDuration;
+    final handle = await _soloud.play(source);
+    _soloud.scheduleStop(handle, duration);
+    await Future<void>.delayed(duration);
+    _warmedUp = true;
   }
 }
 
