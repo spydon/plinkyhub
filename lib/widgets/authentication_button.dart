@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
@@ -166,83 +167,101 @@ class _SignInDialogState extends ConsumerState<SignInDialog> {
       title: Text(_isSignUp ? 'Create account' : 'Sign in'),
       content: SizedBox(
         width: 320,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_isSignUp) ...[
+        child: AutofillGroup(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_isSignUp) ...[
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                    border: OutlineInputBorder(),
+                  ),
+                  autofillHints: const [AutofillHints.newUsername],
+                  textInputAction: TextInputAction.next,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 12),
+              ],
               TextField(
-                controller: _usernameController,
+                controller: _emailController,
                 decoration: const InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'Email',
                   border: OutlineInputBorder(),
                 ),
-                autofocus: true,
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [
+                  AutofillHints.username,
+                  AutofillHints.email,
+                ],
+                textInputAction: TextInputAction.next,
+                autofocus: !_isSignUp,
               ),
               const SizedBox(height: 12),
-            ],
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.emailAddress,
-              autofocus: !_isSignUp,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
-              onSubmitted: (_) => _submit(),
-            ),
-            if (!_isSignUp) ...[
-              const SizedBox(height: 4),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: authenticationState.isLoading
-                      ? null
-                      : () => _showForgotPassword(context, ref),
-                  child: const Text('Forgot password?'),
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
                 ),
+                obscureText: true,
+                autofillHints: [
+                  if (_isSignUp)
+                    AutofillHints.newPassword
+                  else
+                    AutofillHints.password,
+                ],
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _submit(),
               ),
-            ],
-            if (authenticationState.errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                authenticationState.errorMessage!,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-              if (_isConfirmationError(authenticationState.errorMessage!)) ...[
-                const SizedBox(height: 8),
+              if (!_isSignUp) ...[
+                const SizedBox(height: 4),
                 Align(
-                  alignment: Alignment.centerLeft,
-                  child: PlinkyButton(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
                     onPressed: authenticationState.isLoading
                         ? null
-                        : () => _resendConfirmation(ref),
-                    icon: Icons.email,
-                    label: 'Resend confirmation email',
+                        : () => _showForgotPassword(context, ref),
+                    child: const Text('Forgot password?'),
+                  ),
+                ),
+              ],
+              if (authenticationState.errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  authenticationState.errorMessage!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+                if (_isConfirmationError(
+                  authenticationState.errorMessage!,
+                )) ...[
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: PlinkyButton(
+                      onPressed: authenticationState.isLoading
+                          ? null
+                          : () => _resendConfirmation(ref),
+                      icon: Icons.email,
+                      label: 'Resend confirmation email',
+                    ),
+                  ),
+                ],
+              ],
+              if (authenticationState.infoMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  authenticationState.infoMessage!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ],
             ],
-            if (authenticationState.infoMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                authenticationState.infoMessage!,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
       actions: [
@@ -285,6 +304,7 @@ class _SignInDialogState extends ConsumerState<SignInDialog> {
       return;
     }
 
+    TextInput.finishAutofillContext();
     if (_isSignUp) {
       notifier.signUp(email, password, username);
     } else {
