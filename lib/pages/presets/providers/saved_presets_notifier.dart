@@ -70,7 +70,7 @@ class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
         isPublic: isPublic,
         youtubeUrl: youtubeUrl,
         sampleId: sampleId,
-        contentHash: computeContentHash(presetBytes),
+        contentHash: computePresetContentHash(presetBytes),
       );
       await supabase.from('presets').insert(write.toJson());
       await refreshAll();
@@ -106,7 +106,7 @@ class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
         isPublic: isPublic ?? existing.isPublic,
         youtubeUrl: youtubeUrl ?? existing.youtubeUrl,
         sampleId: sampleId,
-        contentHash: computeContentHash(presetBytes),
+        contentHash: computePresetContentHash(presetBytes),
       );
       final json = write.toJson();
       await supabase.from('presets').update(json).eq('id', id);
