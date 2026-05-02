@@ -395,7 +395,9 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       }
       _includePatternsInPack = _patternNames.isNotEmpty;
 
-      // Find existing public matches using precomputed hashes.
+      // Find existing matches by content hash. Reuses any public item
+      // (regardless of owner) plus the current user's own items, including
+      // private ones that won't appear in the public catalog.
       setState(() {
         _statusMessage = 'Checking for existing content...';
       });
@@ -404,15 +406,17 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       _matchedWavetable = null;
       _matchedPatterns.clear();
 
+      final currentUserId = ref.read(authenticationProvider).user?.id;
       await Future.wait([
-        _findMatches('presets', _presetHashes, _matchedPresets),
-        _findMatches('samples', _sampleHashes, _matchedSamples),
+        _findMatches('presets', _presetHashes, _matchedPresets, currentUserId),
+        _findMatches('samples', _sampleHashes, _matchedSamples, currentUserId),
         _findMatches(
           'patterns',
           _patternHashes,
           _matchedPatterns,
+          currentUserId,
         ),
-        _findWavetableMatch(),
+        _findWavetableMatch(currentUserId),
       ]);
 
       // Set names from matched entries.
@@ -450,17 +454,21 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     String table,
     Map<int, String> hashes,
     Map<int, MatchedEntry> matches,
+    String? currentUserId,
   ) async {
     if (hashes.isEmpty) {
       return;
     }
 
     final uniqueHashes = hashes.values.toSet().toList();
-    final results = await _supabase
+    var query = _supabase
         .from(table)
         .select('id, name, content_hash')
-        .eq('is_public', true)
         .inFilter('content_hash', uniqueHashes);
+    query = currentUserId != null
+        ? query.or('is_public.eq.true,user_id.eq.$currentUserId')
+        : query.eq('is_public', true);
+    final results = await query;
 
     final hashToEntry = <String, MatchedEntry>{};
     for (final row in results) {
@@ -481,17 +489,19 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     }
   }
 
-  Future<void> _findWavetableMatch() async {
+  Future<void> _findWavetableMatch(String? currentUserId) async {
     if (_wavetableHash == null) {
       return;
     }
 
-    final results = await _supabase
+    var query = _supabase
         .from('wavetables')
         .select('id, name, content_hash')
-        .eq('is_public', true)
-        .eq('content_hash', _wavetableHash!)
-        .limit(1);
+        .eq('content_hash', _wavetableHash!);
+    query = currentUserId != null
+        ? query.or('is_public.eq.true,user_id.eq.$currentUserId')
+        : query.eq('is_public', true);
+    final results = await query.limit(1);
 
     if (results.isNotEmpty) {
       _matchedWavetable = MatchedEntry(
