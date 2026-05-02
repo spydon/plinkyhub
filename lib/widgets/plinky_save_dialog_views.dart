@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:plinkyhub/services/webusb_service.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/widgets/chromium_required_banner.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 
 /// How data is transferred to the Plinky device.
@@ -307,7 +308,9 @@ class SaveErrorView extends StatelessWidget {
       children: [
         const Icon(Icons.error, size: 48, color: Colors.red),
         const SizedBox(height: 16),
-        Text(errorMessage ?? 'An unknown error occurred.'),
+        CopyableErrorMessage(
+          message: errorMessage ?? 'An unknown error occurred.',
+        ),
       ],
     );
   }

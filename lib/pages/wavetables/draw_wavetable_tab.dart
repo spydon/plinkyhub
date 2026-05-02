@@ -12,6 +12,7 @@ import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/utils/wavetable.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 /// Tab for creating or editing wavetables by drawing waveforms directly in the
@@ -864,8 +865,8 @@ class _ErrorMessageText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Text(
-      errorMessage,
+    return CopyableErrorMessage(
+      message: errorMessage,
       style: theme.textTheme.bodySmall?.copyWith(
         color: theme.colorScheme.error,
       ),

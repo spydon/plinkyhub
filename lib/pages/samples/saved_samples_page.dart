@@ -7,6 +7,7 @@ import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/pages/samples/upload_sample_tab.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
@@ -117,8 +118,8 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
         if (savedSamplesState.errorMessage != null)
           Padding(
             padding: const EdgeInsets.all(8),
-            child: Text(
-              savedSamplesState.errorMessage!,
+            child: CopyableErrorMessage(
+              message: savedSamplesState.errorMessage!,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
               ),

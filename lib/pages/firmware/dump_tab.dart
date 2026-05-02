@@ -8,6 +8,7 @@ import 'package:plinkyhub/pages/firmware/providers/dumps_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/services/webusb_service.dart';
 import 'package:plinkyhub/widgets/chromium_required_banner.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
@@ -72,8 +73,8 @@ class DumpTab extends ConsumerWidget {
           if (dumpsState.errorMessage != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                dumpsState.errorMessage!,
+              child: CopyableErrorMessage(
+                message: dumpsState.errorMessage!,
                 style: TextStyle(color: theme.colorScheme.error),
               ),
             ),

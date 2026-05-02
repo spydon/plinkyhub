@@ -6,6 +6,7 @@ import 'package:plinkyhub/pages/patterns/pattern_card.dart';
 import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
 
@@ -103,8 +104,8 @@ class _SavedPatternsPageState extends ConsumerState<SavedPatternsPage>
         if (savedPatternsState.errorMessage != null)
           Padding(
             padding: const EdgeInsets.all(8),
-            child: Text(
-              savedPatternsState.errorMessage!,
+            child: CopyableErrorMessage(
+              message: savedPatternsState.errorMessage!,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
               ),

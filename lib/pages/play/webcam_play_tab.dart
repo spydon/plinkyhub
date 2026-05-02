@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/play/providers/midi_play_notifier.dart';
 import 'package:plinkyhub/services/mediapipe_hands_service.dart';
 import 'package:plinkyhub/utils/pitch.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:web/web.dart' as web;
 
 const _noteNames = [
@@ -410,9 +411,8 @@ class _WebcamPlayTabState extends ConsumerState<WebcamPlayTab> {
             const SizedBox(height: 8),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
-              child: Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
+              child: CopyableErrorMessage(
+                message: _errorMessage!,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.error,
                 ),

@@ -10,6 +10,7 @@ import 'package:plinkyhub/pages/patterns/utils/pattern_decoder.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -127,8 +128,8 @@ class _PatternPageState extends ConsumerState<PatternPage> {
 
     if (_errorMessage != null || _pattern == null) {
       return Center(
-        child: Text(
-          _errorMessage ?? 'Pattern not found',
+        child: CopyableErrorMessage(
+          message: _errorMessage ?? 'Pattern not found',
           style: TextStyle(
             color: Theme.of(context).colorScheme.error,
           ),

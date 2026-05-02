@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 class UploadWavetableTab extends ConsumerStatefulWidget {
@@ -227,8 +228,8 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
               ),
               if (_errorMessage != null) ...[
                 const SizedBox(height: 8),
-                Text(
-                  _errorMessage!,
+                CopyableErrorMessage(
+                  message: _errorMessage!,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.error,
                   ),

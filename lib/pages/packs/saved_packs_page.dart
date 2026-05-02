@@ -7,6 +7,7 @@ import 'package:plinkyhub/pages/packs/pack_card.dart';
 import 'package:plinkyhub/pages/packs/providers/saved_packs_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
 
@@ -106,8 +107,8 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
         if (savedPacksState.errorMessage != null)
           Padding(
             padding: const EdgeInsets.all(8),
-            child: Text(
-              savedPacksState.errorMessage!,
+            child: CopyableErrorMessage(
+              message: savedPacksState.errorMessage!,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
               ),

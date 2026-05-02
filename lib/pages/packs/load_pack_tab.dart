@@ -22,6 +22,7 @@ import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/wav.dart';
 import 'package:plinkyhub/utils/wavetable.dart';
 import 'package:plinkyhub/widgets/chromium_required_banner.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/linked_item_icon.dart';
 import 'package:plinkyhub/widgets/loading_indicator.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
@@ -1761,8 +1762,8 @@ class _LoadErrorStep extends StatelessWidget {
           color: Colors.red,
         ),
         const SizedBox(height: 16),
-        Text(
-          errorMessage ?? 'An unknown error occurred.',
+        CopyableErrorMessage(
+          message: errorMessage ?? 'An unknown error occurred.',
           style: TextStyle(
             color: Theme.of(context).colorScheme.error,
           ),

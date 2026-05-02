@@ -6,6 +6,7 @@ import 'package:plinkyhub/pages/editor/create_preset_button.dart';
 import 'package:plinkyhub/pages/editor/widgets/linux_webusb_instructions.dart';
 import 'package:plinkyhub/pages/editor/widgets/preset_controls.dart';
 import 'package:plinkyhub/services/webusb_service.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 
 class EditorHeader extends ConsumerWidget {
   const EditorHeader({
@@ -88,8 +89,8 @@ class EditorHeader extends ConsumerWidget {
           ),
           if (isError && state.errorMessage != null) ...[
             const SizedBox(height: 8),
-            Text(
-              state.errorMessage!,
+            CopyableErrorMessage(
+              message: state.errorMessage!,
               style: const TextStyle(color: Colors.red),
             ),
           ],

@@ -8,6 +8,7 @@ import 'package:plinkyhub/pages/users/models/user_profile_state.dart';
 import 'package:plinkyhub/pages/users/providers/user_profile_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 
@@ -180,8 +181,8 @@ class _UserProfileContentState extends ConsumerState<UserProfileContent>
         if (profileState.errorMessage != null)
           Padding(
             padding: const EdgeInsets.all(8),
-            child: Text(
-              profileState.errorMessage!,
+            child: CopyableErrorMessage(
+              message: profileState.errorMessage!,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
               ),

@@ -5,6 +5,7 @@ import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/searchable_item_list.dart';
 import 'package:plinkyhub/widgets/sign_in_prompt.dart';
 
@@ -100,8 +101,8 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
         if (savedPresetsState.errorMessage != null)
           Padding(
             padding: const EdgeInsets.all(8),
-            child: Text(
-              savedPresetsState.errorMessage!,
+            child: CopyableErrorMessage(
+              message: savedPresetsState.errorMessage!,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
               ),

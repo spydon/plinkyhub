@@ -6,6 +6,7 @@ import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -89,8 +90,8 @@ class _SamplePageState extends ConsumerState<SamplePage> {
 
     if (_errorMessage != null || _sample == null) {
       return Center(
-        child: Text(
-          _errorMessage ?? 'Sample not found',
+        child: CopyableErrorMessage(
+          message: _errorMessage ?? 'Sample not found',
           style: TextStyle(
             color: Theme.of(context).colorScheme.error,
           ),

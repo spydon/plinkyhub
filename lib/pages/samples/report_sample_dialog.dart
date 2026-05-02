@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -113,8 +114,8 @@ class _ReportSampleDialogState extends ConsumerState<ReportSampleDialog> {
             ),
             if (_errorMessage != null) ...[
               const SizedBox(height: 8),
-              Text(
-                _errorMessage!,
+              CopyableErrorMessage(
+                message: _errorMessage!,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.error,
                 ),

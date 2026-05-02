@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/pages/users/highscore_tab.dart';
 import 'package:plinkyhub/pages/users/providers/users_search_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 
 enum UsersTab { search, highscore }
@@ -154,8 +155,8 @@ class _SearchTab extends StatelessWidget {
         if (searchState.errorMessage != null)
           Padding(
             padding: const EdgeInsets.all(8),
-            child: Text(
-              searchState.errorMessage!,
+            child: CopyableErrorMessage(
+              message: searchState.errorMessage!,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
 const minimumPasswordLength = 6;
@@ -130,8 +131,8 @@ class _UpdatePasswordDialogState extends ConsumerState<UpdatePasswordDialog> {
             ],
             if (authenticationState.errorMessage != null) ...[
               const SizedBox(height: 12),
-              Text(
-                authenticationState.errorMessage!,
+              CopyableErrorMessage(
+                message: authenticationState.errorMessage!,
                 style: TextStyle(color: colorScheme.error),
               ),
             ],
