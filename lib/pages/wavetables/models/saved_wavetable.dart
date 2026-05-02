@@ -13,6 +13,7 @@ abstract class SavedWavetable with _$SavedWavetable implements Searchable {
     required String filePath,
     required DateTime createdAt,
     required DateTime updatedAt,
+    @Default('') String slug,
     @Default('') String description,
     @Default(false) bool isPublic,
     @Default('') @JsonKey(readValue: _readUsername) String username,

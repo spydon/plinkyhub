@@ -578,7 +578,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
                 context.go(
                   AppRoute.packs.itemPage(
                     pack.username,
-                    pack.name,
+                    pack.slug,
                   ),
                 );
               },
@@ -1171,7 +1171,7 @@ class _LoadReviewStep extends StatelessWidget {
                         onTap: () => context.go(
                           AppRoute.packs.itemPage(
                             matchedPack!.username,
-                            matchedPack!.name,
+                            matchedPack!.slug,
                           ),
                         ),
                       ),

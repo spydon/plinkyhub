@@ -153,7 +153,7 @@ class _SampleCardState extends ConsumerState<SampleCard> {
       child: InkWell(
         onTap: sample.username.isNotEmpty
             ? () => context.go(
-                AppRoute.samples.itemPage(sample.username, sample.name),
+                AppRoute.samples.itemPage(sample.username, sample.slug),
               )
             : null,
         child: Padding(
@@ -216,7 +216,7 @@ class _SampleCardState extends ConsumerState<SampleCard> {
                     ShareLinkButton(
                       username: sample.username,
                       itemType: 'sample',
-                      itemName: sample.name,
+                      itemSlug: sample.slug,
                     ),
                   if (!isOwned)
                     IconButton(
@@ -237,7 +237,7 @@ class _SampleCardState extends ConsumerState<SampleCard> {
                       onPressed: () => context.go(
                         AppRoute.sampleEditPage(
                           sample.username,
-                          sample.name,
+                          sample.slug,
                         ),
                       ),
                     ),

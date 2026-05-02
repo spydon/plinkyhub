@@ -57,8 +57,6 @@ class SavedPatternsNotifier extends SavedItemsNotifier<SavedPattern> {
     SavedPattern pattern, {
     required Uint8List fileBytes,
   }) async {
-    throwIfNameExists(pattern.name);
-
     setLoading();
     try {
       await supabase.storage
@@ -87,8 +85,6 @@ class SavedPatternsNotifier extends SavedItemsNotifier<SavedPattern> {
   }
 
   Future<void> updatePattern(SavedPattern pattern) async {
-    throwIfNameExists(pattern.name, excludeId: pattern.id);
-
     setLoading();
     try {
       final write = PatternWrite(

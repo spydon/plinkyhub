@@ -248,7 +248,9 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
             const SnackBar(content: Text('Wavetable updated')),
           );
           if (username != null) {
-            context.go(AppRoute.wavetables.itemPage(username, name));
+            context.go(
+              AppRoute.wavetables.itemPage(username, existing.slug),
+            );
           }
         }
       } else {
@@ -267,7 +269,7 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
           youtubeUrl: _youtubeUrlController.text.trim(),
         );
 
-        await ref
+        final saved = await ref
             .read(savedWavetablesProvider.notifier)
             .saveWavetable(wavetable, uf2Bytes: uf2Bytes);
 
@@ -275,8 +277,10 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Wavetable created')),
           );
-          if (username != null) {
-            context.go(AppRoute.wavetables.itemPage(username, name));
+          if (username != null && saved != null) {
+            context.go(
+              AppRoute.wavetables.itemPage(username, saved.slug),
+            );
           } else {
             _resetForm();
             widget.onCreated?.call();

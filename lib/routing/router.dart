@@ -296,83 +296,83 @@ GoRouter createRouter(ProviderContainer container) {
       // these routes uses `context.go` (see AGENTS.md) so the URL
       // always reflects the current page.
       GoRoute(
-        path: '/:username/preset/:name',
+        path: '/:username/preset/:slug',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: PresetPage(
             username: state.pathParameters['username']!,
-            presetName: Uri.decodeComponent(
-              state.pathParameters['name']!,
+            presetSlug: Uri.decodeComponent(
+              state.pathParameters['slug']!,
             ),
           ),
         ),
       ),
       GoRoute(
-        path: '/:username/pack/:name',
+        path: '/:username/pack/:slug',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: PackPage(
             username: state.pathParameters['username']!,
-            packName: Uri.decodeComponent(
-              state.pathParameters['name']!,
+            packSlug: Uri.decodeComponent(
+              state.pathParameters['slug']!,
             ),
           ),
         ),
       ),
       GoRoute(
-        path: '/:username/sample/:name',
+        path: '/:username/sample/:slug',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: SamplePage(
             username: state.pathParameters['username']!,
-            sampleName: Uri.decodeComponent(
-              state.pathParameters['name']!,
+            sampleSlug: Uri.decodeComponent(
+              state.pathParameters['slug']!,
             ),
           ),
         ),
       ),
       GoRoute(
-        path: '/:username/sample/:name/edit',
+        path: '/:username/sample/:slug/edit',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: SavedSamplesPage(
-            editSampleName: Uri.decodeComponent(
-              state.pathParameters['name']!,
+            editSampleSlug: Uri.decodeComponent(
+              state.pathParameters['slug']!,
             ),
           ),
         ),
       ),
       GoRoute(
-        path: '/:username/wavetable/:name',
+        path: '/:username/wavetable/:slug',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: WavetablePage(
             username: state.pathParameters['username']!,
-            wavetableName: Uri.decodeComponent(
-              state.pathParameters['name']!,
+            wavetableSlug: Uri.decodeComponent(
+              state.pathParameters['slug']!,
             ),
           ),
         ),
       ),
       GoRoute(
-        path: '/:username/wavetable/:name/edit',
+        path: '/:username/wavetable/:slug/edit',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: SavedWavetablesPage(
-            editWavetableName: Uri.decodeComponent(
-              state.pathParameters['name']!,
+            editWavetableSlug: Uri.decodeComponent(
+              state.pathParameters['slug']!,
             ),
           ),
         ),
       ),
       GoRoute(
-        path: '/:username/pattern/:name',
+        path: '/:username/pattern/:slug',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => _ItemPageShell(
           child: PatternPage(
             username: state.pathParameters['username']!,
-            patternName: Uri.decodeComponent(
-              state.pathParameters['name']!,
+            patternSlug: Uri.decodeComponent(
+              state.pathParameters['slug']!,
             ),
           ),
         ),

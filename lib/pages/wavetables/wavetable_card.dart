@@ -43,7 +43,7 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
             ? () => context.go(
                 AppRoute.wavetables.itemPage(
                   wavetable.username,
-                  wavetable.name,
+                  wavetable.slug,
                 ),
               )
             : null,
@@ -95,7 +95,7 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
                     ShareLinkButton(
                       username: wavetable.username,
                       itemType: 'wavetable',
-                      itemName: wavetable.name,
+                      itemSlug: wavetable.slug,
                     ),
                   const Spacer(),
                   if (widget.isOwned) ...[
@@ -105,7 +105,7 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
                       onPressed: () => context.go(
                         AppRoute.wavetableEditPage(
                           wavetable.username,
-                          wavetable.name,
+                          wavetable.slug,
                         ),
                       ),
                     ),

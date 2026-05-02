@@ -20,6 +20,7 @@ abstract class SavedSample with _$SavedSample implements Searchable {
     required String pcmFilePath,
     required DateTime createdAt,
     required DateTime updatedAt,
+    @Default('') String slug,
     @Default('') String description,
     @Default(false) bool isPublic,
     @Default('') @JsonKey(readValue: _readUsername) String username,

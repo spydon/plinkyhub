@@ -49,8 +49,6 @@ class SavedSamplesNotifier extends SavedItemsNotifier<SavedSample> {
       return;
     }
 
-    throwIfNameExists(sample.name);
-
     setLoading();
     try {
       await supabase.storage
@@ -92,8 +90,6 @@ class SavedSamplesNotifier extends SavedItemsNotifier<SavedSample> {
   }
 
   Future<void> updateSample(SavedSample sample) async {
-    throwIfNameExists(sample.name, excludeId: sample.id);
-
     setLoading();
     try {
       final write = SampleWrite(

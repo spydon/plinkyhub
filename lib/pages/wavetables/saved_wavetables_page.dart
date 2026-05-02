@@ -21,14 +21,14 @@ enum WavetableTab {
 class SavedWavetablesPage extends ConsumerStatefulWidget {
   const SavedWavetablesPage({
     this.initialTab,
-    this.editWavetableName,
+    this.editWavetableSlug,
     super.key,
   });
 
   final String? initialTab;
 
   /// When non-null, opens the create tab in edit mode for this wavetable.
-  final String? editWavetableName;
+  final String? editWavetableSlug;
 
   @override
   ConsumerState<SavedWavetablesPage> createState() =>
@@ -43,7 +43,7 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
   void initState() {
     super.initState();
     var initialIndex = 0;
-    if (widget.editWavetableName != null) {
+    if (widget.editWavetableSlug != null) {
       initialIndex = WavetableTab.create.index;
     } else if (widget.initialTab != null) {
       initialIndex = WavetableTab.values
@@ -63,7 +63,7 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(savedWavetablesProvider.notifier).fetchPublicItems();
-      if (widget.editWavetableName != null || initialIndex == 0) {
+      if (widget.editWavetableSlug != null || initialIndex == 0) {
         ref.read(savedWavetablesProvider.notifier).fetchUserItems();
       }
     });
@@ -104,9 +104,9 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
     final savedWavetablesState = ref.watch(savedWavetablesProvider);
     final isSignedIn = authenticationState.user != null;
 
-    final editWavetable = widget.editWavetableName != null
+    final editWavetable = widget.editWavetableSlug != null
         ? savedWavetablesState.userItems
-              .where((w) => w.name == widget.editWavetableName)
+              .where((w) => w.slug == widget.editWavetableSlug)
               .firstOrNull
         : null;
 
@@ -168,7 +168,7 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
                 itemLabel: 'wavetable',
               ),
               if (isSignedIn)
-                if (widget.editWavetableName != null &&
+                if (widget.editWavetableSlug != null &&
                     editWavetable == null &&
                     savedWavetablesState.isLoading)
                   const Center(child: PlinkyLoadingAnimation())

@@ -29,7 +29,7 @@ class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
   @override
   String get selectQuery =>
       '*, profiles(username), preset_stars(count), '
-      'samples(name, profiles(username))';
+      'samples(name, slug, profiles(username))';
 
   @override
   String get itemLabel => 'preset';
@@ -55,8 +55,6 @@ class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
     if (userId == null) {
       return;
     }
-
-    throwIfNameExists(preset.name);
 
     setLoading();
     try {
@@ -91,8 +89,6 @@ class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
     if (existing == null) {
       return;
     }
-
-    throwIfNameExists(preset.name, excludeId: id);
 
     setLoading();
     try {

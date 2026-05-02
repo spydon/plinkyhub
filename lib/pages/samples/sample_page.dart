@@ -12,12 +12,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SamplePage extends ConsumerStatefulWidget {
   const SamplePage({
     required this.username,
-    required this.sampleName,
+    required this.sampleSlug,
     super.key,
   });
 
   final String username;
-  final String sampleName;
+  final String sampleSlug;
 
   @override
   ConsumerState<SamplePage> createState() => _SamplePageState();
@@ -46,7 +46,7 @@ class _SamplePageState extends ConsumerState<SamplePage> {
           .select(
             '*, profiles(username), sample_stars(count)',
           )
-          .eq('name', widget.sampleName)
+          .eq('slug', widget.sampleSlug)
           .eq('profiles.username', widget.username)
           .not('profiles', 'is', null)
           .order('updated_at', ascending: false)

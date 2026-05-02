@@ -13,6 +13,7 @@ abstract class SavedPack with _$SavedPack implements Searchable {
     required String name,
     required DateTime createdAt,
     required DateTime updatedAt,
+    @Default('') String slug,
     @Default('') String description,
     @Default(false) bool isPublic,
     @Default('') @JsonKey(readValue: _readUsername) String username,

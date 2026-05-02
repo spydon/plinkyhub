@@ -14,6 +14,7 @@ _SavedPreset _$SavedPresetFromJson(Map<String, dynamic> json) => _SavedPreset(
   presetData: json['preset_data'] as String,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
+  slug: json['slug'] as String? ?? '',
   description: json['description'] as String? ?? '',
   isPublic: json['is_public'] as bool? ?? false,
   username: _readUsername(json, 'username') as String? ?? '',
@@ -22,6 +23,7 @@ _SavedPreset _$SavedPresetFromJson(Map<String, dynamic> json) => _SavedPreset(
   youtubeUrl: json['youtube_url'] as String? ?? '',
   sampleId: json['sample_id'] as String?,
   sampleName: _readSampleName(json, 'sample_name') as String?,
+  sampleSlug: _readSampleSlug(json, 'sample_slug') as String?,
   sampleUsername: _readSampleUsername(json, 'sample_username') as String?,
 );
 
@@ -34,6 +36,7 @@ Map<String, dynamic> _$SavedPresetToJson(_SavedPreset instance) =>
       'preset_data': instance.presetData,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
+      'slug': instance.slug,
       'description': instance.description,
       'is_public': instance.isPublic,
       'username': instance.username,
@@ -42,5 +45,6 @@ Map<String, dynamic> _$SavedPresetToJson(_SavedPreset instance) =>
       'youtube_url': instance.youtubeUrl,
       'sample_id': instance.sampleId,
       'sample_name': instance.sampleName,
+      'sample_slug': instance.sampleSlug,
       'sample_username': instance.sampleUsername,
     };

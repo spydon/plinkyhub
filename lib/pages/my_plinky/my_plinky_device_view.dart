@@ -54,7 +54,7 @@ class MyPlinkyDeviceView extends ConsumerWidget {
                           onTap: () => context.go(
                             AppRoute.packs.itemPage(
                               matchedPack.username,
-                              matchedPack.name,
+                              matchedPack.slug,
                             ),
                           ),
                         ),

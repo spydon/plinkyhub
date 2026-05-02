@@ -12,12 +12,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class PackPage extends ConsumerStatefulWidget {
   const PackPage({
     required this.username,
-    required this.packName,
+    required this.packSlug,
     super.key,
   });
 
   final String username;
-  final String packName;
+  final String packSlug;
 
   @override
   ConsumerState<PackPage> createState() => _PackPageState();
@@ -47,7 +47,7 @@ class _PackPageState extends ConsumerState<PackPage> {
             '*, pack_slots(*), profiles(username), '
             'pack_stars(count)',
           )
-          .eq('name', widget.packName)
+          .eq('slug', widget.packSlug)
           .eq('profiles.username', widget.username)
           .not('profiles', 'is', null)
           .order('updated_at', ascending: false)

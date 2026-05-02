@@ -14,6 +14,7 @@ abstract class SavedPreset with _$SavedPreset implements Searchable {
     required String presetData,
     required DateTime createdAt,
     required DateTime updatedAt,
+    @Default('') String slug,
     @Default('') String description,
     @Default(false) bool isPublic,
     @Default('') @JsonKey(readValue: _readUsername) String username,
@@ -22,6 +23,7 @@ abstract class SavedPreset with _$SavedPreset implements Searchable {
     @Default('') String youtubeUrl,
     String? sampleId,
     @JsonKey(readValue: _readSampleName) String? sampleName,
+    @JsonKey(readValue: _readSampleSlug) String? sampleSlug,
     @JsonKey(readValue: _readSampleUsername) String? sampleUsername,
   }) = _SavedPreset;
 
@@ -41,6 +43,14 @@ Object? _readSampleName(Map<dynamic, dynamic> json, String key) {
   final samples = json['samples'];
   if (samples is Map<String, dynamic>) {
     return samples['name'];
+  }
+  return json[key];
+}
+
+Object? _readSampleSlug(Map<dynamic, dynamic> json, String key) {
+  final samples = json['samples'];
+  if (samples is Map<String, dynamic>) {
+    return samples['slug'];
   }
   return json[key];
 }

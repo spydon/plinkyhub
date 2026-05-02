@@ -32,7 +32,7 @@ class PatternCard extends StatelessWidget {
       child: InkWell(
         onTap: pattern.username.isNotEmpty
             ? () => context.go(
-                AppRoute.patterns.itemPage(pattern.username, pattern.name),
+                AppRoute.patterns.itemPage(pattern.username, pattern.slug),
               )
             : null,
         child: Padding(
@@ -118,7 +118,7 @@ class _PatternHeaderState extends ConsumerState<PatternHeader> {
               ShareLinkButton(
                 username: pattern.username,
                 itemType: 'pattern',
-                itemName: pattern.name,
+                itemSlug: pattern.slug,
               ),
             const Spacer(),
             if (widget.isOwned) ...[

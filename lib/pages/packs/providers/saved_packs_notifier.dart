@@ -69,8 +69,6 @@ class SavedPacksNotifier extends SavedItemsNotifier<SavedPack> {
       return;
     }
 
-    throwIfNameExists(name);
-
     setLoading();
     try {
       final write = PackWrite(
@@ -103,9 +101,7 @@ class SavedPacksNotifier extends SavedItemsNotifier<SavedPack> {
     String? description,
     bool? isPublic,
   }) async {
-    if (name != null) {
-      throwIfNameExists(name, excludeId: id);
-    }
+    if (name != null) {}
 
     setLoading();
     try {
@@ -163,8 +159,6 @@ class SavedPacksNotifier extends SavedItemsNotifier<SavedPack> {
     String wavetableId = defaultWavetableId,
     String youtubeUrl = '',
   }) async {
-    throwIfNameExists(name, excludeId: id);
-
     final userId = ref.read(authenticationProvider).user?.id;
     if (userId == null) {
       return;

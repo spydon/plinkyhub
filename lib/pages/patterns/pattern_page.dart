@@ -16,12 +16,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class PatternPage extends ConsumerStatefulWidget {
   const PatternPage({
     required this.username,
-    required this.patternName,
+    required this.patternSlug,
     super.key,
   });
 
   final String username;
-  final String patternName;
+  final String patternSlug;
 
   @override
   ConsumerState<PatternPage> createState() => _PatternPageState();
@@ -53,7 +53,7 @@ class _PatternPageState extends ConsumerState<PatternPage> {
           .select(
             '*, profiles(username), pattern_stars(count)',
           )
-          .eq('name', widget.patternName)
+          .eq('slug', widget.patternSlug)
           .eq('profiles.username', widget.username)
           .not('profiles', 'is', null)
           .order('updated_at', ascending: false)

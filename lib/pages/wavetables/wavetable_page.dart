@@ -12,12 +12,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class WavetablePage extends ConsumerStatefulWidget {
   const WavetablePage({
     required this.username,
-    required this.wavetableName,
+    required this.wavetableSlug,
     super.key,
   });
 
   final String username;
-  final String wavetableName;
+  final String wavetableSlug;
 
   @override
   ConsumerState<WavetablePage> createState() => _WavetablePageState();
@@ -46,7 +46,7 @@ class _WavetablePageState extends ConsumerState<WavetablePage> {
           .select(
             '*, profiles(username), wavetable_stars(count)',
           )
-          .eq('name', widget.wavetableName)
+          .eq('slug', widget.wavetableSlug)
           .eq('profiles.username', widget.username)
           .not('profiles', 'is', null)
           .order('updated_at', ascending: false)

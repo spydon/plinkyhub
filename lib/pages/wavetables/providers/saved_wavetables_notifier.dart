@@ -55,12 +55,10 @@ class SavedWavetablesNotifier extends SavedItemsNotifier<SavedWavetable> {
     }
   }
 
-  Future<void> saveWavetable(
+  Future<SavedWavetable?> saveWavetable(
     SavedWavetable wavetable, {
     required Uint8List uf2Bytes,
   }) async {
-    throwIfNameExists(wavetable.name);
-
     setLoading();
     try {
       await supabase.storage
@@ -80,9 +78,14 @@ class SavedWavetablesNotifier extends SavedItemsNotifier<SavedWavetable> {
         youtubeUrl: wavetable.youtubeUrl,
         contentHash: computeContentHash(uf2Bytes),
       );
-      await supabase.from('wavetables').insert(write.toJson());
+      final inserted = await supabase
+          .from('wavetables')
+          .insert(write.toJson())
+          .select()
+          .single();
 
       await refreshAll();
+      return SavedWavetable.fromJson(inserted);
     } on Exception catch (error) {
       setError(error);
       rethrow;
@@ -90,8 +93,6 @@ class SavedWavetablesNotifier extends SavedItemsNotifier<SavedWavetable> {
   }
 
   Future<void> updateWavetable(SavedWavetable wavetable) async {
-    throwIfNameExists(wavetable.name, excludeId: wavetable.id);
-
     setLoading();
     try {
       final write = WavetableWrite(
@@ -116,8 +117,6 @@ class SavedWavetablesNotifier extends SavedItemsNotifier<SavedWavetable> {
     SavedWavetable wavetable, {
     required Uint8List uf2Bytes,
   }) async {
-    throwIfNameExists(wavetable.name, excludeId: wavetable.id);
-
     setLoading();
     try {
       await supabase.storage

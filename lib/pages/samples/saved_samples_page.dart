@@ -19,9 +19,9 @@ enum SampleTab {
 }
 
 class SavedSamplesPage extends ConsumerStatefulWidget {
-  const SavedSamplesPage({this.editSampleName, this.initialTab, super.key});
+  const SavedSamplesPage({this.editSampleSlug, this.initialTab, super.key});
 
-  final String? editSampleName;
+  final String? editSampleSlug;
   final String? initialTab;
 
   @override
@@ -36,7 +36,7 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
   void initState() {
     super.initState();
     var initialIndex = 0;
-    if (widget.editSampleName != null) {
+    if (widget.editSampleSlug != null) {
       initialIndex = SampleTab.create.index;
     } else if (widget.initialTab != null) {
       initialIndex = SampleTab.values
@@ -56,7 +56,7 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(savedSamplesProvider.notifier).fetchPublicItems();
-      if (widget.editSampleName != null || initialIndex == 0) {
+      if (widget.editSampleSlug != null || initialIndex == 0) {
         ref.read(savedSamplesProvider.notifier).fetchUserItems();
       }
     });
@@ -97,9 +97,9 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
     final savedSamplesState = ref.watch(savedSamplesProvider);
     final isSignedIn = authenticationState.user != null;
 
-    final editSample = widget.editSampleName != null
+    final editSample = widget.editSampleSlug != null
         ? savedSamplesState.userItems
-              .where((s) => s.name == widget.editSampleName)
+              .where((s) => s.slug == widget.editSampleSlug)
               .firstOrNull
         : null;
 
@@ -159,7 +159,7 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
                 itemLabel: 'sample',
               ),
               if (isSignedIn)
-                if (widget.editSampleName != null &&
+                if (widget.editSampleSlug != null &&
                     editSample == null &&
                     savedSamplesState.isLoading)
                   const Center(child: PlinkyLoadingAnimation())

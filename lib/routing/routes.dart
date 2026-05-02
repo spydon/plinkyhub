@@ -20,7 +20,7 @@ enum AppRoute {
   final String path;
 
   /// The singular path segment used in detail routes (e.g. 'preset'
-  /// for `/:username/preset/:name`). Null for tabs without item pages.
+  /// for `/:username/preset/:slug`). Null for tabs without item pages.
   final String? itemSegment;
 
   /// All tab paths in sidebar order, for indexed navigation.
@@ -33,18 +33,18 @@ enum AppRoute {
   String tab(String tabName) => '$path/$tabName';
 
   /// Path to a user's item detail page for this route type.
-  String itemPage(String username, String name) =>
-      '/$username/$itemSegment/${Uri.encodeComponent(name)}';
+  String itemPage(String username, String slug) =>
+      '/$username/$itemSegment/${Uri.encodeComponent(slug)}';
 
   /// Path to a user's sample edit page.
-  static String sampleEditPage(String username, String name) =>
+  static String sampleEditPage(String username, String slug) =>
       '/$username/${AppRoute.samples.itemSegment}/'
-      '${Uri.encodeComponent(name)}/edit';
+      '${Uri.encodeComponent(slug)}/edit';
 
   /// Path to a user's wavetable edit page.
-  static String wavetableEditPage(String username, String name) =>
+  static String wavetableEditPage(String username, String slug) =>
       '/$username/${AppRoute.wavetables.itemSegment}/'
-      '${Uri.encodeComponent(name)}/edit';
+      '${Uri.encodeComponent(slug)}/edit';
 
   /// Path to a user's profile page.
   static String userPage(String username) => '/$username';

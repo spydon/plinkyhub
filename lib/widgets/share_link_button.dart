@@ -5,16 +5,16 @@ class ShareLinkButton extends StatelessWidget {
   const ShareLinkButton({
     required this.username,
     required this.itemType,
-    required this.itemName,
+    required this.itemSlug,
     super.key,
   });
 
   final String username;
   final String itemType;
-  final String itemName;
+  final String itemSlug;
 
   String get itemPath {
-    final encodedName = Uri.encodeComponent(itemName);
+    final encodedName = Uri.encodeComponent(itemSlug);
     return '/$username/$itemType/$encodedName';
   }
 

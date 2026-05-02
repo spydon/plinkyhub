@@ -172,22 +172,6 @@ abstract class SavedItemsNotifier<T extends Searchable>
     }
   }
 
-  // ---- Name uniqueness ----
-
-  bool nameExists(String name, {String? excludeId}) {
-    return state.userItems.any(
-      (item) => item.name == name && item.id != excludeId,
-    );
-  }
-
-  void throwIfNameExists(String name, {String? excludeId}) {
-    if (nameExists(name, excludeId: excludeId)) {
-      throw Exception(
-        'You already have a $itemLabel named "$name"',
-      );
-    }
-  }
-
   // ---- Delete ----
 
   /// Deletes an item by ID. Subclasses that need to remove storage files

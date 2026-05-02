@@ -55,7 +55,7 @@ class _PackCardState extends ConsumerState<PackCard> {
       child: InkWell(
         onTap: pack.username.isNotEmpty
             ? () => context.go(
-                AppRoute.packs.itemPage(pack.username, pack.name),
+                AppRoute.packs.itemPage(pack.username, pack.slug),
               )
             : null,
         child: Padding(
@@ -117,7 +117,7 @@ class _PackCardState extends ConsumerState<PackCard> {
                     ShareLinkButton(
                       username: pack.username,
                       itemType: 'pack',
-                      itemName: pack.name,
+                      itemSlug: pack.slug,
                     ),
                   const Spacer(),
                   if (widget.isOwned) ...[

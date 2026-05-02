@@ -43,7 +43,7 @@ class _PresetCardState extends ConsumerState<PresetCard> {
       child: InkWell(
         onTap: preset.username.isNotEmpty
             ? () => context.go(
-                AppRoute.presets.itemPage(preset.username, preset.name),
+                AppRoute.presets.itemPage(preset.username, preset.slug),
               )
             : null,
         child: Padding(
@@ -89,11 +89,12 @@ class _PresetCardState extends ConsumerState<PresetCard> {
               if (_hasSample) ...[
                 const SizedBox(height: 4),
                 GestureDetector(
-                  onTap: preset.sampleUsername != null
+                  onTap:
+                      preset.sampleUsername != null && preset.sampleSlug != null
                       ? () => context.go(
                           AppRoute.samples.itemPage(
                             preset.sampleUsername!,
-                            preset.sampleName!,
+                            preset.sampleSlug!,
                           ),
                         )
                       : null,
@@ -138,7 +139,7 @@ class _PresetCardState extends ConsumerState<PresetCard> {
                     ShareLinkButton(
                       username: preset.username,
                       itemType: 'preset',
-                      itemName: preset.name,
+                      itemSlug: preset.slug,
                     ),
                   IconButton(
                     icon: const Icon(Icons.edit, size: 20),

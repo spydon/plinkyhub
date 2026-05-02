@@ -129,7 +129,7 @@ void showItemUsageDialog(
                   ? () {
                       Navigator.of(dialogContext).pop();
                       dialogContext.go(
-                        AppRoute.packs.itemPage(pack.username, pack.name),
+                        AppRoute.packs.itemPage(pack.username, pack.slug),
                       );
                     }
                   : null,
@@ -144,7 +144,7 @@ void showItemUsageDialog(
                       dialogContext.go(
                         AppRoute.presets.itemPage(
                           preset.username,
-                          preset.name,
+                          preset.slug,
                         ),
                       );
                     }
