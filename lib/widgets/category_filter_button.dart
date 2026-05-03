@@ -8,19 +8,22 @@ class CategoryFilterButton extends StatelessWidget {
     super.key,
   });
 
-  final List<String> categories;
+  final Map<String, String> categories;
   final String? value;
   final ValueChanged<String?> onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final selectedLabel = value == null ? null : categories[value];
     return PopupMenuButton<String?>(
       icon: Icon(
-        Icons.filter_list,
+        Icons.category,
         size: 20,
         color: value != null ? Theme.of(context).colorScheme.primary : null,
       ),
-      tooltip: value == null ? 'Filter by category' : 'Category: $value',
+      tooltip: selectedLabel == null
+          ? 'Filter by category'
+          : 'Category: $selectedLabel',
       initialValue: value,
       onSelected: onChanged,
       itemBuilder: (_) => [
@@ -28,10 +31,10 @@ class CategoryFilterButton extends StatelessWidget {
           child: Text('All categories'),
         ),
         const PopupMenuDivider(),
-        for (final category in categories)
+        for (final entry in categories.entries)
           PopupMenuItem<String?>(
-            value: category,
-            child: Text(category),
+            value: entry.key,
+            child: Text(entry.value),
           ),
       ],
     );

@@ -32,7 +32,7 @@ class SearchableItemList<T extends Searchable> extends ConsumerStatefulWidget {
   final VoidCallback onRefresh;
   final Widget Function(T item) itemBuilder;
   final String itemLabel;
-  final List<String>? categories;
+  final Map<String, String>? categories;
   final String Function(T item)? categoryOf;
 
   @override

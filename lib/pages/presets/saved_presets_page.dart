@@ -89,10 +89,10 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
     final authenticationState = ref.watch(authenticationProvider);
     final savedPresetsState = ref.watch(savedPresetsProvider);
     final isSignedIn = authenticationState.user != null;
-    final categories = [
+    final categories = {
       for (final category in PresetCategory.values)
-        if (category != PresetCategory.none) category.label,
-    ];
+        if (category != PresetCategory.none) category.name: category.label,
+    };
 
     return Column(
       children: [
