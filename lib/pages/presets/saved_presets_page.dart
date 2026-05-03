@@ -89,10 +89,10 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
     final authenticationState = ref.watch(authenticationProvider);
     final savedPresetsState = ref.watch(savedPresetsProvider);
     final isSignedIn = authenticationState.user != null;
-    final categories = {
+    final categories = [
       for (final category in PresetCategory.values)
-        if (category != PresetCategory.none) category.name: category.label,
-    };
+        if (category != PresetCategory.none) category,
+    ];
 
     return Column(
       children: [
@@ -131,7 +131,8 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
                   ),
                   itemLabel: 'preset',
                   categories: categories,
-                  categoryOf: (preset) => preset.category,
+                  categoryOf: (preset) =>
+                      PresetCategory.fromName(preset.category),
                 )
               else
                 const SignInPrompt(
@@ -149,7 +150,8 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
                 ),
                 itemLabel: 'preset',
                 categories: categories,
-                categoryOf: (preset) => preset.category,
+                categoryOf: (preset) =>
+                    PresetCategory.fromName(preset.category),
               ),
             ],
           ),

@@ -1,3 +1,4 @@
+import 'package:plinkyhub/models/labeled_enum.dart';
 import 'package:plinkyhub/models/plinky_params.dart';
 
 const _randomizeGroupParameterIds = <RandomizeGroup, List<String>>{
@@ -42,7 +43,7 @@ enum RandomizeGroup {
 /// The order of values must match the Plinky firmware
 /// category indices, since `Preset` stores the category as
 /// a byte index into this enum.
-enum PresetCategory {
+enum PresetCategory implements LabeledEnum {
   none(''),
   bass('Bass'),
   leads('Leads'),
@@ -64,5 +65,16 @@ enum PresetCategory {
   ;
 
   const PresetCategory(this.label);
+
+  @override
   final String label;
+
+  static PresetCategory? fromName(String name) {
+    for (final value in values) {
+      if (value.name == name) {
+        return value;
+      }
+    }
+    return null;
+  }
 }

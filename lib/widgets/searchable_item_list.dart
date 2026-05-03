@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:plinkyhub/models/labeled_enum.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/models/sort_order.dart';
 import 'package:plinkyhub/widgets/category_filter_button.dart';
@@ -32,8 +33,8 @@ class SearchableItemList<T extends Searchable> extends ConsumerStatefulWidget {
   final VoidCallback onRefresh;
   final Widget Function(T item) itemBuilder;
   final String itemLabel;
-  final Map<String, String>? categories;
-  final String Function(T item)? categoryOf;
+  final List<LabeledEnum>? categories;
+  final LabeledEnum? Function(T item)? categoryOf;
 
   @override
   ConsumerState<SearchableItemList<T>> createState() =>
@@ -46,7 +47,7 @@ class _SearchableItemListState<T extends Searchable>
   String _query = '';
   SortOrder _sortOrder = SortOrder.stars;
   bool _includeStarred = true;
-  String? _selectedCategory;
+  LabeledEnum? _selectedCategory;
 
   @override
   void dispose() {

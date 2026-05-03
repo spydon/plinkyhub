@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
 import 'package:plinkyhub/pages/presets/save_preset_to_plinky_dialog.dart';
@@ -62,7 +63,8 @@ class _PresetCardState extends ConsumerState<PresetCard> {
                   if (preset.category.isNotEmpty)
                     Chip(
                       label: Text(
-                        preset.category,
+                        PresetCategory.fromName(preset.category)?.label ??
+                            preset.category,
                         style: theme.textTheme.bodySmall,
                       ),
                       visualDensity: VisualDensity.compact,

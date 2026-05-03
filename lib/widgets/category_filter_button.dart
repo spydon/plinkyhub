@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plinkyhub/models/labeled_enum.dart';
 
 class CategoryFilterButton extends StatelessWidget {
   const CategoryFilterButton({
@@ -8,33 +9,32 @@ class CategoryFilterButton extends StatelessWidget {
     super.key,
   });
 
-  final Map<String, String> categories;
-  final String? value;
-  final ValueChanged<String?> onChanged;
+  final List<LabeledEnum> categories;
+  final LabeledEnum? value;
+  final ValueChanged<LabeledEnum?> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final selectedLabel = value == null ? null : categories[value];
-    return PopupMenuButton<String?>(
+    return PopupMenuButton<LabeledEnum?>(
       icon: Icon(
         Icons.category,
         size: 20,
         color: value != null ? Theme.of(context).colorScheme.primary : null,
       ),
-      tooltip: selectedLabel == null
+      tooltip: value == null
           ? 'Filter by category'
-          : 'Category: $selectedLabel',
+          : 'Category: ${value!.label}',
       initialValue: value,
       onSelected: onChanged,
       itemBuilder: (_) => [
-        const PopupMenuItem<String?>(
+        const PopupMenuItem<LabeledEnum?>(
           child: Text('All categories'),
         ),
         const PopupMenuDivider(),
-        for (final entry in categories.entries)
-          PopupMenuItem<String?>(
-            value: entry.key,
-            child: Text(entry.value),
+        for (final category in categories)
+          PopupMenuItem<LabeledEnum?>(
+            value: category,
+            child: Text(category.label),
           ),
       ],
     );
