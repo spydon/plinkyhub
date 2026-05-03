@@ -604,13 +604,11 @@ class _PadGridState extends ConsumerState<_PadGrid> {
     }
 
     if (hit.padIndex == previousPad) {
-      if (widget.pressureByPad.containsKey(hit.padIndex)) {
-        _updatePressure(
-          row: hit.row,
-          column: hit.column,
-          pressure: hit.pressure,
-        );
-      }
+      _updatePressure(
+        row: hit.row,
+        column: hit.column,
+        pressure: hit.pressure,
+      );
       return;
     }
 
