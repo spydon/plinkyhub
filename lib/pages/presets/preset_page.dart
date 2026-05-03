@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/pages/presets/preset_card.dart';
+import 'package:plinkyhub/pages/presets/preset_modulations_section.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
@@ -114,6 +115,7 @@ class _PresetPageState extends ConsumerState<PresetPage> {
                 isOwned: isOwned,
                 onDeleted: () => context.go(AppRoute.presets.path),
               ),
+              PresetModulationsSection(savedPreset: _preset!),
             ],
           ),
         ),
