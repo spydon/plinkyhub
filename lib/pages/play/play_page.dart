@@ -604,7 +604,7 @@ class _PadGridState extends ConsumerState<_PadGrid> {
     }
 
     if (hit.padIndex == previousPad) {
-      if (!widget.latch && widget.pressureByPad.containsKey(hit.padIndex)) {
+      if (widget.pressureByPad.containsKey(hit.padIndex)) {
         _updatePressure(
           row: hit.row,
           column: hit.column,
