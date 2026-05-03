@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/models/sort_order.dart';
+import 'package:plinkyhub/widgets/category_filter_button.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:plinkyhub/widgets/sort_order_button.dart';
@@ -16,8 +17,13 @@ class SearchableItemList<T extends Searchable> extends ConsumerStatefulWidget {
     required this.itemBuilder,
     required this.itemLabel,
     this.starredItems = const [],
+    this.categories,
+    this.categoryOf,
     super.key,
-  });
+  }) : assert(
+         (categories == null) == (categoryOf == null),
+         'categories and categoryOf must be provided together',
+       );
 
   final List<T> items;
   final List<T> starredItems;
@@ -26,6 +32,8 @@ class SearchableItemList<T extends Searchable> extends ConsumerStatefulWidget {
   final VoidCallback onRefresh;
   final Widget Function(T item) itemBuilder;
   final String itemLabel;
+  final List<String>? categories;
+  final String Function(T item)? categoryOf;
 
   @override
   ConsumerState<SearchableItemList<T>> createState() =>
@@ -38,6 +46,7 @@ class _SearchableItemListState<T extends Searchable>
   String _query = '';
   SortOrder _sortOrder = SortOrder.stars;
   bool _includeStarred = true;
+  String? _selectedCategory;
 
   @override
   void dispose() {
@@ -56,6 +65,14 @@ class _SearchableItemListState<T extends Searchable>
 
   List<T> get _filteredItems {
     var items = _combinedItems.toList();
+
+    final selectedCategory = _selectedCategory;
+    final categoryOf = widget.categoryOf;
+    if (selectedCategory != null && categoryOf != null) {
+      items = items
+          .where((item) => categoryOf(item) == selectedCategory)
+          .toList();
+    }
 
     if (_query.isNotEmpty) {
       final lower = _query.toLowerCase();
@@ -194,6 +211,13 @@ class _SearchableItemListState<T extends Searchable>
                                 ),
                               ],
                             ),
+                          ),
+                        if (widget.categories != null)
+                          CategoryFilterButton(
+                            categories: widget.categories!,
+                            value: _selectedCategory,
+                            onChanged: (category) =>
+                                setState(() => _selectedCategory = category),
                           ),
                         SortOrderButton(
                           value: _sortOrder,

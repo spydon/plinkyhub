@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/pages/presets/preset_card.dart';
 import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
@@ -88,6 +89,10 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
     final authenticationState = ref.watch(authenticationProvider);
     final savedPresetsState = ref.watch(savedPresetsProvider);
     final isSignedIn = authenticationState.user != null;
+    final categories = [
+      for (final category in PresetCategory.values)
+        if (category != PresetCategory.none) category.label,
+    ];
 
     return Column(
       children: [
@@ -125,6 +130,8 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
                     isOwned: preset.userId == authenticationState.user?.id,
                   ),
                   itemLabel: 'preset',
+                  categories: categories,
+                  categoryOf: (preset) => preset.category,
                 )
               else
                 const SignInPrompt(
@@ -141,6 +148,8 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
                   isOwned: false,
                 ),
                 itemLabel: 'preset',
+                categories: categories,
+                categoryOf: (preset) => preset.category,
               ),
             ],
           ),
