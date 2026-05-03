@@ -50,6 +50,7 @@ class CategoryFilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isActive = value != null;
     return Tooltip(
       message: isActive ? 'Category: ${value!.label}' : 'Filter by category',
@@ -57,8 +58,8 @@ class CategoryFilterButton extends StatelessWidget {
         onPressed: () => _showMenu(context),
         style: TextButton.styleFrom(
           foregroundColor: isActive
-              ? Theme.of(context).colorScheme.primary
-              : null,
+              ? colorScheme.primary
+              : colorScheme.onSurface,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
