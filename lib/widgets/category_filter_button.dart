@@ -13,16 +13,25 @@ class CategoryFilterButton extends StatelessWidget {
   final LabeledEnum? value;
   final ValueChanged<LabeledEnum?> onChanged;
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isActive = value != null;
-    final color = isActive ? theme.colorScheme.primary : null;
-    return PopupMenuButton<LabeledEnum?>(
-      tooltip: isActive ? 'Category: ${value!.label}' : 'Filter by category',
+  Future<void> _showMenu(BuildContext context) async {
+    final button = context.findRenderObject()! as RenderBox;
+    final overlay =
+        Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
+    final position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(Offset.zero, ancestor: overlay),
+        button.localToGlobal(
+          button.size.bottomRight(Offset.zero),
+          ancestor: overlay,
+        ),
+      ),
+      Offset.zero & overlay.size,
+    );
+    final selected = await showMenu<LabeledEnum?>(
+      context: context,
+      position: position,
       initialValue: value,
-      onSelected: onChanged,
-      itemBuilder: (_) => [
+      items: [
         const PopupMenuItem<LabeledEnum?>(
           child: Text('All categories'),
         ),
@@ -33,16 +42,29 @@ class CategoryFilterButton extends StatelessWidget {
             child: Text(category.label),
           ),
       ],
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+    );
+    if (selected != value) {
+      onChanged(selected);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = value != null;
+    return Tooltip(
+      message: isActive ? 'Category: ${value!.label}' : 'Filter by category',
+      child: TextButton(
+        onPressed: () => _showMenu(context),
+        style: TextButton.styleFrom(
+          foregroundColor: isActive
+              ? Theme.of(context).colorScheme.primary
+              : null,
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              value?.label ?? 'Category',
-              style: theme.textTheme.bodyMedium?.copyWith(color: color),
-            ),
-            Icon(Icons.arrow_drop_down, size: 20, color: color),
+            Text(value?.label ?? 'Category'),
+            const Icon(Icons.arrow_drop_down, size: 20),
           ],
         ),
       ),
