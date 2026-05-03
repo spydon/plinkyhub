@@ -22,29 +22,10 @@ class PresetModulationsSection extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final knobAEntries = <_ModulationEntry>[];
-    final knobBEntries = <_ModulationEntry>[];
-    for (final parameter in preset.parameters) {
-      if (parameter.modulations.a != 0) {
-        knobAEntries.add(
-          _ModulationEntry(
-            parameter: parameter,
-            amount: parameter.modulations.a,
-          ),
-        );
-      }
-      if (parameter.modulations.b != 0) {
-        knobBEntries.add(
-          _ModulationEntry(
-            parameter: parameter,
-            amount: parameter.modulations.b,
-          ),
-        );
-      }
-    }
-
-    knobAEntries.sort((a, b) => b.absoluteAmount.compareTo(a.absoluteAmount));
-    knobBEntries.sort((a, b) => b.absoluteAmount.compareTo(a.absoluteAmount));
+    final knobAEntries = _collectEntries(preset, (m) => m.a);
+    final knobBEntries = _collectEntries(preset, (m) => m.b);
+    final knobXEntries = _collectEntries(preset, (m) => m.x);
+    final knobYEntries = _collectEntries(preset, (m) => m.y);
 
     return Card(
       margin: const EdgeInsets.only(top: 8),
@@ -53,30 +34,27 @@ class PresetModulationsSection extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isNarrow = constraints.maxWidth < 360;
-            final knobAColumn = _KnobColumn(
-              label: 'Knob A',
-              entries: knobAEntries,
-            );
-            final knobBColumn = _KnobColumn(
-              label: 'Knob B',
-              entries: knobBEntries,
-            );
-            if (isNarrow) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  knobAColumn,
-                  const SizedBox(height: 12),
-                  knobBColumn,
-                ],
-              );
-            }
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(child: knobAColumn),
-                const SizedBox(width: 16),
-                Expanded(child: knobBColumn),
+                _KnobRow(
+                  leftLabel: 'Knob A',
+                  leftEntries: knobAEntries,
+                  rightLabel: 'Knob B',
+                  rightEntries: knobBEntries,
+                  isNarrow: isNarrow,
+                ),
+                if (knobXEntries.isNotEmpty || knobYEntries.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _KnobRow(
+                    leftLabel: 'Knob X',
+                    leftEntries: knobXEntries,
+                    rightLabel: 'Knob Y',
+                    rightEntries: knobYEntries,
+                    isNarrow: isNarrow,
+                    hideEmptySides: true,
+                  ),
+                ],
               ],
             );
           },
@@ -86,6 +64,21 @@ class PresetModulationsSection extends StatelessWidget {
   }
 }
 
+List<_ModulationEntry> _collectEntries(
+  Preset preset,
+  int Function(ParameterModulations modulations) selector,
+) {
+  final entries = <_ModulationEntry>[];
+  for (final parameter in preset.parameters) {
+    final amount = selector(parameter.modulations);
+    if (amount != 0) {
+      entries.add(_ModulationEntry(parameter: parameter, amount: amount));
+    }
+  }
+  entries.sort((a, b) => b.absoluteAmount.compareTo(a.absoluteAmount));
+  return entries;
+}
+
 class _ModulationEntry {
   const _ModulationEntry({required this.parameter, required this.amount});
 
@@ -93,6 +86,57 @@ class _ModulationEntry {
   final int amount;
 
   int get absoluteAmount => amount.abs();
+}
+
+class _KnobRow extends StatelessWidget {
+  const _KnobRow({
+    required this.leftLabel,
+    required this.leftEntries,
+    required this.rightLabel,
+    required this.rightEntries,
+    required this.isNarrow,
+    this.hideEmptySides = false,
+  });
+
+  final String leftLabel;
+  final List<_ModulationEntry> leftEntries;
+  final String rightLabel;
+  final List<_ModulationEntry> rightEntries;
+  final bool isNarrow;
+  final bool hideEmptySides;
+
+  @override
+  Widget build(BuildContext context) {
+    final showLeft = !hideEmptySides || leftEntries.isNotEmpty;
+    final showRight = !hideEmptySides || rightEntries.isNotEmpty;
+
+    final leftColumn = showLeft
+        ? _KnobColumn(label: leftLabel, entries: leftEntries)
+        : null;
+    final rightColumn = showRight
+        ? _KnobColumn(label: rightLabel, entries: rightEntries)
+        : null;
+
+    if (isNarrow) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (leftColumn != null) leftColumn,
+          if (leftColumn != null && rightColumn != null)
+            const SizedBox(height: 12),
+          if (rightColumn != null) rightColumn,
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: leftColumn ?? const SizedBox.shrink()),
+        const SizedBox(width: 16),
+        Expanded(child: rightColumn ?? const SizedBox.shrink()),
+      ],
+    );
+  }
 }
 
 class _KnobColumn extends StatelessWidget {
