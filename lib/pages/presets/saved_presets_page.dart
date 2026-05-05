@@ -123,8 +123,9 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
                   starredItems: savedPresetsState.starredItems,
                   isLoading: !savedPresetsState.hasLoadedUserItems,
                   isOwned: true,
-                  onRefresh: () =>
-                      ref.read(savedPresetsProvider.notifier).fetchUserItems(),
+                  onRefresh: () => ref
+                      .read(savedPresetsProvider.notifier)
+                      .fetchUserItems(force: true),
                   itemBuilder: (preset) => PresetCard(
                     preset: preset,
                     isOwned: preset.userId == authenticationState.user?.id,
@@ -142,8 +143,9 @@ class _SavedPresetsPageState extends ConsumerState<SavedPresetsPage>
                 items: savedPresetsState.publicItems,
                 isLoading: !savedPresetsState.hasLoadedPublicItems,
                 isOwned: false,
-                onRefresh: () =>
-                    ref.read(savedPresetsProvider.notifier).fetchPublicItems(),
+                onRefresh: () => ref
+                    .read(savedPresetsProvider.notifier)
+                    .fetchPublicItems(force: true),
                 itemBuilder: (preset) => PresetCard(
                   preset: preset,
                   isOwned: false,

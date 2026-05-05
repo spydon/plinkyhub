@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/preset.dart';
@@ -41,9 +42,9 @@ class PackSlotTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final presetsState = ref.watch(savedPresetsProvider);
-    final presets = [...presetsState.userItems, ...presetsState.publicItems];
+    final presets = presetsState.allItems;
     final samplesState = ref.watch(savedSamplesProvider);
-    final samples = [...samplesState.userItems, ...samplesState.publicItems];
+    final samples = samplesState.allItems;
 
     final hasDevicePreset = devicePreset != null;
     final isLinked = presetId != null;
@@ -55,14 +56,14 @@ class PackSlotTile extends ConsumerWidget {
           : 'Preset ${slotNumber + 1}';
     } else if (isLinked) {
       presetName =
-          presets.where((preset) => preset.id == presetId).firstOrNull?.name ??
+          presets.firstWhereOrNull((preset) => preset.id == presetId)?.name ??
           '(unknown)';
     } else {
       presetName = 'Empty';
     }
 
     final sampleName = sampleId != null
-        ? samples.where((sample) => sample.id == sampleId).firstOrNull?.name ??
+        ? samples.firstWhereOrNull((sample) => sample.id == sampleId)?.name ??
               '(unknown)'
         : null;
     final categoryLabel = devicePreset?.category.label ?? '';
@@ -194,10 +195,9 @@ class PackSlotTile extends ConsumerWidget {
 
   void _showLinkedPreset(BuildContext context, WidgetRef ref) {
     final presetsState = ref.read(savedPresetsProvider);
-    final preset = [
-      ...presetsState.userItems,
-      ...presetsState.publicItems,
-    ].where((preset) => preset.id == presetId).firstOrNull;
+    final preset = presetsState.allItems.firstWhereOrNull(
+      (preset) => preset.id == presetId,
+    );
     if (preset == null) {
       return;
     }

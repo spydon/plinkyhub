@@ -1,8 +1,10 @@
+import 'package:plinkyhub/models/searchable.dart';
+
 /// Generic state for any saved-items notifier.
 ///
 /// Replaces the individual freezed state classes
 /// (SavedPresetsState, SavedSamplesState, etc.) with a single generic.
-class SavedItemsState<T> {
+class SavedItemsState<T extends Searchable> {
   const SavedItemsState({
     this.userItems = const [],
     this.starredItems = const [],
@@ -24,6 +26,19 @@ class SavedItemsState<T> {
 
   /// Used by packs for editing state; null for other item types.
   final T? editingItem;
+
+  /// Deduplicated union of the user's own items, starred items, and public
+  /// items (in that order so own/starred entries win on duplicate IDs).
+  List<T> get allItems {
+    final seen = <String>{};
+    final combined = <T>[];
+    for (final item in [...userItems, ...starredItems, ...publicItems]) {
+      if (seen.add(item.id)) {
+        combined.add(item);
+      }
+    }
+    return combined;
+  }
 
   SavedItemsState<T> copyWith({
     List<T>? userItems,

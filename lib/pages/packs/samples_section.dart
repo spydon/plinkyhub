@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/preset.dart';
@@ -38,10 +39,7 @@ class SamplesSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final savedSamplesState = ref.watch(savedSamplesProvider);
-    final savedSamples = [
-      ...savedSamplesState.userItems,
-      ...savedSamplesState.publicItems,
-    ];
+    final savedSamples = savedSamplesState.allItems;
 
     // Map device sample slot (0-7) to preset slot numbers via P_SAMPLE.
     final deviceSlotToPresetSlots = <int, List<int>>{};
@@ -161,9 +159,9 @@ class SamplesSection extends ConsumerWidget {
           children: List.generate(sampleCount, (deviceSlot) {
             final sampleId = deviceSlotToSampleId[deviceSlot];
             final sample = sampleId != null
-                ? savedSamples
-                      .where((sample) => sample.id == sampleId)
-                      .firstOrNull
+                ? savedSamples.firstWhereOrNull(
+                    (sample) => sample.id == sampleId,
+                  )
                 : null;
             final hasDeviceSample = deviceSampleSlots.contains(deviceSlot);
 

@@ -144,7 +144,7 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
                   isOwned: true,
                   onRefresh: () => ref
                       .read(savedWavetablesProvider.notifier)
-                      .fetchUserItems(),
+                      .fetchUserItems(force: true),
                   itemBuilder: (wavetable) => WavetableCard(
                     wavetable: wavetable,
                     isOwned: wavetable.userId == authenticationState.user?.id,
@@ -161,7 +161,7 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
                 isOwned: false,
                 onRefresh: () => ref
                     .read(savedWavetablesProvider.notifier)
-                    .fetchPublicItems(),
+                    .fetchPublicItems(force: true),
                 itemBuilder: (wavetable) => WavetableCard(
                   wavetable: wavetable,
                   isOwned: false,

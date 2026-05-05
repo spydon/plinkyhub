@@ -80,7 +80,11 @@ abstract class SavedItemsNotifier<T extends Searchable>
 
   // ---- Fetch ----
 
-  Future<void> fetchUserItems() async {
+  Future<void> fetchUserItems({bool force = false}) async {
+    if (!force && state.hasLoadedUserItems) {
+      return;
+    }
+
     final userId = ref.read(authenticationProvider).user?.id;
     if (userId == null) {
       return;
@@ -147,7 +151,11 @@ abstract class SavedItemsNotifier<T extends Searchable>
     }
   }
 
-  Future<void> fetchPublicItems() async {
+  Future<void> fetchPublicItems({bool force = false}) async {
+    if (!force && state.hasLoadedPublicItems) {
+      return;
+    }
+
     state = state.copyWith(isLoading: true, errorMessage: () => null);
     try {
       final response = await supabase
@@ -180,8 +188,8 @@ abstract class SavedItemsNotifier<T extends Searchable>
     state = state.copyWith(isLoading: true, errorMessage: () => null);
     try {
       await supabase.from(tableName).delete().eq('id', id);
-      await fetchUserItems();
-      await fetchPublicItems();
+      await fetchUserItems(force: true);
+      await fetchPublicItems(force: true);
     } on Exception catch (error) {
       debugPrint('$error');
       state = state.copyWith(
@@ -283,10 +291,10 @@ abstract class SavedItemsNotifier<T extends Searchable>
     );
   }
 
-  /// Re-fetches both user and public item lists.
+  /// Re-fetches both user and public item lists, bypassing the cache.
   Future<void> refreshAll() async {
-    await fetchUserItems();
-    await fetchPublicItems();
+    await fetchUserItems(force: true);
+    await fetchPublicItems(force: true);
   }
 }
 

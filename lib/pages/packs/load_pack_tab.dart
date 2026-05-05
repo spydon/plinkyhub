@@ -905,7 +905,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
         params: request.toJson(),
       );
 
-      await ref.read(savedPacksProvider.notifier).fetchUserItems();
+      await ref.read(savedPacksProvider.notifier).fetchUserItems(force: true);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

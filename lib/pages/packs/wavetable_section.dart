@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/packs/wavetable_picker_dialog.dart';
@@ -30,14 +31,9 @@ class WavetableSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final wavetablesState = ref.watch(savedWavetablesProvider);
     final wavetableName = wavetableId != null
-        ? wavetablesState.userItems
-                  .where((wavetable) => wavetable.id == wavetableId)
-                  .firstOrNull
-                  ?.name ??
-              wavetablesState.publicItems
-                  .where((wavetable) => wavetable.id == wavetableId)
-                  .firstOrNull
-                  ?.name
+        ? wavetablesState.allItems
+              .firstWhereOrNull((wavetable) => wavetable.id == wavetableId)
+              ?.name
         : null;
 
     final isLinked = wavetableId != null;
@@ -65,17 +61,9 @@ class WavetableSection extends ConsumerWidget {
             if (isLinked)
               LinkedItemIcon(
                 onTap: () {
-                  final wavetable =
-                      wavetablesState.userItems
-                          .where(
-                            (wavetable) => wavetable.id == wavetableId,
-                          )
-                          .firstOrNull ??
-                      wavetablesState.publicItems
-                          .where(
-                            (wavetable) => wavetable.id == wavetableId,
-                          )
-                          .firstOrNull;
+                  final wavetable = wavetablesState.allItems.firstWhereOrNull(
+                    (wavetable) => wavetable.id == wavetableId,
+                  );
                   if (wavetable == null) {
                     return;
                   }
@@ -130,14 +118,10 @@ class WavetableSection extends ConsumerWidget {
               PlinkyButton(
                 onPressed: () async {
                   final authState = ref.read(authenticationProvider);
-                  final allWavetables = {
-                    ...wavetablesState.userItems,
-                    ...wavetablesState.publicItems,
-                  }.toList();
                   final selected = await showDialog<SavedWavetable>(
                     context: context,
                     builder: (context) => WavetablePickerDialog(
-                      wavetables: allWavetables,
+                      wavetables: wavetablesState.allItems,
                       currentUserId: authState.user?.id,
                     ),
                   );

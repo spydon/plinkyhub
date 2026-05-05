@@ -6,6 +6,10 @@ import 'package:plinkyhub/pages/packs/create_pack_tab.dart';
 import 'package:plinkyhub/pages/packs/load_pack_tab.dart';
 import 'package:plinkyhub/pages/packs/pack_card.dart';
 import 'package:plinkyhub/pages/packs/providers/saved_packs_notifier.dart';
+import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
+import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
+import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
+import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/widgets/copyable_error_message.dart';
@@ -57,6 +61,12 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
       if (initialIndex == 0) {
         ref.read(savedPacksProvider.notifier).fetchUserItems();
       }
+      // Pickers in Create Pack and Bulk Uploader tabs need the full public
+      // catalog of presets, samples, patterns, and wavetables.
+      ref.read(savedPresetsProvider.notifier).fetchPublicItems();
+      ref.read(savedSamplesProvider.notifier).fetchPublicItems();
+      ref.read(savedPatternsProvider.notifier).fetchPublicItems();
+      ref.read(savedWavetablesProvider.notifier).fetchPublicItems();
     });
   }
 
@@ -127,8 +137,9 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
                   starredItems: savedPacksState.starredItems,
                   isLoading: !savedPacksState.hasLoadedUserItems,
                   isOwned: true,
-                  onRefresh: () =>
-                      ref.read(savedPacksProvider.notifier).fetchUserItems(),
+                  onRefresh: () => ref
+                      .read(savedPacksProvider.notifier)
+                      .fetchUserItems(force: true),
                   itemBuilder: (pack) => PackCard(
                     pack: pack,
                     isOwned: pack.userId == authenticationState.user?.id,
@@ -148,8 +159,9 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
                 items: savedPacksState.publicItems,
                 isLoading: !savedPacksState.hasLoadedPublicItems,
                 isOwned: false,
-                onRefresh: () =>
-                    ref.read(savedPacksProvider.notifier).fetchPublicItems(),
+                onRefresh: () => ref
+                    .read(savedPacksProvider.notifier)
+                    .fetchPublicItems(force: true),
                 itemBuilder: (pack) => PackCard(
                   pack: pack,
                   isOwned: false,

@@ -121,8 +121,9 @@ class _SavedPatternsPageState extends ConsumerState<SavedPatternsPage>
                   starredItems: savedPatternsState.starredItems,
                   isLoading: !savedPatternsState.hasLoadedUserItems,
                   isOwned: true,
-                  onRefresh: () =>
-                      ref.read(savedPatternsProvider.notifier).fetchUserItems(),
+                  onRefresh: () => ref
+                      .read(savedPatternsProvider.notifier)
+                      .fetchUserItems(force: true),
                   itemBuilder: (pattern) => PatternCard(
                     pattern: pattern,
                     isOwned: pattern.userId == authenticationState.user?.id,
@@ -137,8 +138,9 @@ class _SavedPatternsPageState extends ConsumerState<SavedPatternsPage>
                 items: savedPatternsState.publicItems,
                 isLoading: !savedPatternsState.hasLoadedPublicItems,
                 isOwned: false,
-                onRefresh: () =>
-                    ref.read(savedPatternsProvider.notifier).fetchPublicItems(),
+                onRefresh: () => ref
+                    .read(savedPatternsProvider.notifier)
+                    .fetchPublicItems(force: true),
                 itemBuilder: (pattern) => PatternCard(
                   pattern: pattern,
                   isOwned: false,

@@ -135,8 +135,9 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
                   starredItems: savedSamplesState.starredItems,
                   isLoading: !savedSamplesState.hasLoadedUserItems,
                   isOwned: true,
-                  onRefresh: () =>
-                      ref.read(savedSamplesProvider.notifier).fetchUserItems(),
+                  onRefresh: () => ref
+                      .read(savedSamplesProvider.notifier)
+                      .fetchUserItems(force: true),
                   itemBuilder: (sample) => SampleCard(
                     sample: sample,
                     isOwned: sample.userId == authenticationState.user?.id,
@@ -151,8 +152,9 @@ class _SavedSamplesPageState extends ConsumerState<SavedSamplesPage>
                 items: savedSamplesState.publicItems,
                 isLoading: !savedSamplesState.hasLoadedPublicItems,
                 isOwned: false,
-                onRefresh: () =>
-                    ref.read(savedSamplesProvider.notifier).fetchPublicItems(),
+                onRefresh: () => ref
+                    .read(savedSamplesProvider.notifier)
+                    .fetchPublicItems(force: true),
                 itemBuilder: (sample) => SampleCard(
                   sample: sample,
                   isOwned: false,

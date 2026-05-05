@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/packs/pattern_picker_dialog.dart';
@@ -89,14 +90,9 @@ class _PatternTile extends ConsumerWidget {
     String displayName;
     if (isLinked) {
       final patternsState = ref.watch(savedPatternsProvider);
-      final allPatterns = [
-        ...patternsState.userItems,
-        ...patternsState.publicItems,
-      ];
       displayName =
-          allPatterns
-              .where((pattern) => pattern.id == patternId)
-              .firstOrNull
+          patternsState.allItems
+              .firstWhereOrNull((pattern) => pattern.id == patternId)
               ?.name ??
           '(unknown)';
     } else if (hasDevicePattern) {
@@ -161,10 +157,9 @@ class _PatternTile extends ConsumerWidget {
 
   void _showLinkedPattern(BuildContext context, WidgetRef ref) {
     final patternsState = ref.read(savedPatternsProvider);
-    final pattern = [
-      ...patternsState.userItems,
-      ...patternsState.publicItems,
-    ].where((pattern) => pattern.id == patternId).firstOrNull;
+    final pattern = patternsState.allItems.firstWhereOrNull(
+      (pattern) => pattern.id == patternId,
+    );
     if (pattern == null) {
       return;
     }
@@ -189,14 +184,10 @@ class _PatternTile extends ConsumerWidget {
   void _showPatternPicker(BuildContext context, WidgetRef ref) {
     final authState = ref.read(authenticationProvider);
     final patternsState = ref.read(savedPatternsProvider);
-    final allPatterns = {
-      ...patternsState.userItems,
-      ...patternsState.publicItems,
-    }.toList();
     showDialog<SavedPattern>(
       context: context,
       builder: (context) => PatternPickerDialog(
-        patterns: allPatterns,
+        patterns: patternsState.allItems,
         currentUserId: authState.user?.id,
       ),
     ).then((selected) {
