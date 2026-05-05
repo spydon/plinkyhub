@@ -89,7 +89,6 @@ class _PatternHeaderState extends ConsumerState<PatternHeader> {
         ],
         const SizedBox(height: 4),
         UsernameDateLine(
-          userId: pattern.userId,
           username: pattern.username,
           updatedAt: pattern.updatedAt,
         ),

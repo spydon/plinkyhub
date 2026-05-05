@@ -11,7 +11,6 @@ part of 'pack_slot_write.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$PackSlotWrite {
 
@@ -210,11 +209,11 @@ return $default(_that.packId,_that.slotNumber,_that.presetId,_that.sampleId,_tha
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PackSlotWrite implements PackSlotWrite {
   const _PackSlotWrite({required this.packId, required this.slotNumber, this.presetId, this.sampleId, this.patternId});
-  factory _PackSlotWrite.fromJson(Map<String, dynamic> json) => _$PackSlotWriteFromJson(json);
+  
 
 @override final  String packId;
 @override final  int slotNumber;

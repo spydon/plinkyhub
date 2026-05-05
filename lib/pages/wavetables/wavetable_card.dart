@@ -69,7 +69,6 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
               ],
               const SizedBox(height: 4),
               UsernameDateLine(
-                userId: wavetable.userId,
                 username: wavetable.username,
                 updatedAt: wavetable.updatedAt,
               ),

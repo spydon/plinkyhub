@@ -39,39 +39,6 @@ const _wavetableUf2FamilyId = 0x00ff6919;
 /// Scale factor for output samples (matching the C++ tool).
 const _outputScale = 16384.0;
 
-/// Generates a wavetable UF2 file from 15 single-cycle WAV files.
-///
-/// [wavFiles] must contain exactly 15 entries, one for each cycle (c0–c14).
-/// Each WAV must be a mono or stereo PCM file containing a single-cycle
-/// waveform with at least 512 samples.
-///
-/// The output contains 17 shapes: a built-in saw (shape 0), a built-in sine
-/// (shape 1), and the 15 user waveforms (shapes 2–16), matching the official
-/// Plinky wavetable format.
-///
-/// Returns the complete UF2 file as bytes, ready to be flashed to a Plinky.
-Uint8List generateWavetableUf2(List<Uint8List> wavFiles) {
-  if (wavFiles.length != wavetableUserShapeCount) {
-    throw ArgumentError(
-      'Expected $wavetableUserShapeCount WAV files, '
-      'got ${wavFiles.length}',
-    );
-  }
-
-  // Build high-resolution lookup tables for all 17 shapes.
-  final lookups = List<Float64List>.generate(wavetableShapeCount, (shape) {
-    if (shape == 0) {
-      return _generateSawLookup();
-    }
-    if (shape == 1) {
-      return _generateSineLookup();
-    }
-    return _wavToLookup(wavFiles[shape - 2]);
-  });
-
-  return _generateUf2FromLookups(lookups);
-}
-
 /// Generates a wavetable UF2 file from 15 raw sample arrays.
 ///
 /// [sampleArrays] must contain exactly 15 entries, one for each cycle
@@ -203,36 +170,8 @@ Float64List _generateSineLookup() {
   return lookup;
 }
 
-/// Decodes a WAV file and resamples the single-cycle waveform into a
-/// normalised 65 536-sample lookup table.
-Float64List _wavToLookup(Uint8List wavBytes) {
-  final samples = _decodeWavMono(wavBytes);
-
-  // Normalise to peak = 1.0.
-  var peak = 0.0;
-  for (final sample in samples) {
-    final absolute = sample.abs();
-    if (absolute > peak) {
-      peak = absolute;
-    }
-  }
-  final gain = peak > 0 ? 1.0 / peak : 1.0;
-
-  // Resample to wavetableLookupSize using linear interpolation (circular).
-  final lookup = Float64List(wavetableLookupSize);
-  for (var i = 0; i < wavetableLookupSize; i++) {
-    final sourcePosition = i * samples.length / wavetableLookupSize;
-    final index = sourcePosition.floor();
-    final fraction = sourcePosition - index;
-    final sample0 = samples[index % samples.length];
-    final sample1 = samples[(index + 1) % samples.length];
-    lookup[i] = (sample0 * (1.0 - fraction) + sample1 * fraction) * gain;
-  }
-  return lookup;
-}
-
 /// Resamples raw floating-point samples into a normalised 65 536-sample
-/// lookup table, mirroring [_wavToLookup] but without WAV decoding.
+/// lookup table.
 Float64List _samplesToLookup(List<double> samples) {
   if (samples.isEmpty) {
     throw const FormatException('Sample array is empty');
@@ -282,99 +221,6 @@ Float64List _buildKernel() {
     kernel[i] /= total;
   }
   return kernel;
-}
-
-// ---------------------------------------------------------------------------
-// WAV decoding (self-contained so we don't depend on wav.dart internals)
-// ---------------------------------------------------------------------------
-
-/// Decodes a PCM WAV file to mono floating-point samples in the range
-/// −1.0 … 1.0.
-List<double> _decodeWavMono(Uint8List wavBytes) {
-  final data = ByteData.sublistView(wavBytes);
-  var offset = 0;
-
-  if (_readFourCC(data, offset) != 'RIFF') {
-    throw const FormatException('Not a WAV file: missing RIFF header');
-  }
-  offset += 8; // skip 'RIFF' + file size
-  if (_readFourCC(data, offset) != 'WAVE') {
-    throw const FormatException('Not a WAV file: missing WAVE identifier');
-  }
-  offset += 4;
-
-  int? channels;
-  int? bitsPerSample;
-  Uint8List? rawData;
-
-  while (offset < data.lengthInBytes - 8) {
-    final chunkId = _readFourCC(data, offset);
-    final chunkSize = data.getUint32(offset + 4, Endian.little);
-    offset += 8;
-
-    if (chunkId == 'fmt ') {
-      final audioFormat = data.getUint16(offset, Endian.little);
-      if (audioFormat != 1) {
-        throw const FormatException('Only PCM WAV files are supported');
-      }
-      channels = data.getUint16(offset + 2, Endian.little);
-      bitsPerSample = data.getUint16(offset + 14, Endian.little);
-    } else if (chunkId == 'data') {
-      rawData = wavBytes.sublist(offset, offset + chunkSize);
-    }
-
-    offset += chunkSize;
-    if (chunkSize.isOdd) {
-      offset += 1;
-    }
-  }
-
-  if (channels == null || bitsPerSample == null) {
-    throw const FormatException('WAV file missing fmt chunk');
-  }
-  if (rawData == null) {
-    throw const FormatException('WAV file missing data chunk');
-  }
-
-  final bytesPerSample = bitsPerSample ~/ 8;
-  final frameSize = bytesPerSample * channels;
-  final frameCount = rawData.length ~/ frameSize;
-  final rawView = ByteData.sublistView(rawData);
-  final samples = List<double>.filled(frameCount, 0);
-
-  for (var i = 0; i < frameCount; i++) {
-    var sum = 0.0;
-    for (var ch = 0; ch < channels; ch++) {
-      final byteOffset = i * frameSize + ch * bytesPerSample;
-      sum += _readSample(rawView, byteOffset, bitsPerSample);
-    }
-    samples[i] = sum / channels;
-  }
-  return samples;
-}
-
-double _readSample(ByteData data, int offset, int bitsPerSample) {
-  return switch (bitsPerSample) {
-    8 => (data.getUint8(offset) - 128) / 128.0,
-    16 => data.getInt16(offset, Endian.little) / 32768.0,
-    24 => () {
-      final b0 = data.getUint8(offset);
-      final b1 = data.getUint8(offset + 1);
-      final b2 = data.getInt8(offset + 2);
-      return (b0 | (b1 << 8) | (b2 << 16)) / 8388608.0;
-    }(),
-    32 => data.getInt32(offset, Endian.little) / 2147483648.0,
-    _ => throw FormatException('Unsupported bit depth: $bitsPerSample'),
-  };
-}
-
-String _readFourCC(ByteData data, int offset) {
-  return String.fromCharCodes([
-    data.getUint8(offset),
-    data.getUint8(offset + 1),
-    data.getUint8(offset + 2),
-    data.getUint8(offset + 3),
-  ]);
 }
 
 // ---------------------------------------------------------------------------

@@ -552,17 +552,6 @@ class ParsedFlashImage {
     return false;
   }
 
-  /// Returns the number of non-empty patterns.
-  int get nonEmptyPatternCount {
-    var count = 0;
-    for (var i = 0; i < patternCount; i++) {
-      if (hasPattern(i)) {
-        count++;
-      }
-    }
-    return count;
-  }
-
   /// Returns the indices of non-empty patterns.
   List<int> get nonEmptyPatternIndices {
     final indices = <int>[];

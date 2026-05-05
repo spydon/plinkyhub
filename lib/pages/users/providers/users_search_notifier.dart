@@ -1,6 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+part 'users_search_notifier.freezed.dart';
+part 'users_search_notifier.g.dart';
 
 final usersSearchProvider =
     NotifierProvider<UsersSearchNotifier, UsersSearchState>(
@@ -19,16 +23,12 @@ class UsersSearchState {
   final String? errorMessage;
 }
 
-class UserProfile {
-  const UserProfile({
-    required this.id,
-    required this.username,
-    required this.createdAt,
-  });
+@freezed
+abstract class UserProfile with _$UserProfile {
+  const factory UserProfile({required String username}) = _UserProfile;
 
-  final String id;
-  final String username;
-  final DateTime createdAt;
+  factory UserProfile.fromJson(Map<String, dynamic> json) =>
+      _$UserProfileFromJson(json);
 }
 
 class UsersSearchNotifier extends Notifier<UsersSearchState> {
@@ -43,19 +43,14 @@ class UsersSearchNotifier extends Notifier<UsersSearchState> {
     try {
       final response = await _supabase
           .from('profiles')
-          .select('id, username, created_at')
+          .select('username')
           .ilike('username', '%$query%')
           .order('username')
           .limit(50);
 
-      final users = (response as List).map((row) {
-        final map = row as Map<String, dynamic>;
-        return UserProfile(
-          id: map['id'] as String,
-          username: map['username'] as String,
-          createdAt: DateTime.parse(map['created_at'] as String),
-        );
-      }).toList();
+      final users = (response as List)
+          .map((row) => UserProfile.fromJson(row as Map<String, dynamic>))
+          .toList();
 
       state = UsersSearchState(users: users);
     } on Exception catch (error) {

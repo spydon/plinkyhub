@@ -1,5 +1,3 @@
-import 'dart:math';
-
 /// Plinky firmware's 27 built-in scales with semitone intervals.
 enum PlinkyScale {
   major('Major', [0, 2, 4, 5, 7, 9, 11]),
@@ -73,12 +71,6 @@ int midiNoteForPad({
       colOffset +
       rowOffset +
       pitchOffset.round();
-}
-
-/// Returns the playback speed multiplier to pitch-shift from [baseMidi]
-/// to [targetMidi]. Speed 1.0 = no shift, 2.0 = one octave up, etc.
-double playbackSpeedForMidi(int targetMidi, int baseMidi) {
-  return pow(2, (targetMidi - baseMidi) / 12).toDouble();
 }
 
 /// One of the 64 (string, column) Plinky pads, with the MIDI note it

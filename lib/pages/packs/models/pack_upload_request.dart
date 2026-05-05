@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'pack_upload_request.freezed.dart';
 part 'pack_upload_request.g.dart';
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PackUploadRequest with _$PackUploadRequest {
   const factory PackUploadRequest({
     required PackUploadPack packData,
@@ -13,12 +13,9 @@ abstract class PackUploadRequest with _$PackUploadRequest {
     @Default([]) List<PackUploadPattern> patternsData,
     @Default([]) List<PackUploadSlot> packSlotsData,
   }) = _PackUploadRequest;
-
-  factory PackUploadRequest.fromJson(Map<String, dynamic> json) =>
-      _$PackUploadRequestFromJson(json);
 }
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PackUploadPack with _$PackUploadPack {
   const factory PackUploadPack({
     required String userId,
@@ -28,12 +25,9 @@ abstract class PackUploadPack with _$PackUploadPack {
     @Default('') String youtubeUrl,
     String? contentHash,
   }) = _PackUploadPack;
-
-  factory PackUploadPack.fromJson(Map<String, dynamic> json) =>
-      _$PackUploadPackFromJson(json);
 }
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PackUploadSample with _$PackUploadSample {
   const factory PackUploadSample({
     required int slotIndex,
@@ -51,12 +45,9 @@ abstract class PackUploadSample with _$PackUploadSample {
     String? contentHash,
     String? existingId,
   }) = _PackUploadSample;
-
-  factory PackUploadSample.fromJson(Map<String, dynamic> json) =>
-      _$PackUploadSampleFromJson(json);
 }
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PackUploadPreset with _$PackUploadPreset {
   const factory PackUploadPreset({
     required int slotIndex,
@@ -70,12 +61,9 @@ abstract class PackUploadPreset with _$PackUploadPreset {
     String? existingId,
     int? sampleSlotIndex,
   }) = _PackUploadPreset;
-
-  factory PackUploadPreset.fromJson(Map<String, dynamic> json) =>
-      _$PackUploadPresetFromJson(json);
 }
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PackUploadWavetable with _$PackUploadWavetable {
   const factory PackUploadWavetable({
     required String userId,
@@ -86,12 +74,9 @@ abstract class PackUploadWavetable with _$PackUploadWavetable {
     String? contentHash,
     String? existingId,
   }) = _PackUploadWavetable;
-
-  factory PackUploadWavetable.fromJson(Map<String, dynamic> json) =>
-      _$PackUploadWavetableFromJson(json);
 }
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PackUploadPattern with _$PackUploadPattern {
   const factory PackUploadPattern({
     required int patternIndex,
@@ -103,12 +88,9 @@ abstract class PackUploadPattern with _$PackUploadPattern {
     String? contentHash,
     String? existingId,
   }) = _PackUploadPattern;
-
-  factory PackUploadPattern.fromJson(Map<String, dynamic> json) =>
-      _$PackUploadPatternFromJson(json);
 }
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PackUploadSlot with _$PackUploadSlot {
   const factory PackUploadSlot({
     required int slotNumber,
@@ -116,7 +98,4 @@ abstract class PackUploadSlot with _$PackUploadSlot {
     int? sampleSlotIndex,
     int? patternIndex,
   }) = _PackUploadSlot;
-
-  factory PackUploadSlot.fromJson(Map<String, dynamic> json) =>
-      _$PackUploadSlotFromJson(json);
 }

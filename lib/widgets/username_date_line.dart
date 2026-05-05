@@ -6,13 +6,11 @@ import 'package:plinkyhub/utils/note_names.dart';
 
 class UsernameDateLine extends ConsumerWidget {
   const UsernameDateLine({
-    required this.userId,
     required this.username,
     required this.updatedAt,
     super.key,
   });
 
-  final String userId;
   final String username;
   final DateTime updatedAt;
 

@@ -45,15 +45,9 @@ class HighscoresNotifier extends Notifier<HighscoresState> {
 
     try {
       final response = await _supabase.rpc('get_user_highscores');
-      final highscores = (response as List).map((row) {
-        final map = row as Map<String, dynamic>;
-        return UserHighscore(
-          userId: map['user_id'] as String,
-          username: map['username'] as String,
-          totalStars: (map['total_stars'] as num).toInt(),
-          totalUploads: (map['total_uploads'] as num).toInt(),
-        );
-      }).toList();
+      final highscores = (response as List)
+          .map((row) => UserHighscore.fromJson(row as Map<String, dynamic>))
+          .toList();
 
       state = HighscoresState(
         highscores: highscores,

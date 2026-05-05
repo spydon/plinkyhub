@@ -263,20 +263,8 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
     return Uri.base.origin;
   }
 
-  void clearError() {
-    state = state.copyWith(errorMessage: null);
-  }
-
   void setError(String message) {
     state = state.copyWith(errorMessage: message);
-  }
-
-  void clearInfo() {
-    state = state.copyWith(infoMessage: null);
-  }
-
-  void setInfo(String message) {
-    state = state.copyWith(infoMessage: message);
   }
 
   void clearMessages() {

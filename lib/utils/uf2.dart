@@ -15,7 +15,8 @@ const sampleSlotAddresses = [
 /// Size of one Plinky sample slot in bytes (4 MB).
 const sampleSlotSize = 0x400000;
 
-/// Maximum sample size per slot (8 MB).
+/// Maximum tolerated input size for [sampleToUf2] (8 MB). Inputs larger than
+/// this almost certainly indicate a decoding bug rather than a long sample.
 const maxSampleSize = 8 * 1024 * 1024;
 
 /// UF2 magic numbers.
@@ -74,7 +75,12 @@ Uint8List dataToUf2(Uint8List data, int baseAddress) {
 /// (0-7) in Plinky's sample memory.
 Uint8List sampleToUf2(Uint8List data, {int slotIndex = 0}) {
   assert(slotIndex >= 0 && slotIndex < 8, 'slotIndex must be 0-7');
-  assert(data.length <= maxSampleSize, 'Sample exceeds 8 MB limit');
+  if (data.length > maxSampleSize) {
+    throw ArgumentError(
+      'Sample is ${data.length} bytes; refusing to encode more than '
+      '$maxSampleSize bytes (sample slot is $sampleSlotSize bytes).',
+    );
+  }
 
   final trimmedData = data.length > sampleSlotSize
       ? data.sublist(0, sampleSlotSize)
@@ -142,15 +148,4 @@ Uint8List uf2ToData(Uint8List uf2Bytes) {
   }
 
   return output;
-}
-
-/// Returns the UF2 file path for a given original sample [filePath].
-///
-/// Example: `userId/sample.wav` → `userId/sample.uf2`
-String uf2PathFromFilePath(String filePath) {
-  final lastDot = filePath.lastIndexOf('.');
-  if (lastDot == -1) {
-    return '$filePath.uf2';
-  }
-  return '${filePath.substring(0, lastDot)}.uf2';
 }

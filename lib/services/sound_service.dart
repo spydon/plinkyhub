@@ -87,14 +87,6 @@ class SoundService {
     }
   }
 
-  /// Dispose a previously loaded source and remove it from the cache.
-  void disposeSource(String key) {
-    final source = _loadedSources.remove(key);
-    if (source != null) {
-      _soloud.disposeSource(source);
-    }
-  }
-
   /// The duration of a loaded source.
   Duration getLength(AudioSource source) => _soloud.getLength(source);
 

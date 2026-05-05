@@ -11,7 +11,6 @@ part of 'pattern_write.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$PatternWrite {
 
@@ -211,11 +210,11 @@ return $default(_that.userId,_that.name,_that.filePath,_that.description,_that.i
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PatternWrite implements PatternWrite {
   const _PatternWrite({required this.userId, required this.name, required this.filePath, this.description = '', this.isPublic = false, this.contentHash});
-  factory _PatternWrite.fromJson(Map<String, dynamic> json) => _$PatternWriteFromJson(json);
+  
 
 @override final  String userId;
 @override final  String name;

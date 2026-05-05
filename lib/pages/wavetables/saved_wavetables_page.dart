@@ -177,8 +177,6 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
                   DrawWavetableTab(
                     wavetableToEdit: editWavetable,
                     onCreated: () => _tabController.animateTo(0),
-                    onClear: () =>
-                        context.go(AppRoute.wavetables.tab('create')),
                   )
               else
                 const SignInPrompt(

@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MidiState {
 
- bool get isConnected; Map<int, ActiveNote> get activeNotes; List<MidiOutputPort> get outputs; String? get selectedOutputId;
+ bool get isConnected; Set<int> get activeNotes; List<MidiOutputPort> get outputs; String? get selectedOutputId;
 /// Create a copy of MidiState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -45,7 +45,7 @@ abstract mixin class $MidiStateCopyWith<$Res>  {
   factory $MidiStateCopyWith(MidiState value, $Res Function(MidiState) _then) = _$MidiStateCopyWithImpl;
 @useResult
 $Res call({
- bool isConnected, Map<int, ActiveNote> activeNotes, List<MidiOutputPort> outputs, String? selectedOutputId
+ bool isConnected, Set<int> activeNotes, List<MidiOutputPort> outputs, String? selectedOutputId
 });
 
 
@@ -66,7 +66,7 @@ class _$MidiStateCopyWithImpl<$Res>
   return _then(_self.copyWith(
 isConnected: null == isConnected ? _self.isConnected : isConnected // ignore: cast_nullable_to_non_nullable
 as bool,activeNotes: null == activeNotes ? _self.activeNotes : activeNotes // ignore: cast_nullable_to_non_nullable
-as Map<int, ActiveNote>,outputs: null == outputs ? _self.outputs : outputs // ignore: cast_nullable_to_non_nullable
+as Set<int>,outputs: null == outputs ? _self.outputs : outputs // ignore: cast_nullable_to_non_nullable
 as List<MidiOutputPort>,selectedOutputId: freezed == selectedOutputId ? _self.selectedOutputId : selectedOutputId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -153,7 +153,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isConnected,  Map<int, ActiveNote> activeNotes,  List<MidiOutputPort> outputs,  String? selectedOutputId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isConnected,  Set<int> activeNotes,  List<MidiOutputPort> outputs,  String? selectedOutputId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MidiState() when $default != null:
 return $default(_that.isConnected,_that.activeNotes,_that.outputs,_that.selectedOutputId);case _:
@@ -174,7 +174,7 @@ return $default(_that.isConnected,_that.activeNotes,_that.outputs,_that.selected
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isConnected,  Map<int, ActiveNote> activeNotes,  List<MidiOutputPort> outputs,  String? selectedOutputId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isConnected,  Set<int> activeNotes,  List<MidiOutputPort> outputs,  String? selectedOutputId)  $default,) {final _that = this;
 switch (_that) {
 case _MidiState():
 return $default(_that.isConnected,_that.activeNotes,_that.outputs,_that.selectedOutputId);case _:
@@ -194,7 +194,7 @@ return $default(_that.isConnected,_that.activeNotes,_that.outputs,_that.selected
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isConnected,  Map<int, ActiveNote> activeNotes,  List<MidiOutputPort> outputs,  String? selectedOutputId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isConnected,  Set<int> activeNotes,  List<MidiOutputPort> outputs,  String? selectedOutputId)?  $default,) {final _that = this;
 switch (_that) {
 case _MidiState() when $default != null:
 return $default(_that.isConnected,_that.activeNotes,_that.outputs,_that.selectedOutputId);case _:
@@ -209,15 +209,15 @@ return $default(_that.isConnected,_that.activeNotes,_that.outputs,_that.selected
 
 
 class _MidiState implements MidiState {
-  const _MidiState({this.isConnected = false, final  Map<int, ActiveNote> activeNotes = const {}, final  List<MidiOutputPort> outputs = const [], this.selectedOutputId}): _activeNotes = activeNotes,_outputs = outputs;
+  const _MidiState({this.isConnected = false, final  Set<int> activeNotes = const {}, final  List<MidiOutputPort> outputs = const [], this.selectedOutputId}): _activeNotes = activeNotes,_outputs = outputs;
   
 
 @override@JsonKey() final  bool isConnected;
- final  Map<int, ActiveNote> _activeNotes;
-@override@JsonKey() Map<int, ActiveNote> get activeNotes {
-  if (_activeNotes is EqualUnmodifiableMapView) return _activeNotes;
+ final  Set<int> _activeNotes;
+@override@JsonKey() Set<int> get activeNotes {
+  if (_activeNotes is EqualUnmodifiableSetView) return _activeNotes;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableMapView(_activeNotes);
+  return EqualUnmodifiableSetView(_activeNotes);
 }
 
  final  List<MidiOutputPort> _outputs;
@@ -259,7 +259,7 @@ abstract mixin class _$MidiStateCopyWith<$Res> implements $MidiStateCopyWith<$Re
   factory _$MidiStateCopyWith(_MidiState value, $Res Function(_MidiState) _then) = __$MidiStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isConnected, Map<int, ActiveNote> activeNotes, List<MidiOutputPort> outputs, String? selectedOutputId
+ bool isConnected, Set<int> activeNotes, List<MidiOutputPort> outputs, String? selectedOutputId
 });
 
 
@@ -280,7 +280,7 @@ class __$MidiStateCopyWithImpl<$Res>
   return _then(_MidiState(
 isConnected: null == isConnected ? _self.isConnected : isConnected // ignore: cast_nullable_to_non_nullable
 as bool,activeNotes: null == activeNotes ? _self._activeNotes : activeNotes // ignore: cast_nullable_to_non_nullable
-as Map<int, ActiveNote>,outputs: null == outputs ? _self._outputs : outputs // ignore: cast_nullable_to_non_nullable
+as Set<int>,outputs: null == outputs ? _self._outputs : outputs // ignore: cast_nullable_to_non_nullable
 as List<MidiOutputPort>,selectedOutputId: freezed == selectedOutputId ? _self.selectedOutputId : selectedOutputId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

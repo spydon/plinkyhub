@@ -11,7 +11,6 @@ part of 'preset_write.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$PresetWrite {
 
@@ -214,11 +213,11 @@ return $default(_that.userId,_that.name,_that.category,_that.presetData,_that.de
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PresetWrite implements PresetWrite {
   const _PresetWrite({required this.userId, required this.name, required this.category, required this.presetData, this.description = '', this.isPublic = false, this.youtubeUrl = '', this.sampleId, this.contentHash});
-  factory _PresetWrite.fromJson(Map<String, dynamic> json) => _$PresetWriteFromJson(json);
+  
 
 @override final  String userId;
 @override final  String name;

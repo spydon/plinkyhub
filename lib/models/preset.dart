@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:plinkyhub/models/category.dart';
 import 'package:plinkyhub/models/parameter.dart';
 import 'package:plinkyhub/models/plinky_params.dart';
-import 'package:plinkyhub/utils/pitch.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 
 /// Represents a single Plinky synthesizer preset stored as
@@ -22,8 +21,6 @@ class Preset {
           name: definition?.name,
           description: definition?.description ?? '',
           minimum: definition?.min ?? 0,
-          maximum: definition?.max ?? 127,
-          controlChange: definition?.cc ?? -1,
           enumNames: definition?.enumName,
         ),
       );
@@ -112,44 +109,6 @@ class Preset {
     return null;
   }
 
-  /// The selected musical scale.
-  PlinkyScale get scale {
-    final scaleParameter = parameterById('P_SCALE');
-    if (scaleParameter == null) {
-      return PlinkyScale.chromatic;
-    }
-    final options = scaleParameter.getSelectOptions();
-    if (options == null) {
-      return PlinkyScale.chromatic;
-    }
-    final width = 1024 / options.length;
-    final index = (scaleParameter.value / width).floor().clamp(
-      0,
-      options.length - 1,
-    );
-    return PlinkyScale.values[index.clamp(0, PlinkyScale.values.length - 1)];
-  }
-
-  /// Stride in semitones between columns (default 7 = perfect fifth).
-  int get stride {
-    final strideParameter = parameterById('P_STRIDE');
-    if (strideParameter == null) {
-      return 7;
-    }
-    // Raw value 0-1024 maps to 0-127 semitones.
-    return (strideParameter.value / 1024 * 127).round().clamp(0, 127);
-  }
-
-  /// Octave offset (-4 to +4).
-  int get octaveOffset {
-    final octaveParameter = parameterById('P_OCT');
-    if (octaveParameter == null) {
-      return 0;
-    }
-    // Raw value -1024..1024 maps to -4..+4 octaves.
-    return (octaveParameter.value / 256).round().clamp(-4, 4);
-  }
-
   /// Sample slot index (0-7) used by this preset, or -1 if none.
   int get sampleSlot => rawToSampleSlot(parameterById('P_SAMPLE')?.value ?? 0);
 
@@ -158,16 +117,6 @@ class Preset {
 
   /// Whether this preset is effectively empty (all parameters at zero).
   bool get isEmpty => parameters.every((parameter) => parameter.value == 0);
-
-  /// Fine pitch offset in semitones (fractional, ±12).
-  double get pitchOffset {
-    final pitchParameter = parameterById('P_PITCH');
-    if (pitchParameter == null) {
-      return 0;
-    }
-    // Raw value -1024..1024 maps to ±12 semitones (1 octave).
-    return pitchParameter.value / 1024 * 12;
-  }
 
   void randomize(List<RandomizeGroup> groups) {
     final parameterIdsToRandomize = <String>{};

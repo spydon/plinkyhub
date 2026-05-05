@@ -11,7 +11,6 @@ part of 'wavetable_write.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$WavetableWrite {
 
@@ -212,11 +211,11 @@ return $default(_that.userId,_that.name,_that.filePath,_that.description,_that.i
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _WavetableWrite implements WavetableWrite {
   const _WavetableWrite({required this.userId, required this.name, required this.filePath, this.description = '', this.isPublic = false, this.youtubeUrl = '', this.contentHash});
-  factory _WavetableWrite.fromJson(Map<String, dynamic> json) => _$WavetableWriteFromJson(json);
+  
 
 @override final  String userId;
 @override final  String name;

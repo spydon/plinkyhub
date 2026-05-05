@@ -43,8 +43,6 @@ class Parameter {
     this.name,
     this.description = '',
     this.minimum = 0,
-    this.maximum = 127,
-    this.controlChange = -1,
     this.enumNames,
   }) : _array = array,
        modulations = ParameterModulations(array);
@@ -54,8 +52,6 @@ class Parameter {
   final String? name;
   final String description;
   final double minimum;
-  final double maximum;
-  final int controlChange;
   final List<String>? enumNames;
   final ParameterModulations modulations;
 

@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'pattern_write.freezed.dart';
 part 'pattern_write.g.dart';
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PatternWrite with _$PatternWrite {
   const factory PatternWrite({
     required String userId,
@@ -13,7 +13,4 @@ abstract class PatternWrite with _$PatternWrite {
     @Default(false) bool isPublic,
     String? contentHash,
   }) = _PatternWrite;
-
-  factory PatternWrite.fromJson(Map<String, dynamic> json) =>
-      _$PatternWriteFromJson(json);
 }

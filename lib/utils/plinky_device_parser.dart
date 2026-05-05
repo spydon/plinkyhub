@@ -4,32 +4,12 @@ import 'package:plinkyhub/utils/content_hash.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 
-/// Input data for [parsePlinkyDevice], containing the raw file bytes
-/// read from a Plinky in Tunnel of Lights mode.
-class PlinkyDeviceInput {
-  PlinkyDeviceInput({
-    required this.presetsUf2,
-    required this.sampleUf2s,
-    this.wavetableBytes,
-  });
-
-  /// Raw PRESETS.UF2 bytes.
-  final Uint8List presetsUf2;
-
-  /// Raw SAMPLE0-7.UF2 bytes (null entries for missing files).
-  final List<Uint8List?> sampleUf2s;
-
-  /// Raw WAVETAB.UF2 bytes (null if missing).
-  final Uint8List? wavetableBytes;
-}
-
-/// Parsed result from [parsePlinkyDevice], containing all device data
+/// Parsed result from a Plinky device, containing all device data
 /// and precomputed content hashes.
 class ParsedPlinkyDevice {
   ParsedPlinkyDevice({
     required this.presets,
     required this.sampleInfos,
-    required this.rawSampleInfos,
     required this.patternQuarters,
     required this.nonEmptyPatternIndices,
     required this.samplePcmData,
@@ -46,9 +26,6 @@ class ParsedPlinkyDevice {
 
   /// 8 parsed sample info entries (null for empty slots).
   final List<ParsedSampleInfo?> sampleInfos;
-
-  /// 8 raw sample info byte arrays (null for empty slots).
-  final List<Uint8List?> rawSampleInfos;
 
   /// 96 pattern quarter entries.
   final List<Uint8List?> patternQuarters;
@@ -244,33 +221,6 @@ ParsedWavetablePhase parseWavetablePhase(Uint8List? wavetableBytes) {
   return ParsedWavetablePhase(
     deviceHasWavetable: deviceHasWavetable,
     wavetableHash: wavetableHash,
-  );
-}
-
-/// Parses all data from a Plinky device in one shot.
-Future<ParsedPlinkyDevice> parsePlinkyDevice(PlinkyDeviceInput input) async {
-  final presetsResult = parsePresetsPhase(input.presetsUf2);
-  final samplesResult = await parseSamplesPhase(
-    SamplesPhaseInput(
-      sampleUf2s: input.sampleUf2s,
-      sampleInfos: presetsResult.sampleInfos,
-    ),
-  );
-  final wavetableResult = parseWavetablePhase(input.wavetableBytes);
-
-  return ParsedPlinkyDevice(
-    presets: presetsResult.presets,
-    sampleInfos: presetsResult.sampleInfos,
-    rawSampleInfos: presetsResult.rawSampleInfos,
-    patternQuarters: presetsResult.patternQuarters,
-    nonEmptyPatternIndices: presetsResult.nonEmptyPatternIndices,
-    samplePcmData: samplesResult.samplePcmData,
-    emptySampleSlots: samplesResult.emptySampleSlots,
-    presetHashes: presetsResult.presetHashes,
-    sampleHashes: samplesResult.sampleHashes,
-    wavetableHash: wavetableResult.wavetableHash,
-    patternHashes: presetsResult.patternHashes,
-    deviceHasWavetable: wavetableResult.deviceHasWavetable,
   );
 }
 
