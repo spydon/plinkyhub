@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
+import 'package:plinkyhub/pages/packs/sample_picker_dialog.dart';
 import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
 import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
@@ -11,12 +12,25 @@ import 'package:plinkyhub/widgets/linked_item_icon.dart';
 class SamplesSection extends ConsumerWidget {
   const SamplesSection({
     required this.slots,
+    this.manualSampleSlots,
+    this.onSampleSlotChanged,
     this.deviceSampleSlots = const {},
     this.devicePresets = const {},
     super.key,
   });
 
   final List<({String? presetId, String? sampleId, String? patternId})> slots;
+
+  /// Explicit per-device-slot sample assignments. When set for a device slot,
+  /// it overrides the sample that would be auto-derived from preset-linked
+  /// samples for that slot.
+  final List<String?>? manualSampleSlots;
+
+  /// When provided, each device sample slot becomes editable: tapping the
+  /// tile opens a sample picker. The callback receives the device slot index
+  /// (0..sampleCount-1) and the new sample id (or null to clear).
+  final void Function(int slotIndex, String? sampleId)? onSampleSlotChanged;
+
   final Set<int> deviceSampleSlots;
   final Map<int, Preset> devicePresets;
 
@@ -65,18 +79,49 @@ class SamplesSection extends ConsumerWidget {
       }
     }
 
-    // Also pick up any linked samples not mapped through device
-    // presets (for Create Pack where there are no device presets).
+    // For Create Pack (no device presets), auto-fill device slots from
+    // preset-linked samples in order, skipping slots already claimed by
+    // a manual assignment.
+    final manual = manualSampleSlots;
+    final manuallyClaimedSampleIds = <String>{
+      if (manual != null)
+        for (final id in manual)
+          if (id != null) id,
+    };
     if (devicePresets.isEmpty) {
-      final uniqueSampleIds = <String>[];
+      final autoFillIds = <String>[];
       for (var i = 0; i < slots.length; i++) {
         final sampleId = slots[i].sampleId;
-        if (sampleId != null && !uniqueSampleIds.contains(sampleId)) {
-          uniqueSampleIds.add(sampleId);
+        if (sampleId == null) {
+          continue;
+        }
+        if (manuallyClaimedSampleIds.contains(sampleId)) {
+          continue;
+        }
+        if (!autoFillIds.contains(sampleId)) {
+          autoFillIds.add(sampleId);
         }
       }
-      for (var i = 0; i < uniqueSampleIds.length && i < sampleCount; i++) {
-        deviceSlotToSampleId[i] = uniqueSampleIds[i];
+      var autoIndex = 0;
+      for (var slot = 0; slot < sampleCount; slot++) {
+        if (manual != null && slot < manual.length && manual[slot] != null) {
+          continue;
+        }
+        if (autoIndex >= autoFillIds.length) {
+          break;
+        }
+        deviceSlotToSampleId[slot] = autoFillIds[autoIndex];
+        autoIndex++;
+      }
+    }
+
+    // Apply manual overrides last so they win over any auto-derived value.
+    if (manual != null) {
+      for (var slot = 0; slot < manual.length && slot < sampleCount; slot++) {
+        final id = manual[slot];
+        if (id != null) {
+          deviceSlotToSampleId[slot] = id;
+        }
       }
     }
 
@@ -89,7 +134,10 @@ class SamplesSection extends ConsumerWidget {
       }
     }
 
-    final uniqueSampleCount = sampleToPresetSlots.length;
+    final uniqueSampleCount = {
+      ...sampleToPresetSlots.keys,
+      ...manuallyClaimedSampleIds,
+    }.length;
     final hasOverflow = uniqueSampleCount > sampleCount;
 
     return Column(
@@ -136,8 +184,23 @@ class SamplesSection extends ConsumerWidget {
                 ? deviceSlotToPresetSlots[deviceSlot]
                 : null;
 
-            return Expanded(
-              child: Card(
+            final isManual =
+                manual != null &&
+                deviceSlot < manual.length &&
+                manual[deviceSlot] != null;
+
+            final tile = Card(
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: onSampleSlotChanged != null
+                    ? () => _showSlotMenu(
+                        context,
+                        ref,
+                        deviceSlot,
+                        savedSamples,
+                        isManual: isManual,
+                      )
+                    : null,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 4,
@@ -187,12 +250,80 @@ class SamplesSection extends ConsumerWidget {
                 ),
               ),
             );
+
+            return Expanded(child: tile);
           }),
         ),
       ],
     );
   }
+
+  Future<void> _showSlotMenu(
+    BuildContext context,
+    WidgetRef ref,
+    int deviceSlot,
+    List<SavedSample> samples, {
+    required bool isManual,
+  }) async {
+    final callback = onSampleSlotChanged;
+    if (callback == null) {
+      return;
+    }
+    // If the slot is empty or auto-derived, jump straight to picker.
+    // If a manual sample is set, offer Pick / Clear.
+    if (!isManual) {
+      await _pickSample(context, ref, deviceSlot, samples, callback);
+      return;
+    }
+
+    final action = await showDialog<_SlotAction>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: const Text('Sample slot'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(dialogContext).pop(_SlotAction.pick),
+            child: const Text('Pick sample'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(dialogContext).pop(_SlotAction.clear),
+            child: const Text('Clear slot'),
+          ),
+        ],
+      ),
+    );
+    if (action == _SlotAction.pick) {
+      if (!context.mounted) {
+        return;
+      }
+      await _pickSample(context, ref, deviceSlot, samples, callback);
+    } else if (action == _SlotAction.clear) {
+      callback(deviceSlot, null);
+    }
+  }
+
+  Future<void> _pickSample(
+    BuildContext context,
+    WidgetRef ref,
+    int deviceSlot,
+    List<SavedSample> samples,
+    void Function(int, String?) callback,
+  ) async {
+    final currentUserId = ref.read(authenticationProvider).user?.id;
+    final selected = await showDialog<SavedSample>(
+      context: context,
+      builder: (context) => SamplePickerDialog(
+        samples: samples,
+        currentUserId: currentUserId,
+      ),
+    );
+    if (selected != null) {
+      callback(deviceSlot, selected.id);
+    }
+  }
 }
+
+enum _SlotAction { pick, clear }
 
 class _SampleLinkIcon extends StatelessWidget {
   const _SampleLinkIcon({

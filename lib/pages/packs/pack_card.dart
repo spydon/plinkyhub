@@ -279,6 +279,18 @@ class _PackContentsSection extends ConsumerWidget {
           .map((s) => MapEntry(s.slotNumber - patternSlotStart, s.patternId)),
     );
 
+    // Pack sample-slot assignments (56-63), so samples not yet referenced
+    // by any preset still show up in the samples row.
+    final packSampleSlots = List<String?>.filled(sampleCount, null);
+    for (final slot in pack.slots) {
+      if (slot.slotNumber >= sampleSlotStart && slot.sampleId != null) {
+        final sampleSlotIndex = slot.slotNumber - sampleSlotStart;
+        if (sampleSlotIndex >= 0 && sampleSlotIndex < packSampleSlots.length) {
+          packSampleSlots[sampleSlotIndex] = slot.sampleId;
+        }
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -289,7 +301,10 @@ class _PackContentsSection extends ConsumerWidget {
           readOnly: true,
         ),
         const SizedBox(height: 16),
-        SamplesSection(slots: presetSlots),
+        SamplesSection(
+          slots: presetSlots,
+          manualSampleSlots: packSampleSlots,
+        ),
         const SizedBox(height: 16),
         PatternSection(
           patternIds: patternIds,
