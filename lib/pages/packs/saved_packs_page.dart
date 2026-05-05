@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plinkyhub/pages/packs/bulk_uploader_tab.dart';
 import 'package:plinkyhub/pages/packs/create_pack_tab.dart';
 import 'package:plinkyhub/pages/packs/load_pack_tab.dart';
 import 'package:plinkyhub/pages/packs/pack_card.dart';
@@ -15,6 +16,7 @@ enum PackTab {
   my,
   community,
   create,
+  bulk,
   load,
 }
 
@@ -101,6 +103,7 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
             Tab(text: 'My Packs'),
             Tab(text: 'Community Packs'),
             Tab(text: 'Create Pack'),
+            Tab(text: 'Bulk Uploader'),
             Tab(text: 'Load from Plinky'),
           ],
         ),
@@ -159,6 +162,7 @@ class _SavedPacksPageState extends ConsumerState<SavedPacksPage>
                 const SignInPrompt(
                   message: 'Sign in to create packs',
                 ),
+              const BulkUploaderTab(),
               if (isSignedIn)
                 LoadPackTab(
                   onLoaded: () => _tabController.animateTo(0),
