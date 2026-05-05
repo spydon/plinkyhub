@@ -6,7 +6,6 @@ import 'package:plinkyhub/pages/packs/preset_slots_grid.dart';
 import 'package:plinkyhub/pages/packs/samples_section.dart';
 import 'package:plinkyhub/pages/packs/save_to_plinky_dialog.dart';
 import 'package:plinkyhub/pages/packs/wavetable_section.dart';
-import 'package:plinkyhub/utils/constants.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
@@ -23,7 +22,8 @@ class _BulkUploaderTabState extends State<BulkUploaderTab> {
         32,
         (_) => (presetId: null, sampleId: null, patternId: null),
       );
-  String _wavetableId = defaultWavetableId;
+  String? _wavetableId;
+  bool _clearEmpty = false;
   final Map<int, String?> _patternIds = {};
   final List<String?> _sampleSlots = List<String?>.filled(sampleCount, null);
 
@@ -40,6 +40,9 @@ class _BulkUploaderTabState extends State<BulkUploaderTab> {
       return true;
     }
     if (_sampleSlots.any((id) => id != null)) {
+      return true;
+    }
+    if (_wavetableId != null) {
       return true;
     }
     return false;
@@ -104,8 +107,19 @@ class _BulkUploaderTabState extends State<BulkUploaderTab> {
           WavetableSection(
             wavetableId: _wavetableId,
             onChanged: (wavetableId) => setState(
-              () => _wavetableId = wavetableId ?? defaultWavetableId,
+              () => _wavetableId = wavetableId,
             ),
+          ),
+          const SizedBox(height: 16),
+          SwitchListTile(
+            title: const Text('Clear Empty'),
+            subtitle: const Text(
+              'When on, slots without a selection are cleared on the Plinky. '
+              'When off, only selected items are uploaded and the rest are '
+              'kept as they are.',
+            ),
+            value: _clearEmpty,
+            onChanged: (value) => setState(() => _clearEmpty = value),
           ),
           const SizedBox(height: 16),
           Center(
@@ -142,7 +156,10 @@ class _BulkUploaderTabState extends State<BulkUploaderTab> {
 
     await showDialog<void>(
       context: context,
-      builder: (context) => SaveToPlinkyDialog(pack: pack),
+      builder: (context) => SaveToPlinkyDialog(
+        pack: pack,
+        clearEmpty: _clearEmpty,
+      ),
     );
   }
 

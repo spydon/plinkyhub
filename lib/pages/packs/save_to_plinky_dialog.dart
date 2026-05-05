@@ -14,9 +14,18 @@ import 'package:plinkyhub/widgets/plinky_transfer_dialog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SaveToPlinkyDialog extends ConsumerWidget {
-  const SaveToPlinkyDialog({required this.pack, super.key});
+  const SaveToPlinkyDialog({
+    required this.pack,
+    this.clearEmpty = true,
+    super.key,
+  });
 
   final SavedPack pack;
+
+  /// When true (default), unselected slots are cleared on the device. When
+  /// false, only the explicitly selected slots are written and the rest are
+  /// preserved.
+  final bool clearEmpty;
 
   bool get _hasPatterns => pack.slots.any((slot) => slot.patternId != null);
 
@@ -34,12 +43,14 @@ class SaveToPlinkyDialog extends ConsumerWidget {
           pack: pack,
           ref: ref,
           controller: controller,
+          clearEmpty: clearEmpty,
         ),
         onTunnelOfLightsSave: (directory, ref, controller) =>
             _generateAndWriteFiles(
               pack: pack,
               directory: directory,
               controller: controller,
+              clearEmpty: clearEmpty,
             ),
       ),
     );
@@ -50,6 +61,7 @@ Future<void> _sendPackOverWebUsb({
   required SavedPack pack,
   required WidgetRef ref,
   required PlinkyTransferController controller,
+  required bool clearEmpty,
 }) async {
   final supabase = Supabase.instance.client;
   final notifier = ref.read(plinkyProvider.notifier);
@@ -104,9 +116,33 @@ Future<void> _sendPackOverWebUsb({
       sampleSlotMapping[slot.sampleId!] = slot.slotNumber - sampleSlotStart;
     }
   }
+  final filledSampleSlots = sampleSlotMapping.values.toSet();
+  final emptySampleSlots = clearEmpty
+      ? [
+          for (var i = 0; i < sampleCount; i++) i,
+        ].where((slot) => !filledSampleSlots.contains(slot)).toList()
+      : const <int>[];
+
+  // Build the set of preset slot indices that have a selection.
+  final filledPresetSlots = <int, String>{};
+  for (final slot in slots) {
+    if (slot.slotNumber >= presetSlotStart &&
+        slot.slotNumber < patternSlotStart &&
+        slot.presetId != null) {
+      filledPresetSlots[slot.slotNumber - presetSlotStart] = slot.presetId!;
+    }
+  }
+  final emptyPresetIndices = clearEmpty
+      ? [
+          for (var i = 0; i < presetCount; i++) i,
+        ].where((index) => !filledPresetSlots.containsKey(index)).toList()
+      : const <int>[];
 
   // Count total work items for progress.
-  final totalSteps = sampleSlotMapping.length + presetIds.length + 1;
+  final totalSamples = sampleSlotMapping.length + emptySampleSlots.length;
+  final totalPresets = filledPresetSlots.length + emptyPresetIndices.length;
+  final wavetableSteps = pack.wavetableId != null ? 1 : 0;
+  final totalSteps = totalSamples + totalPresets + wavetableSteps;
   var completedSteps = 0;
 
   // Upload samples via WebUSB (cmd=3 for PCM, cmd=1 for SampleInfo).
@@ -120,7 +156,7 @@ Future<void> _sendPackOverWebUsb({
     sampleNumber++;
     final slotIndex = entry.value;
     controller.updateStatus(
-      'Downloading sample $sampleNumber/${sampleSlotMapping.length}...',
+      'Downloading sample $sampleNumber/$totalSamples...',
     );
 
     final pcmBytes = await supabase.storage
@@ -147,7 +183,7 @@ Future<void> _sendPackOverWebUsb({
     );
 
     controller.updateStatus(
-      'Sending sample $sampleNumber/${sampleSlotMapping.length}...',
+      'Sending sample $sampleNumber/$totalSamples...',
     );
 
     await notifier.sendSample(
@@ -164,7 +200,28 @@ Future<void> _sendPackOverWebUsb({
     completedSteps++;
   }
 
-  // Upload wavetable via WebUSB (cmd=5).
+  // Clear unselected sample slots when requested.
+  for (final slotIndex in emptySampleSlots) {
+    sampleNumber++;
+    controller.updateStatus(
+      'Clearing sample $sampleNumber/$totalSamples...',
+    );
+    await notifier.sendSample(
+      slotIndex: slotIndex,
+      pcmData: Uint8List(0),
+      sampleInfo: Uint8List(sampleInfoSize),
+      onProgress: (value) {
+        if (controller.isMounted) {
+          controller.updateProgress((completedSteps + value) / totalSteps);
+        }
+      },
+    );
+    completedSteps++;
+  }
+
+  // Upload wavetable via WebUSB (cmd=5). Wavetable is global state, not a
+  // numbered slot, so the clearEmpty toggle doesn't apply to it: we only
+  // overwrite when one is explicitly selected.
   if (pack.wavetableId != null) {
     controller.updateStatus('Sending wavetable...');
 
@@ -179,18 +236,15 @@ Future<void> _sendPackOverWebUsb({
     final wavetableData = uf2ToData(uf2Bytes);
 
     await notifier.sendWavetable(wavetableData: wavetableData);
+    completedSteps++;
   }
 
   // Upload presets via WebUSB (cmd=1 for each preset slot).
-  for (final slot in slots) {
-    if (slot.slotNumber < presetSlotStart ||
-        slot.slotNumber >= patternSlotStart) {
-      continue;
-    }
-    if (slot.presetId == null) {
-      continue;
-    }
-    final originalBytes = presetDataMap[slot.presetId];
+  var presetCounter = 0;
+  for (final entry in filledPresetSlots.entries) {
+    final presetIndex = entry.key;
+    final presetId = entry.value;
+    final originalBytes = presetDataMap[presetId];
     if (originalBytes == null) {
       continue;
     }
@@ -203,22 +257,39 @@ Future<void> _sendPackOverWebUsb({
       final presetRaw = preset.parameterById('P_SAMPLE')?.value;
       if (presetRaw != null && presetRaw != 0) {
         final originalSlot = rawToSampleSlot(presetRaw);
-        for (final entry in sampleSlotMapping.entries) {
-          if (entry.value == originalSlot) {
-            setPresetSampleSlot(presetBytes, entry.value);
+        for (final mappingEntry in sampleSlotMapping.entries) {
+          if (mappingEntry.value == originalSlot) {
+            setPresetSampleSlot(presetBytes, mappingEntry.value);
             break;
           }
         }
       }
     }
 
-    final presetIndex = slot.slotNumber - presetSlotStart;
-    controller.updateStatus('Sending preset ${presetIndex + 1}...');
+    presetCounter++;
+    controller.updateStatus(
+      'Sending preset $presetCounter/$totalPresets '
+      '(slot ${presetIndex + 1})...',
+    );
 
     notifier.presetNumber = presetIndex;
     notifier.loadPresetFromBytes(presetBytes);
     await notifier.savePreset();
 
+    completedSteps++;
+    controller.updateProgress(completedSteps / totalSteps);
+  }
+
+  // Clear unselected preset slots when requested.
+  for (final presetIndex in emptyPresetIndices) {
+    presetCounter++;
+    controller.updateStatus(
+      'Clearing preset $presetCounter/$totalPresets '
+      '(slot ${presetIndex + 1})...',
+    );
+    notifier.presetNumber = presetIndex;
+    notifier.loadPresetFromBytes(Uint8List(presetSize));
+    await notifier.savePreset();
     completedSteps++;
     controller.updateProgress(completedSteps / totalSteps);
   }
@@ -228,6 +299,7 @@ Future<void> _generateAndWriteFiles({
   required SavedPack pack,
   required FileSystemDirectoryHandle directory,
   required PlinkyTransferController controller,
+  required bool clearEmpty,
 }) async {
   final supabase = Supabase.instance.client;
   final slots = pack.slots;
@@ -267,14 +339,18 @@ Future<void> _generateAndWriteFiles({
       )
       .toList();
   final hasWavetable = pack.wavetableId != null;
+  final sampleFilesToWrite = clearEmpty
+      ? sampleCount
+      : sampleSlotMapping.length;
+  final wavetableFilesToWrite = hasWavetable ? 1 : 0;
 
   final totalSteps =
       2 +
       sampleSlotMapping.length +
       (patternSlots.isNotEmpty ? 1 : 0) +
       1 +
-      sampleCount +
-      (hasWavetable ? 1 : 0);
+      sampleFilesToWrite +
+      wavetableFilesToWrite;
   var completedSteps = 0;
 
   void reportProgress(String message) {
@@ -424,20 +500,32 @@ Future<void> _generateAndWriteFiles({
     completedSteps++;
   }
 
-  // Generate PRESETS.UF2.
+  // Generate PRESETS.UF2. With clearEmpty=false and nothing in the preset
+  // region selected (e.g. wavetable-only upload), the UF2 has zero blocks
+  // and we skip writing it so the bootloader doesn't see an empty file.
   reportProgress('Generating PRESETS.UF2...');
   final presetsUf2 = generatePresetsUf2(
     presets: presets,
     sampleInfos: sampleInfos,
     patternQuarters: patternQuarters,
+    clearEmpty: clearEmpty,
   );
 
-  reportProgress('Writing PRESETS.UF2...');
-  await writeFileToDirectory(directory, 'PRESETS.UF2', presetsUf2);
+  if (presetsUf2.isNotEmpty) {
+    reportProgress('Writing PRESETS.UF2...');
+    await writeFileToDirectory(directory, 'PRESETS.UF2', presetsUf2);
+  }
   completedSteps++;
 
-  // Generate and write SAMPLE*.UF2 files for all 8 slots.
+  // Generate and write SAMPLE*.UF2 files. When clearEmpty is true, write all
+  // 8 (with empty PCM for unfilled slots so they are erased on the device).
+  // Otherwise, only write files for slots that have data so unselected slots
+  // are preserved on the device.
   for (var slotIndex = 0; slotIndex < sampleCount; slotIndex++) {
+    final hasSample = samplePcmData.containsKey(slotIndex);
+    if (!hasSample && !clearEmpty) {
+      continue;
+    }
     reportProgress('Writing SAMPLE$slotIndex.UF2...');
 
     final pcmBytes = samplePcmData[slotIndex] ?? Uint8List(0);
@@ -450,7 +538,8 @@ Future<void> _generateAndWriteFiles({
     completedSteps++;
   }
 
-  // Write WAVETAB.UF2 if the pack has one.
+  // Write WAVETAB.UF2 if the pack has one. Wavetable is global state, not a
+  // numbered slot, so the clearEmpty toggle doesn't apply to it.
   if (hasWavetable) {
     reportProgress('Writing WAVETAB.UF2...');
 

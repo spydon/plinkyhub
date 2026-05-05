@@ -575,10 +575,16 @@ class ParsedFlashImage {
 ///
 /// [patternQuarters] is an optional list of up to 96 entries (24 patterns ×
 /// 4 quarters). Each entry is either a 1792-byte `Uint8List` or null.
+///
+/// When [clearEmpty] is true (default), every flash page is emitted in the
+/// resulting UF2 (with 0xFF for slots without data), so flashing the file
+/// erases unfilled slots on the device. When false, only pages backed by
+/// real data are emitted, leaving unselected slots untouched on the device.
 Uint8List generatePresetsUf2({
   required List<Uint8List?> presets,
   required List<Uint8List?> sampleInfos,
   List<Uint8List?>? patternQuarters,
+  bool clearEmpty = true,
 }) {
   assert(presets.length == presetCount);
   assert(sampleInfos.length <= sampleCount);
@@ -591,13 +597,22 @@ Uint8List generatePresetsUf2({
   final flashImage = Uint8List(flashPageCount * flashPageSize);
   flashImage.fillRange(0, flashImage.length, 0xFF);
 
+  // Track which pages are backed by real data so we can emit only those when
+  // clearEmpty is false.
+  final writtenPages = <int>{};
+
   var seq = 1;
   var pageIndex = 0;
 
   // Presets (item IDs 0-31).
   for (var i = 0; i < presetCount; i++) {
-    final presetData = presets[i] ?? Uint8List(presetSize);
-    _writePage(flashImage, pageIndex++, presetData, i, seq++);
+    if (presets[i] != null) {
+      _writePage(flashImage, pageIndex, presets[i]!, i, seq++);
+      writtenPages.add(pageIndex);
+    } else if (clearEmpty) {
+      _writePage(flashImage, pageIndex, Uint8List(presetSize), i, seq++);
+    }
+    pageIndex++;
   }
 
   // Pattern quarters (item IDs 32-127).
@@ -611,6 +626,7 @@ Uint8List generatePresetsUf2({
           _patternQuarterItemIdStart + i,
           seq++,
         );
+        writtenPages.add(pageIndex);
       }
       pageIndex++;
     }
@@ -628,19 +644,31 @@ Uint8List generatePresetsUf2({
         _sampleInfoItemIdStart + i,
         seq++,
       );
+      writtenPages.add(pageIndex);
     }
     pageIndex++;
   }
 
   // Floating preset (item ID 136, copy of preset 0).
-  final floatingPreset = presets[0] ?? Uint8List(presetSize);
-  _writePage(
-    flashImage,
-    pageIndex++,
-    floatingPreset,
-    _floatingPresetItemId,
-    seq++,
-  );
+  if (presets[0] != null) {
+    _writePage(
+      flashImage,
+      pageIndex,
+      presets[0]!,
+      _floatingPresetItemId,
+      seq++,
+    );
+    writtenPages.add(pageIndex);
+  } else if (clearEmpty) {
+    _writePage(
+      flashImage,
+      pageIndex,
+      Uint8List(presetSize),
+      _floatingPresetItemId,
+      seq++,
+    );
+  }
+  pageIndex++;
 
   // Floating pattern quarters (item IDs 137-140, copy of pattern 0).
   if (patternQuarters != null) {
@@ -656,13 +684,22 @@ Uint8List generatePresetsUf2({
           _floatingPatternItemIdStart + q,
           seq++,
         );
+        writtenPages.add(pageIndex);
       }
       pageIndex++;
     }
   }
 
   // Convert the flash image to UF2 format.
-  return dataToUf2(flashImage, presetsBaseAddress);
+  if (clearEmpty) {
+    return dataToUf2(flashImage, presetsBaseAddress);
+  }
+  return flashImageToUf2(
+    flashImage,
+    presetsBaseAddress,
+    includedPages: writtenPages,
+    pageSize: flashPageSize,
+  );
 }
 
 /// Serializes a list of pattern quarters into a flat binary blob.

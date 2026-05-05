@@ -71,6 +71,51 @@ Uint8List dataToUf2(Uint8List data, int baseAddress) {
   return output.buffer.asUint8List();
 }
 
+/// Like [dataToUf2] but only emits UF2 blocks for the specified
+/// [includedPages] of [flashImage] (each page is [pageSize] bytes). Pages
+/// not in [includedPages] are skipped, so flashing the resulting file leaves
+/// the corresponding flash regions on the device untouched.
+Uint8List flashImageToUf2(
+  Uint8List flashImage,
+  int baseAddress, {
+  required Set<int> includedPages,
+  required int pageSize,
+}) {
+  assert(pageSize % dataPerBlock == 0, 'pageSize must be a multiple of block');
+  final blocksPerPage = pageSize ~/ dataPerBlock;
+  final sortedPages = includedPages.toList()..sort();
+  final totalBlocks = sortedPages.length * blocksPerPage;
+  final output = ByteData(totalBlocks * uf2BlockSize);
+
+  var globalBlockNum = 0;
+  for (final pageIndex in sortedPages) {
+    for (var blockInPage = 0; blockInPage < blocksPerPage; blockInPage++) {
+      final offset = globalBlockNum * uf2BlockSize;
+      final dataOffset = pageIndex * pageSize + blockInPage * dataPerBlock;
+      final targetAddress = baseAddress + dataOffset;
+
+      output.setUint32(offset + 0, magic1, Endian.little);
+      output.setUint32(offset + 4, magic2, Endian.little);
+      output.setUint32(offset + 8, 0x00000000, Endian.little);
+      output.setUint32(offset + 12, targetAddress, Endian.little);
+      output.setUint32(offset + 16, dataPerBlock, Endian.little);
+      output.setUint32(offset + 20, globalBlockNum, Endian.little);
+      output.setUint32(offset + 24, totalBlocks, Endian.little);
+      output.setUint32(offset + 28, 0, Endian.little);
+
+      for (var i = 0; i < dataPerBlock; i++) {
+        output.setUint8(offset + 32 + i, flashImage[dataOffset + i]);
+      }
+
+      output.setUint32(offset + uf2BlockSize - 4, magicEnd, Endian.little);
+
+      globalBlockNum++;
+    }
+  }
+
+  return output.buffer.asUint8List();
+}
+
 /// Converts raw sample [data] into a UF2 file targeting the given [slotIndex]
 /// (0-7) in Plinky's sample memory.
 Uint8List sampleToUf2(Uint8List data, {int slotIndex = 0}) {
