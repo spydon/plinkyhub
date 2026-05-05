@@ -33,6 +33,7 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
   String? _editingPackId;
   String _wavetableId = defaultWavetableId;
   final Map<int, String?> _patternIds = {};
+  final List<String?> _sampleSlots = List<String?>.filled(sampleCount, null);
 
   @override
   void dispose() {
@@ -52,6 +53,9 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
     _patternIds.clear();
     for (var i = 0; i < 32; i++) {
       _slots[i] = (presetId: null, sampleId: null, patternId: null);
+    }
+    for (var i = 0; i < _sampleSlots.length; i++) {
+      _sampleSlots[i] = null;
     }
 
     // Build a set of sample IDs from the sample slots (56-63).
@@ -89,6 +93,13 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
         // Pattern slot: convert to pattern index.
         final patternIndex = slot.slotNumber - patternSlotStart;
         _patternIds[patternIndex] = slot.patternId;
+      } else if (slot.slotNumber >= sampleSlotStart && slot.sampleId != null) {
+        // Sample slot (56-63): keep its assignment so samples not yet
+        // referenced by a preset still appear after reload.
+        final sampleSlotIndex = slot.slotNumber - sampleSlotStart;
+        if (sampleSlotIndex >= 0 && sampleSlotIndex < _sampleSlots.length) {
+          _sampleSlots[sampleSlotIndex] = slot.sampleId;
+        }
       }
     }
   }
@@ -103,6 +114,9 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
     _patternIds.clear();
     for (var i = 0; i < 32; i++) {
       _slots[i] = (presetId: null, sampleId: null, patternId: null);
+    }
+    for (var i = 0; i < _sampleSlots.length; i++) {
+      _sampleSlots[i] = null;
     }
   }
 
@@ -206,7 +220,15 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
             },
           ),
           const SizedBox(height: 16),
-          SamplesSection(slots: _slots),
+          SamplesSection(
+            slots: _slots,
+            manualSampleSlots: _sampleSlots,
+            onSampleSlotChanged: (deviceSlot, sampleId) {
+              setState(() {
+                _sampleSlots[deviceSlot] = sampleId;
+              });
+            },
+          ),
           const SizedBox(height: 16),
           PatternSection(
             patternIds: _patternIds,
@@ -238,11 +260,10 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
   }
 
   Future<void> _savePack() async {
-    final uniqueSampleCount = _slots
-        .map((slot) => slot.sampleId)
-        .whereType<String>()
-        .toSet()
-        .length;
+    final uniqueSampleCount = {
+      ..._slots.map((slot) => slot.sampleId).whereType<String>(),
+      ..._sampleSlots.whereType<String>(),
+    }.length;
     if (uniqueSampleCount > sampleCount) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -289,19 +310,43 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
       }
     }
 
-    // Sample slots (56-63) from unique samples in presets.
+    // Sample slots (56-63): start with manually assigned slots so they keep
+    // their position, then auto-fill remaining slots with unique samples
+    // referenced by presets.
+    final assignedSampleSlots = List<String?>.filled(sampleCount, null);
     final seenSampleIds = <String>{};
-    var sampleIndex = 0;
+    for (var i = 0; i < sampleCount && i < _sampleSlots.length; i++) {
+      final manualSampleId = _sampleSlots[i];
+      if (manualSampleId != null) {
+        assignedSampleSlots[i] = manualSampleId;
+        seenSampleIds.add(manualSampleId);
+      }
+    }
+    var nextAutoSlot = 0;
     for (var i = 0; i < 32; i++) {
       final sampleId = _slots[i].sampleId;
-      if (sampleId != null && seenSampleIds.add(sampleId)) {
+      if (sampleId == null || !seenSampleIds.add(sampleId)) {
+        continue;
+      }
+      while (nextAutoSlot < sampleCount &&
+          assignedSampleSlots[nextAutoSlot] != null) {
+        nextAutoSlot++;
+      }
+      if (nextAutoSlot >= sampleCount) {
+        break;
+      }
+      assignedSampleSlots[nextAutoSlot] = sampleId;
+      nextAutoSlot++;
+    }
+    for (var i = 0; i < sampleCount; i++) {
+      final sampleId = assignedSampleSlots[i];
+      if (sampleId != null) {
         slots.add((
-          slotNumber: sampleSlotStart + sampleIndex,
+          slotNumber: sampleSlotStart + i,
           presetId: null,
           sampleId: sampleId,
           patternId: null,
         ));
-        sampleIndex++;
       }
     }
 
