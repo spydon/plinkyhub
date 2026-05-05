@@ -93,7 +93,6 @@ class _PackCardState extends ConsumerState<PackCard> {
               ],
               const SizedBox(height: 4),
               UsernameDateLine(
-                userId: pack.userId,
                 username: pack.username,
                 updatedAt: pack.updatedAt,
               ),

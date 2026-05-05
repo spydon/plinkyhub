@@ -102,16 +102,6 @@ class WebMidiService {
         .toList();
   }
 
-  static bool get isSupported {
-    try {
-      // Accessing _navigator will throw if not available.
-      _navigator;
-      return true;
-    } on Object {
-      return false;
-    }
-  }
-
   Future<void> connect() async {
     try {
       final options = MIDIOptions(sysex: false, software: true);
@@ -204,17 +194,5 @@ class WebMidiService {
     } on Object catch (error) {
       debugPrint('Failed to send MIDI: $error');
     }
-  }
-
-  void disconnect() {
-    for (final input in _inputs.values) {
-      input.onmidimessage = null;
-    }
-    _inputs.clear();
-    _outputs.clear();
-    if (_access != null) {
-      _access!.onstatechange = null;
-    }
-    _connected = false;
   }
 }

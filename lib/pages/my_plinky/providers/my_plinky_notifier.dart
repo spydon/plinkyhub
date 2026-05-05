@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/matched_entry.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/pages/my_plinky/models/my_plinky_state.dart';
@@ -204,10 +205,10 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
       // Match content hashes against saved entries.
       updateProgress('Matching saved content...');
 
-      final matchedPresets = <int, _MatchedEntry>{};
-      final matchedSamples = <int, _MatchedEntry>{};
-      _MatchedEntry? matchedWavetable;
-      final matchedPatterns = <int, _MatchedEntry>{};
+      final matchedPresets = <int, MatchedEntry>{};
+      final matchedSamples = <int, MatchedEntry>{};
+      MatchedEntry? matchedWavetable;
+      final matchedPatterns = <int, MatchedEntry>{};
 
       await Future.wait([
         _findMatches('presets', presetsResult.presetHashes, matchedPresets),
@@ -334,7 +335,7 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
   Future<void> _findMatches(
     String table,
     Map<int, String> hashes,
-    Map<int, _MatchedEntry> matches,
+    Map<int, MatchedEntry> matches,
   ) async {
     if (hashes.isEmpty) {
       return;
@@ -346,14 +347,11 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
         .select('id, name, content_hash')
         .inFilter('content_hash', uniqueHashes);
 
-    final hashToEntry = <String, _MatchedEntry>{};
-    for (final row in results) {
-      final hash = row['content_hash'] as String?;
+    final hashToEntry = <String, MatchedEntry>{};
+    for (final map in results) {
+      final hash = map['content_hash'] as String?;
       if (hash != null) {
-        hashToEntry[hash] = _MatchedEntry(
-          id: row['id'] as String,
-          name: row['name'] as String,
-        );
+        hashToEntry[hash] = MatchedEntry.fromJson(map);
       }
     }
 
@@ -365,7 +363,7 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
     }
   }
 
-  Future<_MatchedEntry?> _findWavetableMatch(String hash) async {
+  Future<MatchedEntry?> _findWavetableMatch(String hash) async {
     final results = await _supabase
         .from('wavetables')
         .select('id, name, content_hash')
@@ -373,18 +371,8 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
         .limit(1);
 
     if (results.isNotEmpty) {
-      return _MatchedEntry(
-        id: results.first['id'] as String,
-        name: results.first['name'] as String,
-      );
+      return MatchedEntry.fromJson(results.first);
     }
     return null;
   }
-}
-
-class _MatchedEntry {
-  const _MatchedEntry({required this.id, required this.name});
-
-  final String id;
-  final String name;
 }

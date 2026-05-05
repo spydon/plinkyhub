@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'pack_write.freezed.dart';
 part 'pack_write.g.dart';
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PackWrite with _$PackWrite {
   const factory PackWrite({
     required String userId,
@@ -14,7 +14,4 @@ abstract class PackWrite with _$PackWrite {
     @Default('') String youtubeUrl,
     String? contentHash,
   }) = _PackWrite;
-
-  factory PackWrite.fromJson(Map<String, dynamic> json) =>
-      _$PackWriteFromJson(json);
 }

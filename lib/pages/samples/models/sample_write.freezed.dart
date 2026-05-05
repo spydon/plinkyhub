@@ -11,7 +11,6 @@ part of 'sample_write.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$SampleWrite {
 
@@ -217,11 +216,11 @@ return $default(_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.d
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _SampleWrite implements SampleWrite {
   const _SampleWrite({required this.userId, required this.name, required this.filePath, required this.pcmFilePath, this.description = '', this.isPublic = false, final  List<double> slicePoints = defaultSlicePoints, this.baseNote = 60, this.fineTune = 0, this.pitched = false, final  List<int> sliceNotes = defaultSliceNotes, this.contentHash}): _slicePoints = slicePoints,_sliceNotes = sliceNotes;
-  factory _SampleWrite.fromJson(Map<String, dynamic> json) => _$SampleWriteFromJson(json);
+  
 
 @override final  String userId;
 @override final  String name;

@@ -11,7 +11,6 @@ part of 'pack_write.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$PackWrite {
 
@@ -212,11 +211,11 @@ return $default(_that.userId,_that.name,_that.description,_that.isPublic,_that.w
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PackWrite implements PackWrite {
   const _PackWrite({required this.userId, required this.name, this.description = '', this.isPublic = false, this.wavetableId, this.youtubeUrl = '', this.contentHash});
-  factory _PackWrite.fromJson(Map<String, dynamic> json) => _$PackWriteFromJson(json);
+  
 
 @override final  String userId;
 @override final  String name;

@@ -52,10 +52,6 @@ final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
 class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() => ThemeMode.dark;
-
-  void toggle() {
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-  }
 }
 
 const defaultPrimaryColor = Color(0xFF00897B);

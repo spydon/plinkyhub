@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/category.dart';
+import 'package:plinkyhub/models/matched_entry.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
@@ -29,14 +30,6 @@ import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum _LoadStep { select, review, uploading, done, error }
-
-/// Info about a public entry that matches content loaded from Plinky.
-class MatchedEntry {
-  const MatchedEntry({required this.id, required this.name});
-
-  final String id;
-  final String name;
-}
 
 class LoadPackTab extends ConsumerStatefulWidget {
   const LoadPackTab({this.onLoaded, super.key});
@@ -312,7 +305,6 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       final result = ParsedPlinkyDevice(
         presets: presetsResult.presets,
         sampleInfos: presetsResult.sampleInfos,
-        rawSampleInfos: presetsResult.rawSampleInfos,
         patternQuarters: presetsResult.patternQuarters,
         nonEmptyPatternIndices: presetsResult.nonEmptyPatternIndices,
         samplePcmData: samplesResult.samplePcmData,
@@ -472,13 +464,10 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     final results = await query;
 
     final hashToEntry = <String, MatchedEntry>{};
-    for (final row in results) {
-      final hash = row['content_hash'] as String?;
+    for (final map in results) {
+      final hash = map['content_hash'] as String?;
       if (hash != null) {
-        hashToEntry[hash] = MatchedEntry(
-          id: row['id'] as String,
-          name: row['name'] as String,
-        );
+        hashToEntry[hash] = MatchedEntry.fromJson(map);
       }
     }
 
@@ -505,10 +494,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     final results = await query.limit(1);
 
     if (results.isNotEmpty) {
-      _matchedWavetable = MatchedEntry(
-        id: results.first['id'] as String,
-        name: results.first['name'] as String,
-      );
+      _matchedWavetable = MatchedEntry.fromJson(results.first);
     }
   }
 

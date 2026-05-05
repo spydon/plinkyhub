@@ -18,8 +18,6 @@ class MidiPlayState {
   /// padIndex -> latest pressure value in [0, 1].
   final Map<int, double> pressureByPad;
 
-  Set<int> get activePadIndices => activeNotesByPad.keys.toSet();
-
   MidiPlayState copyWith({
     Map<int, int>? activeNotesByPad,
     Map<int, double>? pressureByPad,

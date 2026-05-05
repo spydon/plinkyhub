@@ -26,13 +26,12 @@ extension type _HandLandmarker._(JSObject _) implements JSObject {
   );
 }
 
-/// A normalized 3D landmark from MediaPipe (values in 0..1).
+/// A normalized 2D landmark from MediaPipe (values in 0..1).
 class HandLandmark {
-  const HandLandmark({required this.x, required this.y, required this.z});
+  const HandLandmark({required this.x, required this.y});
 
   final double x;
   final double y;
-  final double z;
 }
 
 /// Thumb tip and fingertip landmark indices.
@@ -149,11 +148,6 @@ class MediaPipeHandsService {
   HandResultsCallback? onResults;
   bool _running = false;
 
-  /// Whether the MediaPipe Tasks Vision JS library is loaded.
-  static bool get isSupported {
-    return globalContext.has('FilesetResolver');
-  }
-
   Future<void> initialize(web.HTMLVideoElement videoElement) async {
     // The ES module script in index.html loads asynchronously; wait
     // for the globals to appear on window before proceeding.
@@ -250,15 +244,13 @@ class MediaPipeHandsService {
         final pointObject = point as JSObject;
         final x = pointObject['x'];
         final y = pointObject['y'];
-        final z = pointObject['z'];
-        if (x == null || y == null || z == null) {
+        if (x == null || y == null) {
           continue;
         }
         points.add(
           HandLandmark(
             x: (x as JSNumber).toDartDouble,
             y: (y as JSNumber).toDartDouble,
-            z: (z as JSNumber).toDartDouble,
           ),
         );
       }

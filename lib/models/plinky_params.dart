@@ -199,8 +199,6 @@ class PlinkyParamDef {
   const PlinkyParamDef({
     required this.id,
     required this.min,
-    required this.max,
-    this.cc = -1,
     this.name,
     this.description = '',
     this.enumName,
@@ -208,8 +206,6 @@ class PlinkyParamDef {
 
   final String id;
   final double min;
-  final double max;
-  final int cc;
   final String? name;
   final String description;
   final List<String>? enumName;
@@ -219,8 +215,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_PWM',
     min: -100,
-    max: 100,
-    cc: 13,
     name: 'Shape',
     description:
         'Controls the shape of the oscillators in '
@@ -232,8 +226,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_DRIVE',
     min: -1024,
-    max: 1024,
-    cc: 4,
     name: 'Distortion',
     description:
         'Drive/Saturation. When turned up high, '
@@ -243,8 +235,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_PITCH',
     min: -1024,
-    max: 1024,
-    cc: 9,
     name: 'Pitch',
     description:
         'Use this to (fine) tune plinky. Range is '
@@ -253,7 +243,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_OCT',
     min: -1024,
-    max: 1024,
     name: 'Octave',
     description:
         'Use this to quickly change pitch, '
@@ -262,8 +251,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_GLIDE',
     min: 0,
-    max: 127,
-    cc: 5,
     name: 'Glide',
     description:
         'Controls the speed of the portamento '
@@ -272,8 +259,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_INTERVAL',
     min: 0,
-    max: 127,
-    cc: 14,
     name: 'Interval',
     description:
         'Each voice has several oscillators, and '
@@ -283,8 +268,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_NOISE',
     min: -127,
-    max: 127,
-    cc: 2,
     name: 'Noise',
     description:
         'Each voice can add a variable amount of '
@@ -294,8 +277,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_MIXRESO',
     min: 0,
-    max: 127,
-    cc: 71,
     name: 'Resonance',
     description:
         'Each voice has a 2-pole lowpass gate. '
@@ -304,7 +285,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_ROTATE',
     min: 0,
-    max: 127,
     name: 'Degree',
     description:
         'A quantized pitch control that transposes '
@@ -313,7 +293,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SCALE',
     min: 0,
-    max: 26,
     name: 'Scale',
     description: 'Selects which scale of notes plinky uses',
     enumName: [
@@ -348,7 +327,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_MICROTUNE',
     min: 0,
-    max: 127,
     name: 'Microtune',
     description:
         'Controls how much vertical movement of '
@@ -357,7 +335,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_STRIDE',
     min: 0,
-    max: 127,
     name: 'Stride',
     description:
         'Controls the interval, in semitones, '
@@ -366,8 +343,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SENS',
     min: 0,
-    max: 1,
-    cc: 3,
     name: 'Sensitivity',
     description:
         'Master sensitivity, controlling the '
@@ -377,8 +352,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_A',
     min: 0,
-    max: 127,
-    cc: 73,
     name: 'Attack',
     description:
         'Attack time for the main envelope that '
@@ -387,8 +360,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_D',
     min: 0,
-    max: 127,
-    cc: 75,
     name: 'Decay',
     description:
         'Decay time for the main envelope that '
@@ -397,8 +368,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_S',
     min: 0,
-    max: 127,
-    cc: 74,
     name: 'Sustain',
     description:
         'Sustain level for the main envelope that '
@@ -407,8 +376,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_R',
     min: 0,
-    max: 127,
-    cc: 72,
     name: 'Release',
     description:
         'Release time for the main envelope that '
@@ -417,74 +384,58 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_ENV1_UNUSED',
     min: 0,
-    max: 127,
     description: 'unused parameter slot',
   ),
   PlinkyParamDef(
     id: 'P_ENV_LEVEL1',
     min: 0,
-    max: 127,
     name: 'Envelope 1 level',
     description: 'Envelope 1 level',
   ),
   PlinkyParamDef(
     id: 'P_A2',
     min: 0,
-    max: 127,
-    cc: 20,
     name: 'Attack 2',
     description: 'Attack time of the second envelope.',
   ),
   PlinkyParamDef(
     id: 'P_D2',
     min: 0,
-    max: 127,
-    cc: 21,
     name: 'Decay 2',
     description: 'Decay time of the second envelope.',
   ),
   PlinkyParamDef(
     id: 'P_S2',
     min: 0,
-    max: 127,
-    cc: 22,
     name: 'Sustain 2',
     description: 'Sustain level of the second envelope.',
   ),
   PlinkyParamDef(
     id: 'P_R2',
     min: 0,
-    max: 127,
-    cc: 23,
     name: 'Release 2',
     description: 'Release time of the second envelope.',
   ),
   PlinkyParamDef(
     id: 'P_ENV2_UNUSED',
     min: 0,
-    max: 127,
     description: 'unused parameter slot',
   ),
   PlinkyParamDef(
     id: 'P_DLSEND',
     min: 0,
-    max: 1,
-    cc: 94,
     name: 'Delay Send',
     description: 'Amount of the dry sound sent to the delay unit.',
   ),
   PlinkyParamDef(
     id: 'P_DLTIME',
     min: -1,
-    max: 1,
-    cc: 12,
     name: 'Delay Time',
     description: 'The time between each echo.',
   ),
   PlinkyParamDef(
     id: 'P_DLRATIO',
     min: 0,
-    max: 1,
     name: 'Delay Ratio',
     description:
         'Moves the right tap to an earlier time, '
@@ -493,7 +444,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_DLWOB',
     min: 0,
-    max: 1,
     name: 'Delay Wobble',
     description:
         'Amount of simulated tape speed wobble '
@@ -502,8 +452,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_DLFB',
     min: 0,
-    max: 1,
-    cc: 95,
     name: 'Delay Feedback',
     description:
         'Amount of feedback - the volume of each '
@@ -512,7 +460,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_TEMPO',
     min: -1,
-    max: 1,
     name: 'BPM',
     description:
         'Tempo in BPM. You can also tap this '
@@ -521,24 +468,18 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_RVSEND',
     min: 0,
-    max: 1,
-    cc: 91,
     name: 'Reverb Send',
     description: 'Amount of the dry sound sent to the reverb unit.',
   ),
   PlinkyParamDef(
     id: 'P_RVTIME',
     min: 0,
-    max: 1,
-    cc: 92,
     name: 'Reverb Time',
     description: 'Controls the length of the decay of the reverb.',
   ),
   PlinkyParamDef(
     id: 'P_RVSHIM',
     min: 0,
-    max: 1,
-    cc: 93,
     name: 'Shimmer',
     description:
         'Amount of octave-up signal fed into the '
@@ -547,7 +488,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_RVWOB',
     min: 0,
-    max: 1,
     name: 'Reverb Wobble',
     description:
         'Amount of simulated tape speed wobble '
@@ -556,13 +496,11 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_RVUNUSED',
     min: 0,
-    max: 1,
     description: 'unused parameter slot',
   ),
   PlinkyParamDef(
     id: 'P_SWING',
     min: 0,
-    max: 1,
     name: 'Swing',
     description:
         'This parameter will be used to add swing '
@@ -571,8 +509,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_ARPONOFF',
     min: 0,
-    max: 1,
-    cc: 102,
     name: 'Arp on/off',
     description: 'Switches the arpeggiator on and off.',
     enumName: ['Off', 'On'],
@@ -580,8 +516,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_ARPMODE',
     min: 0,
-    max: 15,
-    cc: 103,
     name: 'Arpeggiator Mode',
     description: 'Arpeggiator mode.',
     enumName: [
@@ -605,7 +539,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_ARPDIV',
     min: -1,
-    max: 22,
     name: 'Arp Clock Divide',
     description: 'Sets the speed of the arpeggiator.',
     enumName: [
@@ -636,7 +569,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_ARPPROB',
     min: 0,
-    max: 1,
     name: 'Arp Probability / Density',
     description:
         'Sets the probability of the arpeggiator '
@@ -645,7 +577,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_ARPLEN',
     min: -17,
-    max: 17,
     name: 'Arp Pattern Length',
     description:
         'Sets the length of the euclidean pattern '
@@ -654,7 +585,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_ARPOCT',
     min: 0,
-    max: 4,
     name: 'Arp Octaves',
     description:
         'Sets how many octaves the arpeggiator '
@@ -663,7 +593,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_LATCHONOFF',
     min: 0,
-    max: 1,
     name: 'Latch on/off',
     description:
         'Switches the latch on/off. When on, '
@@ -674,7 +603,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SEQMODE',
     min: 0,
-    max: 6,
     name: 'Sequencer Mode',
     description:
         'Sets the order that notes are played '
@@ -691,7 +619,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SEQDIV',
     min: 0,
-    max: 22,
     name: 'Seq Clock Divide',
     description: 'Sets the speed of the sequencer.',
     enumName: [
@@ -722,7 +649,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SEQPROB',
     min: 0,
-    max: 1,
     name: 'Seq Probability / Density',
     description:
         'Sets the probability of the sequencer '
@@ -731,7 +657,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SEQLEN',
     min: -17,
-    max: 17,
     name: 'Seq Pattern Length',
     description:
         'Sets the length of the euclidean pattern '
@@ -740,16 +665,12 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_GATE_LENGTH',
     min: 0,
-    max: 127,
-    cc: 11,
     name: 'Gate length',
     description: 'Sets the length of the gate of each step.',
   ),
   PlinkyParamDef(
     id: 'P_SMP_POS',
     min: 0,
-    max: 127,
-    cc: 15,
     name: 'Sample position',
     description:
         'Controls the starting point of the '
@@ -758,16 +679,12 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SMP_GRAINSIZE',
     min: 0,
-    max: 127,
-    cc: 16,
     name: 'Grain size',
     description: 'Sets the size of the grains.',
   ),
   PlinkyParamDef(
     id: 'P_SMP_RATE',
     min: 0,
-    max: 127,
-    cc: 17,
     name: 'Sample playback rate',
     description:
         'Determines at what relative speed the '
@@ -776,8 +693,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SMP_TIME',
     min: 0,
-    max: 127,
-    cc: 18,
     name: 'Sample playback time',
     description:
         'Determines at what relative speed the '
@@ -786,16 +701,12 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SAMPLE',
     min: 0,
-    max: 127,
-    cc: 82,
     name: 'Sample #',
     description: 'Controls which sample is being played.',
   ),
   PlinkyParamDef(
     id: 'P_SEQPAT',
     min: 0,
-    max: 127,
-    cc: 83,
     name: 'Sequencer pattern #',
     description:
         'Controls which sequencer pattern is '
@@ -830,7 +741,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_JIT_POS',
     min: 0,
-    max: 127,
     name: 'Sample position jitter',
     description:
         'Adds randomness to the sample '
@@ -839,7 +749,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_JIT_GRAINSIZE',
     min: 0,
-    max: 127,
     name: 'Grain size jitter',
     description:
         'Adds randomness to the sample '
@@ -848,7 +757,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_JIT_RATE',
     min: 0,
-    max: 127,
     name: 'Sample speed jitter',
     description:
         'Adds randomness to the sample '
@@ -857,20 +765,16 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_JIT_PULSE',
     min: 0,
-    max: 127,
     description: 'unused parameter slot',
   ),
   PlinkyParamDef(
     id: 'P_JIT_UNUSED',
     min: 0,
-    max: 127,
     description: 'unused parameter slot',
   ),
   PlinkyParamDef(
     id: 'P_SEQSTEP',
     min: 0,
-    max: 127,
-    cc: 85,
     name: 'Pattern offset',
     description:
         'Offsets the starting point of the '
@@ -879,7 +783,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_ASCALE',
     min: 0,
-    max: 127,
     name: 'A scale',
     description:
         'An attenuator for the signal coming '
@@ -888,16 +791,12 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_AOFFSET',
     min: 0,
-    max: 127,
-    cc: 24,
     name: 'A offset',
     description: 'Offsets the CV and/or LFO.',
   ),
   PlinkyParamDef(
     id: 'P_ADEPTH',
     min: 0,
-    max: 127,
-    cc: 25,
     name: 'A depth',
     description:
         'Attenuator for the internal LFOs. '
@@ -906,29 +805,24 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_AFREQ',
     min: 0,
-    max: 127,
-    cc: 26,
     name: 'A rate',
     description: 'Controls the rate of the internal LFO.',
   ),
   PlinkyParamDef(
     id: 'P_ASHAPE',
     min: 0,
-    max: 127,
     name: 'A shape',
     description: 'Sets the shape of the LFO.',
   ),
   PlinkyParamDef(
     id: 'P_AWARP',
     min: 0,
-    max: 127,
     name: 'A warp',
     description: 'Sets the slope of the LFO shape.',
   ),
   PlinkyParamDef(
     id: 'P_BSCALE',
     min: 0,
-    max: 127,
     name: 'B scale',
     description:
         'An attenuator for the signal coming '
@@ -937,16 +831,12 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_BOFFSET',
     min: 0,
-    max: 127,
-    cc: 27,
     name: 'B offset',
     description: 'Offsets the CV and/or LFO.',
   ),
   PlinkyParamDef(
     id: 'P_BDEPTH',
     min: 0,
-    max: 127,
-    cc: 28,
     name: 'B depth',
     description:
         'Attenuator for the internal LFOs. '
@@ -955,29 +845,24 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_BFREQ',
     min: 0,
-    max: 127,
-    cc: 29,
     name: 'B rate',
     description: 'Controls the rate of the internal LFO.',
   ),
   PlinkyParamDef(
     id: 'P_BSHAPE',
     min: 0,
-    max: 127,
     name: 'B shape',
     description: 'Sets the shape of the LFO.',
   ),
   PlinkyParamDef(
     id: 'P_BWARP',
     min: 0,
-    max: 127,
     name: 'B warp',
     description: 'Sets the slope of the LFO shape.',
   ),
   PlinkyParamDef(
     id: 'P_XSCALE',
     min: 0,
-    max: 127,
     name: 'X scale',
     description:
         'An attenuator for the signal coming '
@@ -986,16 +871,12 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_XOFFSET',
     min: 0,
-    max: 127,
-    cc: 78,
     name: 'X offset',
     description: 'Offsets the CV and/or LFO.',
   ),
   PlinkyParamDef(
     id: 'P_XDEPTH',
     min: 0,
-    max: 127,
-    cc: 77,
     name: 'X depth',
     description:
         'Attenuator for the internal LFOs. '
@@ -1004,29 +885,24 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_XFREQ',
     min: 0,
-    max: 127,
-    cc: 76,
     name: 'X rate',
     description: 'Controls the rate of the internal LFO.',
   ),
   PlinkyParamDef(
     id: 'P_XSHAPE',
     min: 0,
-    max: 127,
     name: 'X shape',
     description: 'Sets the shape of the LFO.',
   ),
   PlinkyParamDef(
     id: 'P_XWARP',
     min: 0,
-    max: 127,
     name: 'X warp',
     description: 'Sets the slope of the LFO shape.',
   ),
   PlinkyParamDef(
     id: 'P_YSCALE',
     min: 0,
-    max: 127,
     name: 'Y scale',
     description:
         'An attenuator for the signal coming '
@@ -1035,16 +911,12 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_YOFFSET',
     min: 0,
-    max: 127,
-    cc: 81,
     name: 'Y offset',
     description: 'Offsets the CV and/or LFO.',
   ),
   PlinkyParamDef(
     id: 'P_YDEPTH',
     min: 0,
-    max: 127,
-    cc: 80,
     name: 'Y depth',
     description:
         'Attenuator for the internal LFOs. '
@@ -1053,30 +925,24 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_YFREQ',
     min: 0,
-    max: 127,
-    cc: 79,
     name: 'Y rate',
     description: 'Controls the rate of the internal LFO.',
   ),
   PlinkyParamDef(
     id: 'P_YSHAPE',
     min: 0,
-    max: 127,
     name: 'Y shape',
     description: 'Sets the shape of the LFO.',
   ),
   PlinkyParamDef(
     id: 'P_YWARP',
     min: 0,
-    max: 127,
     name: 'Y warp',
     description: 'Sets the slope of the LFO shape.',
   ),
   PlinkyParamDef(
     id: 'P_MIXSYNTH',
     min: 0,
-    max: 127,
-    cc: 7,
     name: 'Synth level',
     description:
         "Sets the gain level of Plinky's "
@@ -1085,8 +951,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_MIXWETDRY',
     min: 0,
-    max: 127,
-    cc: 8,
     name: 'Synth wet/dry',
     description:
         'Sets the balance between the dry signal '
@@ -1095,21 +959,17 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_MIXHPF',
     min: 0,
-    max: 127,
-    cc: 21,
     name: 'HPF',
     description: 'High Pass Filter cutoff frequency.',
   ),
   PlinkyParamDef(
     id: 'P_MIX_UNUSED',
     min: 0,
-    max: 127,
     description: 'unused parameter slot',
   ),
   PlinkyParamDef(
     id: 'P_CV_QUANT',
     min: 0,
-    max: 127,
     name: 'Pitch quantization',
     description:
         'Choose if pitch CV transposition is '
@@ -1119,7 +979,6 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_HEADPHONE',
     min: 0,
-    max: 127,
     name: 'Headphone level',
     description:
         'Sets the level of the final output '
@@ -1128,16 +987,12 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_MIXINPUT',
     min: 0,
-    max: 127,
-    cc: 89,
     name: 'Input level',
     description: "Sets the gain level of Plinky's inputs.",
   ),
   PlinkyParamDef(
     id: 'P_MIXINWETDRY',
     min: 0,
-    max: 127,
-    cc: 90,
     name: 'Input wet/dry',
     description:
         'Sets the balance between the dry signal '
@@ -1146,25 +1001,21 @@ const plinkyParams = <PlinkyParamDef>[
   PlinkyParamDef(
     id: 'P_SYS_UNUSED1',
     min: 0,
-    max: 127,
     description: 'unused parameter slot',
   ),
   PlinkyParamDef(
     id: 'P_SYS_UNUSED2',
     min: 0,
-    max: 127,
     description: 'unused parameter slot',
   ),
   PlinkyParamDef(
     id: 'P_SYS_UNUSED3',
     min: 0,
-    max: 127,
     description: 'unused parameter slot',
   ),
   PlinkyParamDef(
     id: 'P_ACCEL_SENS',
     min: 0,
-    max: 127,
     name: 'Accelerometer sensitivity',
     description: 'Sets the sensitivity of the accelerometer.',
   ),

@@ -260,9 +260,7 @@ GoRouter createRouter(ProviderContainer container) {
             routes: [
               GoRoute(
                 path: AppRoute.firmware.path,
-                builder: (context, state) => FirmwarePage(
-                  initialTab: state.uri.queryParameters['tab'],
-                ),
+                builder: (context, state) => const FirmwarePage(),
               ),
             ],
           ),

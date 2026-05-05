@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'preset_write.freezed.dart';
 part 'preset_write.g.dart';
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PresetWrite with _$PresetWrite {
   const factory PresetWrite({
     required String userId,
@@ -16,7 +16,4 @@ abstract class PresetWrite with _$PresetWrite {
     String? sampleId,
     String? contentHash,
   }) = _PresetWrite;
-
-  factory PresetWrite.fromJson(Map<String, dynamic> json) =>
-      _$PresetWriteFromJson(json);
 }

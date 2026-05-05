@@ -17,21 +17,20 @@ const _randomizeGroupParameterIds = <RandomizeGroup, List<String>>{
 
 /// Groups of parameters that can be selectively randomized.
 enum RandomizeGroup {
-  synth('synth', 'Synth'),
-  envelope1('envelope-1', 'Envelope 1'),
-  envelope2('envelope-2', 'Envelope 2'),
-  effects('effects', 'Effects'),
-  arpeggiator('arpeggiator', 'Arpeggiator'),
-  sequencer('sequencer', 'Sequencer'),
-  sampler('sampler', 'Sampler'),
-  modA('mod-a', 'A'),
-  modB('mod-b', 'B'),
-  modX('mod-x', 'X'),
-  modY('mod-y', 'Y')
+  synth('Synth'),
+  envelope1('Envelope 1'),
+  envelope2('Envelope 2'),
+  effects('Effects'),
+  arpeggiator('Arpeggiator'),
+  sequencer('Sequencer'),
+  sampler('Sampler'),
+  modA('A'),
+  modB('B'),
+  modX('X'),
+  modY('Y')
   ;
 
-  const RandomizeGroup(this.id, this.displayName);
-  final String id;
+  const RandomizeGroup(this.displayName);
   final String displayName;
 
   List<String> get parameterIds => _randomizeGroupParameterIds[this]!;

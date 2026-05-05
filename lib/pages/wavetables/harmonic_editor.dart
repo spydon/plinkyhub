@@ -94,7 +94,6 @@ class _HarmonicEditorState extends State<HarmonicEditor> {
                 backgroundColor: Theme.of(
                   context,
                 ).colorScheme.surfaceContainerLow,
-                gridColor: Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
           ),
@@ -116,7 +115,6 @@ class _HarmonicPainter extends CustomPainter {
     required this.barColor,
     required this.ghostColor,
     required this.backgroundColor,
-    required this.gridColor,
     this.postEffectHarmonics,
   });
 
@@ -125,7 +123,6 @@ class _HarmonicPainter extends CustomPainter {
   final Color barColor;
   final Color ghostColor;
   final Color backgroundColor;
-  final Color gridColor;
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -190,7 +190,6 @@ class _SampleCardState extends ConsumerState<SampleCard> {
               ],
               const SizedBox(height: 4),
               UsernameDateLine(
-                userId: sample.userId,
                 username: sample.username,
                 updatedAt: sample.updatedAt,
               ),

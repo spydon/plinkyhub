@@ -30,12 +30,6 @@ class PrivateItemSummary {
       sampleIds.isNotEmpty ||
       patternIds.isNotEmpty ||
       wavetableId != null;
-
-  int get totalCount =>
-      presetIds.length +
-      sampleIds.length +
-      patternIds.length +
-      (wavetableId != null ? 1 : 0);
 }
 
 PrivateItemSummary findPrivateItems({

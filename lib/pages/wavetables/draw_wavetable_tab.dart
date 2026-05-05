@@ -21,7 +21,6 @@ class DrawWavetableTab extends ConsumerStatefulWidget {
   const DrawWavetableTab({
     this.onCreated,
     this.wavetableToEdit,
-    this.onClear,
     super.key,
   });
 
@@ -29,9 +28,6 @@ class DrawWavetableTab extends ConsumerStatefulWidget {
 
   /// When non-null, the editor opens in edit mode with this wavetable's data.
   final SavedWavetable? wavetableToEdit;
-
-  /// Called when the user clears the edit (navigates away from edit mode).
-  final VoidCallback? onClear;
 
   @override
   ConsumerState<DrawWavetableTab> createState() => _DrawWavetableTabState();

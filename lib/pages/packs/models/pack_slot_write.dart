@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'pack_slot_write.freezed.dart';
 part 'pack_slot_write.g.dart';
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class PackSlotWrite with _$PackSlotWrite {
   const factory PackSlotWrite({
     required String packId,
@@ -12,7 +12,4 @@ abstract class PackSlotWrite with _$PackSlotWrite {
     String? sampleId,
     String? patternId,
   }) = _PackSlotWrite;
-
-  factory PackSlotWrite.fromJson(Map<String, dynamic> json) =>
-      _$PackSlotWriteFromJson(json);
 }

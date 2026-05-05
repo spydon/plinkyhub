@@ -4,7 +4,7 @@ import 'package:plinkyhub/models/saved_sample.dart';
 part 'sample_write.freezed.dart';
 part 'sample_write.g.dart';
 
-@freezed
+@Freezed(fromJson: false, toJson: true)
 abstract class SampleWrite with _$SampleWrite {
   const factory SampleWrite({
     required String userId,
@@ -20,7 +20,4 @@ abstract class SampleWrite with _$SampleWrite {
     @Default(defaultSliceNotes) List<int> sliceNotes,
     String? contentHash,
   }) = _SampleWrite;
-
-  factory SampleWrite.fromJson(Map<String, dynamic> json) =>
-      _$SampleWriteFromJson(json);
 }

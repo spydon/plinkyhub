@@ -84,7 +84,6 @@ class _PresetCardState extends ConsumerState<PresetCard> {
               ],
               const SizedBox(height: 4),
               UsernameDateLine(
-                userId: preset.userId,
                 username: preset.username,
                 updatedAt: preset.updatedAt,
               ),

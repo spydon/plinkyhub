@@ -11,7 +11,6 @@ part of 'pack_upload_request.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$PackUploadRequest {
 
@@ -232,11 +231,11 @@ return $default(_that.packData,_that.samplesData,_that.presetsData,_that.wavetab
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PackUploadRequest implements PackUploadRequest {
   const _PackUploadRequest({required this.packData, final  List<PackUploadSample> samplesData = const [], final  List<PackUploadPreset> presetsData = const [], this.wavetableData, final  List<PackUploadPattern> patternsData = const [], final  List<PackUploadSlot> packSlotsData = const []}): _samplesData = samplesData,_presetsData = presetsData,_patternsData = patternsData,_packSlotsData = packSlotsData;
-  factory _PackUploadRequest.fromJson(Map<String, dynamic> json) => _$PackUploadRequestFromJson(json);
+  
 
 @override final  PackUploadPack packData;
  final  List<PackUploadSample> _samplesData;
@@ -354,7 +353,6 @@ $PackUploadWavetableCopyWith<$Res>? get wavetableData {
   });
 }
 }
-
 
 /// @nodoc
 mixin _$PackUploadPack {
@@ -555,11 +553,11 @@ return $default(_that.userId,_that.name,_that.description,_that.isPublic,_that.y
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PackUploadPack implements PackUploadPack {
   const _PackUploadPack({required this.userId, required this.name, this.description = '', this.isPublic = false, this.youtubeUrl = '', this.contentHash});
-  factory _PackUploadPack.fromJson(Map<String, dynamic> json) => _$PackUploadPackFromJson(json);
+  
 
 @override final  String userId;
 @override final  String name;
@@ -632,7 +630,6 @@ as String?,
 
 
 }
-
 
 /// @nodoc
 mixin _$PackUploadSample {
@@ -841,11 +838,11 @@ return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcm
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PackUploadSample implements PackUploadSample {
   const _PackUploadSample({required this.slotIndex, required this.userId, required this.name, required this.filePath, required this.pcmFilePath, this.description = '', this.isPublic = false, final  List<double> slicePoints = const [], this.baseNote = 60, this.fineTune = 0, this.pitched = false, final  List<int> sliceNotes = const [], this.contentHash, this.existingId}): _slicePoints = slicePoints,_sliceNotes = sliceNotes;
-  factory _PackUploadSample.fromJson(Map<String, dynamic> json) => _$PackUploadSampleFromJson(json);
+  
 
 @override final  int slotIndex;
 @override final  String userId;
@@ -946,7 +943,6 @@ as String?,
 
 
 }
-
 
 /// @nodoc
 mixin _$PackUploadPreset {
@@ -1151,11 +1147,11 @@ return $default(_that.slotIndex,_that.userId,_that.name,_that.category,_that.pre
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PackUploadPreset implements PackUploadPreset {
   const _PackUploadPreset({required this.slotIndex, required this.userId, required this.name, required this.category, required this.presetData, this.description = '', this.isPublic = false, this.contentHash, this.existingId, this.sampleSlotIndex});
-  factory _PackUploadPreset.fromJson(Map<String, dynamic> json) => _$PackUploadPresetFromJson(json);
+  
 
 @override final  int slotIndex;
 @override final  String userId;
@@ -1236,7 +1232,6 @@ as int?,
 
 
 }
-
 
 /// @nodoc
 mixin _$PackUploadWavetable {
@@ -1438,11 +1433,11 @@ return $default(_that.userId,_that.name,_that.filePath,_that.description,_that.i
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PackUploadWavetable implements PackUploadWavetable {
   const _PackUploadWavetable({required this.userId, required this.name, required this.filePath, this.description = '', this.isPublic = false, this.contentHash, this.existingId});
-  factory _PackUploadWavetable.fromJson(Map<String, dynamic> json) => _$PackUploadWavetableFromJson(json);
+  
 
 @override final  String userId;
 @override final  String name;
@@ -1517,7 +1512,6 @@ as String?,
 
 
 }
-
 
 /// @nodoc
 mixin _$PackUploadPattern {
@@ -1720,11 +1714,11 @@ return $default(_that.patternIndex,_that.userId,_that.name,_that.filePath,_that.
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PackUploadPattern implements PackUploadPattern {
   const _PackUploadPattern({required this.patternIndex, required this.userId, required this.name, required this.filePath, this.description = '', this.isPublic = false, this.contentHash, this.existingId});
-  factory _PackUploadPattern.fromJson(Map<String, dynamic> json) => _$PackUploadPatternFromJson(json);
+  
 
 @override final  int patternIndex;
 @override final  String userId;
@@ -1801,7 +1795,6 @@ as String?,
 
 
 }
-
 
 /// @nodoc
 mixin _$PackUploadSlot {
@@ -2000,11 +1993,11 @@ return $default(_that.slotNumber,_that.presetSlotIndex,_that.sampleSlotIndex,_th
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createFactory: false)
 
 class _PackUploadSlot implements PackUploadSlot {
   const _PackUploadSlot({required this.slotNumber, this.presetSlotIndex, this.sampleSlotIndex, this.patternIndex});
-  factory _PackUploadSlot.fromJson(Map<String, dynamic> json) => _$PackUploadSlotFromJson(json);
+  
 
 @override final  int slotNumber;
 @override final  int? presetSlotIndex;

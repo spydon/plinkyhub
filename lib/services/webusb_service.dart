@@ -13,7 +13,6 @@ const _vendorFilters = [
 // CDC (Communication Device Class) control request codes.
 const _cdcSetControlLineState = 0x22;
 const _cdcControlLineStateDtrActive = 0x01;
-const _cdcControlLineStateInactive = 0x00;
 
 @JS('navigator.usb')
 external USB? get _navigatorUsb;
@@ -287,25 +286,5 @@ class WebUsbService {
           data.toJS,
         )
         .toDart;
-  }
-
-  Future<void> disconnect() async {
-    _connected = false;
-    if (_device != null) {
-      try {
-        final controlSetup = USBControlTransferParameters(
-          requestType: 'class',
-          recipient: 'interface',
-          request: _cdcSetControlLineState,
-          value: _cdcControlLineStateInactive,
-          index: _interfaceNumber,
-        );
-        await _device!.controlTransferOut(controlSetup).toDart;
-        await _device!.close().toDart;
-      } on Object {
-        // Ignore errors during disconnect.
-      }
-    }
-    _device = null;
   }
 }

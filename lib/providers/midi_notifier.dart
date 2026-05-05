@@ -65,12 +65,8 @@ class MidiNotifier extends Notifier<MidiState> {
 
   void _onMessage(MidiMessage message) {
     if (message.isNoteOn) {
-      final note = ActiveNote(
-        note: message.note,
-        velocity: message.velocity,
-      );
       state = state.copyWith(
-        activeNotes: {...state.activeNotes, message.note: note},
+        activeNotes: {...state.activeNotes, message.note},
       );
     } else if (message.isNoteOff) {
       state = state.copyWith(
@@ -146,26 +142,5 @@ class MidiNotifier extends Notifier<MidiState> {
         programNumber & 0x7F,
       ]),
     );
-  }
-
-  /// Send an "all notes off" control-change to the selected output.
-  void sendAllNotesOff({int channel = 0}) {
-    final outputId = state.selectedOutputId;
-    if (outputId == null) {
-      return;
-    }
-    _service.sendToOutput(
-      outputId,
-      Uint8List.fromList([
-        0xB0 | (channel & 0x0F),
-        123,
-        0,
-      ]),
-    );
-  }
-
-  void disconnect() {
-    _service.disconnect();
-    state = const MidiState();
   }
 }

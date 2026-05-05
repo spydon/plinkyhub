@@ -136,27 +136,3 @@ Future<void> writeFileToDirectory(
   await writable.write(data);
   await writable.close();
 }
-
-/// Triggers a browser download of [bytes] with the given [fileName].
-///
-/// Creates a Blob from the data, attaches it to a temporary anchor
-/// element, and programmatically clicks it to prompt the browser's
-/// native save dialog. Revokes the object URL immediately after.
-void downloadBytesToUser(
-  Uint8List bytes,
-  String fileName, {
-  String mimeType = 'application/octet-stream',
-}) {
-  final parts = [bytes.toJS].toJS;
-  final options = web.BlobPropertyBag(type: mimeType);
-  final blob = web.Blob(parts, options);
-  final objectUrl = web.URL.createObjectURL(blob);
-  final anchor = web.HTMLAnchorElement()
-    ..href = objectUrl
-    ..download = fileName
-    ..style.display = 'none';
-  web.document.body?.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  web.URL.revokeObjectURL(objectUrl);
-}
