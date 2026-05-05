@@ -78,6 +78,32 @@ class _SaveSampleToPlinkyDialogState
           final sample = widget.sample;
           final supabase = Supabase.instance.client;
 
+          // Read existing PRESETS.UF2 first to preserve other slots. This
+          // must happen before any SAMPLE.UF2 write, because writing leaves
+          // the Plinky's FAT/USB view of PRESETS.UF2 temporarily corrupted
+          // until the device is restarted, causing a "bad magic" parse
+          // error on subsequent uploads.
+          controller.updateStatus('Reading existing PRESETS.UF2...');
+          final existingUf2 = await readFileFromDirectory(
+            directory,
+            'PRESETS.UF2',
+          );
+
+          List<Uint8List?> presets;
+          List<Uint8List?> sampleInfos;
+          List<Uint8List?>? patternQuarters;
+
+          if (existingUf2 != null) {
+            final flashImage = uf2ToData(existingUf2);
+            final parsed = parseFlashImage(flashImage);
+            presets = parsed.presets;
+            sampleInfos = parsed.rawSampleInfos;
+            patternQuarters = parsed.patternQuarters;
+          } else {
+            presets = List<Uint8List?>.filled(presetCount, null);
+            sampleInfos = List<Uint8List?>.filled(sampleCount, null);
+          }
+
           controller.updateStatus('Downloading sample PCM data...');
           final pcmBytes = await supabase.storage
               .from('samples')
@@ -99,28 +125,6 @@ class _SaveSampleToPlinkyDialogState
             'SAMPLE$_selectedSlot.UF2',
             sampleUf2Bytes,
           );
-
-          // Read existing PRESETS.UF2 to preserve other slots.
-          controller.updateStatus('Reading existing PRESETS.UF2...');
-          final existingUf2 = await readFileFromDirectory(
-            directory,
-            'PRESETS.UF2',
-          );
-
-          List<Uint8List?> presets;
-          List<Uint8List?> sampleInfos;
-          List<Uint8List?>? patternQuarters;
-
-          if (existingUf2 != null) {
-            final flashImage = uf2ToData(existingUf2);
-            final parsed = parseFlashImage(flashImage);
-            presets = parsed.presets;
-            sampleInfos = parsed.rawSampleInfos;
-            patternQuarters = parsed.patternQuarters;
-          } else {
-            presets = List<Uint8List?>.filled(presetCount, null);
-            sampleInfos = List<Uint8List?>.filled(sampleCount, null);
-          }
 
           sampleInfos[_selectedSlot] = buildSampleInfo(
             pcmData: pcmBytes,
