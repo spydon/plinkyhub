@@ -24,9 +24,6 @@ const _pageFooterSize = 8;
 /// Firmware footer version (FOOTER_VERSION = 2).
 const _footerVersion = 2;
 
-/// Firmware LPE_SYS_PARAMS_VERSION.
-const _sysParamsVersion = 16;
-
 /// Size of a single Preset in bytes.
 const presetSize = 1552;
 
@@ -227,20 +224,57 @@ int rawToSampleSlot(int rawValue) {
   return slot;
 }
 
-/// Creates a default SysParams block (16 bytes).
-Uint8List _buildSysParams() {
-  final data = Uint8List(_sysParamsSize);
-  data[0] = 0; // preset_id
-  data[1] = 0; // midi_in_chan:4, midi_out_chan:4
-  data[2] = 150; // accel_sens
-  data[3] = 0x80; // volume_lsb
-  // volume_msb=2 (bits 0-2), cv_quant=0 (bits 3-4),
-  // reverse_encoder=0 (bit 5), preset_aligned=0 (bit 6),
-  // pattern_aligned=0 (bit 7)
-  data[4] = 0x02;
-  // data[5..14] = pad (zeros)
-  data[15] = _sysParamsVersion; // version
-  return data;
+/// Returns a zero-initialized SysParams block (16 bytes).
+///
+/// A version byte of 0 (OG_SYS_PARAMS_VERSION in LPE firmware) causes the
+/// firmware to run its own migration on next boot and apply correct defaults.
+/// On stable firmware, all fields (including headphonevol at byte 3) stay
+/// at 0, which maps to a normal operating volume.
+Uint8List _buildDefaultSysParams() {
+  return Uint8List(_sysParamsSize);
+}
+
+/// Extracts the SysParams bytes from the most recently written flash page
+/// in [flashImage]. Returns null if the image contains no valid pages.
+///
+/// The firmware uses the SysParams from the page with the globally highest
+/// sequence number to initialize device-wide settings on boot. Preserving
+/// these bytes prevents user settings (volume, MIDI channels, etc.) from
+/// being silently reset on every PRESETS.UF2 upload.
+Uint8List? extractDeviceSysParams(Uint8List flashImage) {
+  var highestSeq = -1;
+  Uint8List? result;
+
+  for (var pageIndex = 0; pageIndex < flashPageCount; pageIndex++) {
+    final pageOffset = pageIndex * flashPageSize;
+    if (pageOffset + flashPageSize > flashImage.length) {
+      break;
+    }
+
+    final footerOffset = pageOffset + flashPageSize - _pageFooterSize;
+    final itemId = flashImage[footerOffset];
+    final version = flashImage[footerOffset + 1];
+
+    if (itemId == 0xFF || version != _footerVersion) {
+      continue;
+    }
+
+    final seq =
+        flashImage[footerOffset + 4] |
+        (flashImage[footerOffset + 5] << 8) |
+        (flashImage[footerOffset + 6] << 16) |
+        (flashImage[footerOffset + 7] << 24);
+
+    if (seq > highestSeq) {
+      highestSeq = seq;
+      final sysParamsOffset = pageOffset + _flashPageUsable;
+      result = Uint8List.fromList(
+        flashImage.sublist(sysParamsOffset, sysParamsOffset + _sysParamsSize),
+      );
+    }
+  }
+
+  return result;
 }
 
 /// Writes a single flash page into [output] at [pageIndex].
@@ -248,15 +282,16 @@ Uint8List _buildSysParams() {
 /// [itemData] is the raw struct bytes (Preset, SampleInfo, etc.).
 /// [itemId] is the flash item index.
 /// [seq] is the wear-leveling sequence number.
+/// [sysParams] is the 16-byte SysParams block written to every page.
 void _writePage(
   Uint8List output,
   int pageIndex,
   Uint8List itemData,
   int itemId,
   int seq,
+  Uint8List sysParams,
 ) {
   final pageOffset = pageIndex * flashPageSize;
-  final sysParams = _buildSysParams();
 
   // Write item data (padded to _flashPageUsable with zeros).
   for (var i = 0; i < itemData.length && i < _flashPageUsable; i++) {
@@ -576,6 +611,12 @@ class ParsedFlashImage {
 /// [patternQuarters] is an optional list of up to 96 entries (24 patterns ×
 /// 4 quarters). Each entry is either a 1792-byte `Uint8List` or null.
 ///
+/// [deviceSysParams] is the 16-byte SysParams block read from the device's
+/// existing PRESETS.UF2 via [extractDeviceSysParams]. When provided, the
+/// device's own settings (volume, MIDI channels, etc.) are written back into
+/// every generated page instead of a zero-initialized fallback, preserving
+/// the user's configuration across uploads.
+///
 /// When [clearEmpty] is true (default), every flash page is emitted in the
 /// resulting UF2 (with 0xFF for slots without data), so flashing the file
 /// erases unfilled slots on the device. When false, only pages backed by
@@ -585,12 +626,15 @@ Uint8List generatePresetsUf2({
   required List<Uint8List?> sampleInfos,
   List<Uint8List?>? patternQuarters,
   bool clearEmpty = true,
+  Uint8List? deviceSysParams,
 }) {
   assert(presets.length == presetCount);
   assert(sampleInfos.length <= sampleCount);
   assert(
     patternQuarters == null || patternQuarters.length <= _patternQuarterCount,
   );
+
+  final sysParams = deviceSysParams ?? _buildDefaultSysParams();
 
   // Create raw flash image: 256 pages × 2048 bytes, initialized to 0xFF
   // (erased flash state).
@@ -607,10 +651,17 @@ Uint8List generatePresetsUf2({
   // Presets (item IDs 0-31).
   for (var i = 0; i < presetCount; i++) {
     if (presets[i] != null) {
-      _writePage(flashImage, pageIndex, presets[i]!, i, seq++);
+      _writePage(flashImage, pageIndex, presets[i]!, i, seq++, sysParams);
       writtenPages.add(pageIndex);
     } else if (clearEmpty) {
-      _writePage(flashImage, pageIndex, Uint8List(presetSize), i, seq++);
+      _writePage(
+        flashImage,
+        pageIndex,
+        Uint8List(presetSize),
+        i,
+        seq++,
+        sysParams,
+      );
     }
     pageIndex++;
   }
@@ -625,6 +676,7 @@ Uint8List generatePresetsUf2({
           patternQuarters[i]!,
           _patternQuarterItemIdStart + i,
           seq++,
+          sysParams,
         );
         writtenPages.add(pageIndex);
       }
@@ -643,6 +695,7 @@ Uint8List generatePresetsUf2({
         sampleInfos[i]!,
         _sampleInfoItemIdStart + i,
         seq++,
+        sysParams,
       );
       writtenPages.add(pageIndex);
     }
@@ -657,6 +710,7 @@ Uint8List generatePresetsUf2({
       presets[0]!,
       _floatingPresetItemId,
       seq++,
+      sysParams,
     );
     writtenPages.add(pageIndex);
   } else if (clearEmpty) {
@@ -666,6 +720,7 @@ Uint8List generatePresetsUf2({
       Uint8List(presetSize),
       _floatingPresetItemId,
       seq++,
+      sysParams,
     );
   }
   pageIndex++;
@@ -683,6 +738,7 @@ Uint8List generatePresetsUf2({
           quarterData,
           _floatingPatternItemIdStart + q,
           seq++,
+          sysParams,
         );
         writtenPages.add(pageIndex);
       }
