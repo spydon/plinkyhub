@@ -66,7 +66,7 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
     final existing = widget.parsedFlashImage;
 
     // Start with existing device data.
-    final presets = List<Uint8List?>.of(existing.presets);
+    final presets = List<Uint8List?>.of(existing.rawPresets);
     final sampleInfos = List<Uint8List?>.of(existing.rawSampleInfos);
     final patternQuarters = List<Uint8List?>.of(existing.patternQuarters);
 
