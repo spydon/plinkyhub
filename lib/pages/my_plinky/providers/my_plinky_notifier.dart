@@ -183,6 +183,7 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
 
       final parsedFlashImage = ParsedFlashImage(
         presets: presetsResult.presets,
+        rawPresets: presetsResult.rawPresets,
         sampleInfos: presetsResult.sampleInfos,
         rawSampleInfos: presetsResult.rawSampleInfos,
         patternQuarters: presetsResult.patternQuarters,

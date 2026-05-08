@@ -507,17 +507,23 @@ ParsedFlashImage parseFlashImage(Uint8List flashImage) {
 
   // Extract presets (item IDs 0-31).
   final presets = List<Uint8List?>.filled(presetCount, null);
+  final rawPresets = List<Uint8List?>.filled(presetCount, null);
   for (var i = 0; i < presetCount; i++) {
     final page = pages[i];
     if (page == null) {
       continue;
     }
+    // Use presetSize bytes for isEmpty detection and display (stable across
+    // firmware versions). Store the full usable area in rawPresets so that
+    // round-tripping back to the device preserves fields added by newer
+    // firmware (e.g. poly_params added in LPE preset version 17).
     final presetBytes = Uint8List.sublistView(page, 0, presetSize);
     final first = presetBytes[0];
     final isEmpty =
         (first == 0 || first == 0xFF) && _allSameByte(presetBytes, first);
     if (!isEmpty) {
       presets[i] = Uint8List.fromList(presetBytes);
+      rawPresets[i] = Uint8List.fromList(page.sublist(0, _flashPageUsable));
     }
   }
 
@@ -548,6 +554,7 @@ ParsedFlashImage parseFlashImage(Uint8List flashImage) {
 
   return ParsedFlashImage(
     presets: presets,
+    rawPresets: rawPresets,
     sampleInfos: sampleInfos,
     rawSampleInfos: rawSampleInfos,
     patternQuarters: patternQuarters,
@@ -558,13 +565,24 @@ ParsedFlashImage parseFlashImage(Uint8List flashImage) {
 class ParsedFlashImage {
   ParsedFlashImage({
     required this.presets,
+    required this.rawPresets,
     required this.sampleInfos,
     required this.rawSampleInfos,
     required this.patternQuarters,
   });
 
-  /// 32 preset entries (null for empty slots).
+  /// 32 preset entries, each [presetSize] bytes (null for empty slots).
+  ///
+  /// Use for display and content hashing. For writing back to the device,
+  /// use [rawPresets] to avoid truncating firmware-version-specific fields.
   final List<Uint8List?> presets;
+
+  /// 32 raw preset entries, each [_flashPageUsable] bytes (null for empty).
+  ///
+  /// Stores the full usable area of each flash page, preserving fields added
+  /// by newer firmware (e.g. poly_params in LPE preset v17). Use this instead
+  /// of [presets] when round-tripping data back to the device.
+  final List<Uint8List?> rawPresets;
 
   /// 8 parsed sample info entries (null for empty slots).
   final List<ParsedSampleInfo?> sampleInfos;

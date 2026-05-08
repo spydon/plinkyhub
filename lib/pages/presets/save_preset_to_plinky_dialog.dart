@@ -136,7 +136,7 @@ class _SavePresetToPlinkyDialogState
           if (existingUf2 != null) {
             final flashImage = uf2ToData(existingUf2);
             final parsed = parseFlashImage(flashImage);
-            presets = parsed.presets;
+            presets = parsed.rawPresets;
             sampleInfos = parsed.rawSampleInfos;
             patternQuarters = parsed.patternQuarters;
             deviceSysParams = extractDeviceSysParams(flashImage);

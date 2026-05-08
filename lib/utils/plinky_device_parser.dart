@@ -59,6 +59,7 @@ class ParsedPlinkyDevice {
 class ParsedPresetsPhase {
   ParsedPresetsPhase({
     required this.presets,
+    required this.rawPresets,
     required this.sampleInfos,
     required this.rawSampleInfos,
     required this.patternQuarters,
@@ -68,6 +69,7 @@ class ParsedPresetsPhase {
   });
 
   final List<Uint8List?> presets;
+  final List<Uint8List?> rawPresets;
   final List<ParsedSampleInfo?> sampleInfos;
   final List<Uint8List?> rawSampleInfos;
   final List<Uint8List?> patternQuarters;
@@ -145,6 +147,7 @@ ParsedPresetsPhase parsePresetsPhase(Uint8List presetsUf2) {
 
   return ParsedPresetsPhase(
     presets: parsed.presets,
+    rawPresets: parsed.rawPresets,
     sampleInfos: parsed.sampleInfos,
     rawSampleInfos: parsed.rawSampleInfos,
     patternQuarters: parsed.patternQuarters,
