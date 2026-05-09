@@ -73,8 +73,12 @@ const _floatingPresetItemId = _sampleInfoItemIdStart + sampleCount;
 /// Flash item ID for the first floating pattern quarter.
 const _floatingPatternItemIdStart = _floatingPresetItemId + 1;
 
-/// Total number of flash items used by the firmware.
-const _numFlashItems = _floatingPatternItemIdStart + _quartersPerPattern;
+/// Flash item ID for the floating global data (FLOAT_GLOBAL_DATA_ID = 141).
+const _floatingGlobalDataItemId =
+    _floatingPatternItemIdStart + _quartersPerPattern;
+
+/// Total number of flash items used by the firmware (NUM_FLASH_ITEMS = 142).
+const _numFlashItems = _floatingGlobalDataItemId + 1;
 
 /// Returns true if every byte in [data] equals [value].
 bool _allSameByte(Uint8List data, int value) {
@@ -720,13 +724,13 @@ Uint8List generatePresetsUf2({
     pageIndex++;
   }
 
-  // Floating preset (item ID 136) and floating pattern quarters (item IDs
-  // 137-140) are intentionally omitted. Leaving these pages as erased (0xFF)
-  // causes the firmware to detect the absence of a floating preset and
-  // initialize a fresh one using the current firmware's struct layout and
-  // defaults. Writing stale floating preset data here would prevent the
-  // firmware from applying correct defaults for fields added in newer
-  // firmware versions (e.g. poly_params in LPE preset v17).
+  // Floating preset (item ID 136), floating pattern quarters (item IDs
+  // 137-140), and global data (item ID 141) are intentionally omitted.
+  // These are all user state, not pack data. Leaving those pages as erased
+  // (0xFF) causes the firmware to initialize fresh copies on boot using the
+  // current firmware's struct layout and defaults. Writing stale data here
+  // would prevent the firmware from applying correct defaults for fields added
+  // in newer firmware versions (e.g. poly_params in LPE preset v17).
 
   // Convert the flash image to UF2 format.
   if (clearEmpty) {
