@@ -720,49 +720,13 @@ Uint8List generatePresetsUf2({
     pageIndex++;
   }
 
-  // Floating preset (item ID 136, copy of preset 0).
-  if (presets[0] != null) {
-    _writePage(
-      flashImage,
-      pageIndex,
-      presets[0]!,
-      _floatingPresetItemId,
-      seq++,
-      sysParams,
-    );
-    writtenPages.add(pageIndex);
-  } else if (clearEmpty) {
-    _writePage(
-      flashImage,
-      pageIndex,
-      Uint8List(presetSize),
-      _floatingPresetItemId,
-      seq++,
-      sysParams,
-    );
-  }
-  pageIndex++;
-
-  // Floating pattern quarters (item IDs 137-140, copy of pattern 0).
-  if (patternQuarters != null) {
-    for (var q = 0; q < _quartersPerPattern; q++) {
-      final quarterData = q < patternQuarters.length
-          ? patternQuarters[q]
-          : null;
-      if (quarterData != null) {
-        _writePage(
-          flashImage,
-          pageIndex,
-          quarterData,
-          _floatingPatternItemIdStart + q,
-          seq++,
-          sysParams,
-        );
-        writtenPages.add(pageIndex);
-      }
-      pageIndex++;
-    }
-  }
+  // Floating preset (item ID 136) and floating pattern quarters (item IDs
+  // 137-140) are intentionally omitted. Leaving these pages as erased (0xFF)
+  // causes the firmware to detect the absence of a floating preset and
+  // initialize a fresh one using the current firmware's struct layout and
+  // defaults. Writing stale floating preset data here would prevent the
+  // firmware from applying correct defaults for fields added in newer
+  // firmware versions (e.g. poly_params in LPE preset v17).
 
   // Convert the flash image to UF2 format.
   if (clearEmpty) {
