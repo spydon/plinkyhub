@@ -93,6 +93,7 @@ class _SaveSampleToPlinkyDialogState
           List<Uint8List?> sampleInfos;
           List<Uint8List?>? patternQuarters;
           Uint8List? deviceSysParams;
+          Map<int, Uint8List>? userStatePages;
 
           if (existingUf2 != null) {
             final flashImage = uf2ToData(existingUf2);
@@ -101,6 +102,7 @@ class _SaveSampleToPlinkyDialogState
             sampleInfos = parsed.rawSampleInfos;
             patternQuarters = parsed.patternQuarters;
             deviceSysParams = extractDeviceSysParams(flashImage);
+            userStatePages = parsed.userStatePages;
           } else {
             presets = List<Uint8List?>.filled(presetCount, null);
             sampleInfos = List<Uint8List?>.filled(sampleCount, null);
@@ -141,6 +143,7 @@ class _SaveSampleToPlinkyDialogState
             sampleInfos: sampleInfos,
             patternQuarters: patternQuarters,
             deviceSysParams: deviceSysParams,
+            userStatePages: userStatePages,
           );
 
           controller.updateStatus('Writing PRESETS.UF2...');

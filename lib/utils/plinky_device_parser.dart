@@ -66,6 +66,7 @@ class ParsedPresetsPhase {
     required this.presetHashes,
     required this.nonEmptyPatternIndices,
     required this.patternHashes,
+    required this.userStatePages,
   });
 
   final List<Uint8List?> presets;
@@ -76,6 +77,7 @@ class ParsedPresetsPhase {
   final Map<int, String> presetHashes;
   final List<int> nonEmptyPatternIndices;
   final Map<int, String> patternHashes;
+  final Map<int, Uint8List> userStatePages;
 }
 
 /// Input for [parseSamplesPhase].
@@ -154,6 +156,7 @@ ParsedPresetsPhase parsePresetsPhase(Uint8List presetsUf2) {
     presetHashes: presetHashes,
     nonEmptyPatternIndices: nonEmptyPatternIndices,
     patternHashes: patternHashes,
+    userStatePages: parsed.userStatePages,
   );
 }
 

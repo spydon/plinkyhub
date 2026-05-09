@@ -187,6 +187,7 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
         sampleInfos: presetsResult.sampleInfos,
         rawSampleInfos: presetsResult.rawSampleInfos,
         patternQuarters: presetsResult.patternQuarters,
+        userStatePages: presetsResult.userStatePages,
       );
 
       // Populate device presets.

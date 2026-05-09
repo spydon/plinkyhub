@@ -6,6 +6,7 @@ import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
 import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
+import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/widgets/plinky_save_dialog_views.dart';
 import 'package:plinkyhub/widgets/plinky_transfer_dialog.dart';
 
@@ -42,6 +43,29 @@ class _SavePatternToPlinkyDialogState
           ),
         ],
         onTunnelOfLightsSave: (directory, ref, controller) async {
+          controller.updateStatus('Reading existing PRESETS.UF2...');
+          final existingUf2 = await readFileFromDirectory(
+            directory,
+            'PRESETS.UF2',
+          );
+
+          List<Uint8List?> presets;
+          List<Uint8List?> sampleInfos;
+          Uint8List? deviceSysParams;
+          Map<int, Uint8List>? userStatePages;
+
+          if (existingUf2 != null) {
+            final flashImage = uf2ToData(existingUf2);
+            final parsed = parseFlashImage(flashImage);
+            presets = parsed.rawPresets;
+            sampleInfos = parsed.rawSampleInfos;
+            deviceSysParams = extractDeviceSysParams(flashImage);
+            userStatePages = parsed.userStatePages;
+          } else {
+            presets = List<Uint8List?>.filled(presetCount, null);
+            sampleInfos = List<Uint8List?>.filled(sampleCount, null);
+          }
+
           controller.updateStatus('Downloading pattern...');
           final patternBlob = await ref
               .read(savedPatternsProvider.notifier)
@@ -64,9 +88,11 @@ class _SavePatternToPlinkyDialogState
           }
 
           final presetsUf2 = generatePresetsUf2(
-            presets: List<Uint8List?>.filled(presetCount, null),
-            sampleInfos: List<Uint8List?>.filled(sampleCount, null),
+            presets: presets,
+            sampleInfos: sampleInfos,
             patternQuarters: patternQuarters,
+            deviceSysParams: deviceSysParams,
+            userStatePages: userStatePages,
           );
 
           controller.updateStatus('Writing PRESETS.UF2...');

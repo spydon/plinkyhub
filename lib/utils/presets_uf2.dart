@@ -556,12 +556,23 @@ ParsedFlashImage parseFlashImage(Uint8List flashImage) {
     );
   }
 
+  // Extract user state pages (floating preset 136, floating pattern quarters
+  // 137-140, global data 141).
+  final userStatePages = <int, Uint8List>{};
+  for (var id = _floatingPresetItemId; id <= _floatingGlobalDataItemId; id++) {
+    final page = pages[id];
+    if (page != null) {
+      userStatePages[id] = page;
+    }
+  }
+
   return ParsedFlashImage(
     presets: presets,
     rawPresets: rawPresets,
     sampleInfos: sampleInfos,
     rawSampleInfos: rawSampleInfos,
     patternQuarters: patternQuarters,
+    userStatePages: userStatePages,
   );
 }
 
@@ -573,6 +584,7 @@ class ParsedFlashImage {
     required this.sampleInfos,
     required this.rawSampleInfos,
     required this.patternQuarters,
+    required this.userStatePages,
   });
 
   /// 32 preset entries, each [presetSize] bytes (null for empty slots).
@@ -596,6 +608,13 @@ class ParsedFlashImage {
 
   /// 96 pattern quarter entries (24 patterns × 4 quarters, null for empty).
   final List<Uint8List?> patternQuarters;
+
+  /// Raw flash pages for user state items keyed by item ID.
+  ///
+  /// Covers the floating preset (136), floating pattern quarters (137-140),
+  /// and global data (141). Pass to [generatePresetsUf2] as [userStatePages]
+  /// to preserve the user's working state across uploads.
+  final Map<int, Uint8List> userStatePages;
 
   /// Returns true if any pattern quarter for the given [patternIndex] is
   /// non-null (i.e., the pattern has data).
@@ -639,6 +658,13 @@ class ParsedFlashImage {
 /// every generated page instead of a zero-initialized fallback, preserving
 /// the user's configuration across uploads.
 ///
+/// [userStatePages] is the map of raw flash pages from [ParsedFlashImage]
+/// covering the floating preset (136), floating pattern quarters (137-140),
+/// and global data (141). When provided, those pages are written verbatim so
+/// the user's working state (active preset edits, MIDI tuning, layout params)
+/// is preserved across uploads. When null, those pages stay erased (0xFF) and
+/// the firmware initializes fresh copies on boot.
+///
 /// When [clearEmpty] is true (default), every flash page is emitted in the
 /// resulting UF2 (with 0xFF for slots without data), so flashing the file
 /// erases unfilled slots on the device. When false, only pages backed by
@@ -649,6 +675,7 @@ Uint8List generatePresetsUf2({
   List<Uint8List?>? patternQuarters,
   bool clearEmpty = true,
   Uint8List? deviceSysParams,
+  Map<int, Uint8List>? userStatePages,
 }) {
   assert(presets.length == presetCount);
   assert(sampleInfos.length <= sampleCount);
@@ -724,13 +751,19 @@ Uint8List generatePresetsUf2({
     pageIndex++;
   }
 
-  // Floating preset (item ID 136), floating pattern quarters (item IDs
-  // 137-140), and global data (item ID 141) are intentionally omitted.
-  // These are all user state, not pack data. Leaving those pages as erased
-  // (0xFF) causes the firmware to initialize fresh copies on boot using the
-  // current firmware's struct layout and defaults. Writing stale data here
-  // would prevent the firmware from applying correct defaults for fields added
-  // in newer firmware versions (e.g. poly_params in LPE preset v17).
+  // User state pages: floating preset (136), floating pattern quarters
+  // (137-140), global data (141). Write verbatim from the device when
+  // available so the user's working state is preserved. When not provided,
+  // pages stay 0xFF and the firmware initializes fresh copies on boot.
+  for (var id = _floatingPresetItemId; id <= _floatingGlobalDataItemId; id++) {
+    final page = userStatePages?[id];
+    if (page != null) {
+      final offset = pageIndex * flashPageSize;
+      flashImage.setRange(offset, offset + flashPageSize, page);
+      writtenPages.add(pageIndex);
+    }
+    pageIndex++;
+  }
 
   // Convert the flash image to UF2 format.
   if (clearEmpty) {
