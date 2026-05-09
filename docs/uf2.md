@@ -120,6 +120,7 @@ Each 2048-byte flash page is laid out as:
 | 128-135  | 8     | SampleInfo                                                    | 1072 bytes    |
 | 136      | 1     | Floating preset (current working copy of preset 0)            | 1552 bytes    |
 | 137-140  | 4     | Floating pattern quarters (current working copy of pattern 0) | 1792 bytes    |
+| 141      | 1     | Global data (MIDI tuning, layout params)                      | variable      |
 
 ### PageFooter (8 bytes)
 
