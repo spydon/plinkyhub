@@ -263,6 +263,7 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
       presets: presets,
       sampleInfos: sampleInfos,
       patternQuarters: patternQuarters,
+      userStatePages: existing.userStatePages,
     );
 
     updateProgress('Writing PRESETS.UF2...');

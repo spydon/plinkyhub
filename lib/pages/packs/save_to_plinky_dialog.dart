@@ -345,6 +345,7 @@ Future<void> _generateAndWriteFiles({
   final wavetableFilesToWrite = hasWavetable ? 1 : 0;
 
   final totalSteps =
+      1 +
       2 +
       sampleSlotMapping.length +
       (patternSlots.isNotEmpty ? 1 : 0) +
@@ -357,6 +358,19 @@ Future<void> _generateAndWriteFiles({
     controller.updateStatus(message);
     controller.updateProgress(completedSteps / totalSteps);
   }
+
+  // Read existing PRESETS.UF2 to preserve the user's device state.
+  reportProgress('Reading existing PRESETS.UF2...');
+  final existingUf2 = await readFileFromDirectory(directory, 'PRESETS.UF2');
+  Uint8List? deviceSysParams;
+  Map<int, Uint8List>? userStatePages;
+  if (existingUf2 != null) {
+    final flashImage = uf2ToData(existingUf2);
+    final parsed = parseFlashImage(flashImage);
+    deviceSysParams = extractDeviceSysParams(flashImage);
+    userStatePages = parsed.userStatePages;
+  }
+  completedSteps++;
 
   // Fetch presets from the database.
   reportProgress('Fetching presets...');
@@ -509,6 +523,8 @@ Future<void> _generateAndWriteFiles({
     sampleInfos: sampleInfos,
     patternQuarters: patternQuarters,
     clearEmpty: clearEmpty,
+    deviceSysParams: deviceSysParams,
+    userStatePages: userStatePages,
   );
 
   if (presetsUf2.isNotEmpty) {
