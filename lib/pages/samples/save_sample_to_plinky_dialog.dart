@@ -147,6 +147,13 @@ class _SaveSampleToPlinkyDialogState
                 );
               }
             },
+            onFinalize: () {
+              if (controller.isMounted) {
+                controller.updateStatus(
+                  'Finalizing SAMPLE$_selectedSlot.UF2...',
+                );
+              }
+            },
           );
           sampleInfos[_selectedSlot] = buildSampleInfo(
             pcmData: pcmBytes,

@@ -561,6 +561,8 @@ Future<void> _generateAndWriteFiles({
         final percent = (writeProgress * 100).toInt();
         controller.updateStatus('Writing SAMPLE$slotIndex.UF2... $percent%');
       },
+      onFinalize: () =>
+          controller.updateStatus('Finalizing SAMPLE$slotIndex.UF2...'),
     );
     completedSteps++;
   }

@@ -127,11 +127,16 @@ Future<Uint8List?> readFileFromDirectory(
 ///
 /// When [onProgress] is provided, data is sent in 64 KB chunks and
 /// [onProgress] is called after each chunk with a value from 0.0 to 1.0.
+///
+/// [onFinalize] is called after all bytes are written but before the stream
+/// is closed. Use it to show a "Finalizing..." status when the close may
+/// take a while (e.g. the device is flushing to flash).
 Future<void> writeFileToDirectory(
   FileSystemDirectoryHandle directory,
   String fileName,
   Uint8List data, {
   ValueChanged<double>? onProgress,
+  VoidCallback? onFinalize,
 }) async {
   final fileHandle = await directory.getFileHandle(
     fileName,
@@ -150,5 +155,6 @@ Future<void> writeFileToDirectory(
       onProgress(position / data.length);
     }
   }
+  onFinalize?.call();
   await writable.close();
 }
