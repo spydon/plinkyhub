@@ -1,4 +1,5 @@
 import 'dart:js_interop';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:web/web.dart' as web;
@@ -123,16 +124,31 @@ Future<Uint8List?> readFileFromDirectory(
 }
 
 /// Writes [data] to a file in the given [directory].
+///
+/// When [onProgress] is provided, data is sent in 64 KB chunks and
+/// [onProgress] is called after each chunk with a value from 0.0 to 1.0.
 Future<void> writeFileToDirectory(
   FileSystemDirectoryHandle directory,
   String fileName,
-  Uint8List data,
-) async {
+  Uint8List data, {
+  ValueChanged<double>? onProgress,
+}) async {
   final fileHandle = await directory.getFileHandle(
     fileName,
     create: true,
   );
   final writable = await fileHandle.createWritable();
-  await writable.write(data);
+  if (onProgress == null || data.isEmpty) {
+    await writable.write(data);
+  } else {
+    const chunkSize = 64 * 1024;
+    var position = 0;
+    while (position < data.length) {
+      final end = min(position + chunkSize, data.length);
+      await writable.write(data.sublist(position, end));
+      position = end;
+      onProgress(position / data.length);
+    }
+  }
   await writable.close();
 }

@@ -45,6 +45,7 @@ class _SaveSampleToPlinkyDialogState
           final sample = widget.sample;
           final supabase = Supabase.instance.client;
 
+          controller.updateProgress(0.0);
           controller.updateStatus('Downloading sample data...');
           final pcmBytes = await supabase.storage
               .from('samples')
@@ -77,13 +78,20 @@ class _SaveSampleToPlinkyDialogState
         onTunnelOfLightsSave: (directory, ref, controller) async {
           final sample = widget.sample;
           final supabase = Supabase.instance.client;
+          const totalSteps = 6;
+          var completedSteps = 0;
+
+          void reportProgress(String message) {
+            controller.updateStatus(message);
+            controller.updateProgress(completedSteps / totalSteps);
+          }
 
           // Read existing PRESETS.UF2 first to preserve other slots. This
           // must happen before any SAMPLE.UF2 write, because writing leaves
           // the Plinky's FAT/USB view of PRESETS.UF2 temporarily corrupted
           // until the device is restarted, causing a "bad magic" parse
           // error on subsequent uploads.
-          controller.updateStatus('Reading existing PRESETS.UF2...');
+          reportProgress('Reading existing PRESETS.UF2...');
           final existingUf2 = await readFileFromDirectory(
             directory,
             'PRESETS.UF2',
@@ -107,37 +115,48 @@ class _SaveSampleToPlinkyDialogState
             presets = List<Uint8List?>.filled(presetCount, null);
             sampleInfos = List<Uint8List?>.filled(sampleCount, null);
           }
+          completedSteps++;
 
-          controller.updateStatus('Downloading sample PCM data...');
+          reportProgress('Downloading sample PCM data...');
           final pcmBytes = await supabase.storage
               .from('samples')
               .download(sample.pcmFilePath);
+          completedSteps++;
 
-          controller.updateStatus(
-            'Generating SAMPLE$_selectedSlot.UF2...',
-          );
+          reportProgress('Generating SAMPLE$_selectedSlot.UF2...');
           final sampleUf2Bytes = sampleToUf2(
             pcmBytes,
             slotIndex: _selectedSlot,
           );
+          completedSteps++;
 
-          controller.updateStatus(
-            'Writing SAMPLE$_selectedSlot.UF2...',
-          );
+          controller.updateStatus('Writing SAMPLE$_selectedSlot.UF2...');
+          controller.updateProgress(completedSteps / totalSteps);
           await writeFileToDirectory(
             directory,
             'SAMPLE$_selectedSlot.UF2',
             sampleUf2Bytes,
+            onProgress: (writeProgress) {
+              if (controller.isMounted) {
+                controller.updateProgress(
+                  (completedSteps + writeProgress) / totalSteps,
+                );
+                final percent = (writeProgress * 100).toInt();
+                controller.updateStatus(
+                  'Writing SAMPLE$_selectedSlot.UF2... $percent%',
+                );
+              }
+            },
           );
-
           sampleInfos[_selectedSlot] = buildSampleInfo(
             pcmData: pcmBytes,
             slicePoints: sample.slicePoints,
             sliceNotes: sample.sliceNotes,
             pitched: sample.pitched,
           );
+          completedSteps++;
 
-          controller.updateStatus('Generating PRESETS.UF2...');
+          reportProgress('Generating PRESETS.UF2...');
           final presetsUf2 = generatePresetsUf2(
             presets: presets,
             sampleInfos: sampleInfos,
@@ -145,9 +164,11 @@ class _SaveSampleToPlinkyDialogState
             deviceSysParams: deviceSysParams,
             userStatePages: userStatePages,
           );
+          completedSteps++;
 
-          controller.updateStatus('Writing PRESETS.UF2...');
+          reportProgress('Writing PRESETS.UF2...');
           await writeFileToDirectory(directory, 'PRESETS.UF2', presetsUf2);
+          completedSteps++;
         },
       ),
     );

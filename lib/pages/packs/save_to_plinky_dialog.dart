@@ -193,6 +193,10 @@ Future<void> _sendPackOverWebUsb({
       onProgress: (value) {
         if (controller.isMounted) {
           controller.updateProgress((completedSteps + value) / totalSteps);
+          final percent = (value * 100).toInt();
+          controller.updateStatus(
+            'Sending sample $sampleNumber/$totalSamples... $percent%',
+          );
         }
       },
     );
@@ -542,14 +546,21 @@ Future<void> _generateAndWriteFiles({
     if (!hasSample && !clearEmpty) {
       continue;
     }
-    reportProgress('Writing SAMPLE$slotIndex.UF2...');
-
     final pcmBytes = samplePcmData[slotIndex] ?? Uint8List(0);
     final sampleUf2Bytes = sampleToUf2(pcmBytes, slotIndex: slotIndex);
+    controller.updateStatus('Writing SAMPLE$slotIndex.UF2...');
+    controller.updateProgress(completedSteps / totalSteps);
     await writeFileToDirectory(
       directory,
       'SAMPLE$slotIndex.UF2',
       sampleUf2Bytes,
+      onProgress: (writeProgress) {
+        controller.updateProgress(
+          (completedSteps + writeProgress) / totalSteps,
+        );
+        final percent = (writeProgress * 100).toInt();
+        controller.updateStatus('Writing SAMPLE$slotIndex.UF2... $percent%');
+      },
     );
     completedSteps++;
   }
