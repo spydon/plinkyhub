@@ -124,7 +124,7 @@ class _BulkUploaderTabState extends State<BulkUploaderTab> {
           const SizedBox(height: 16),
           Center(
             child: PlinkyButton(
-              onPressed: _hasContent ? _uploadToPlinky : null,
+              onPressed: (_hasContent || _clearEmpty) ? _uploadToPlinky : null,
               icon: Icons.cloud_upload,
               label: 'Upload to Plinky',
             ),

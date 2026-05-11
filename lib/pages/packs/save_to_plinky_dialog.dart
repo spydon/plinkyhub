@@ -284,15 +284,15 @@ Future<void> _sendPackOverWebUsb({
     controller.updateProgress(completedSteps / totalSteps);
   }
 
-  // Clear unselected preset slots when requested.
+  // Reset unselected preset slots to factory defaults when requested.
   for (final presetIndex in emptyPresetIndices) {
     presetCounter++;
     controller.updateStatus(
-      'Clearing preset $presetCounter/$totalPresets '
+      'Resetting preset $presetCounter/$totalPresets '
       '(slot ${presetIndex + 1})...',
     );
     notifier.presetNumber = presetIndex;
-    notifier.loadPresetFromBytes(Uint8List(presetSize));
+    notifier.loadPresetFromBytes(buildDefaultPresetBytes());
     await notifier.savePreset();
     completedSteps++;
     controller.updateProgress(completedSteps / totalSteps);
