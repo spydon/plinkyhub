@@ -33,6 +33,7 @@ _SavedSample _$SavedSampleFromJson(Map<String, dynamic> json) => _SavedSample(
           ?.map((e) => (e as num).toInt())
           .toList() ??
       defaultSliceNotes,
+  loopMode: (json['loop_mode'] as num?)?.toInt() ?? 0,
   contentHash: json['content_hash'] as String?,
 );
 
@@ -56,5 +57,6 @@ Map<String, dynamic> _$SavedSampleToJson(_SavedSample instance) =>
       'fine_tune': instance.fineTune,
       'pitched': instance.pitched,
       'slice_notes': instance.sliceNotes,
+      'loop_mode': instance.loopMode,
       'content_hash': instance.contentHash,
     };

@@ -101,7 +101,9 @@ Future<void> _sendPackOverWebUsb({
   if (sampleIds.isNotEmpty) {
     final response = await supabase
         .from('samples')
-        .select('id, pcm_file_path, slice_points, slice_notes, pitched')
+        .select(
+          'id, pcm_file_path, slice_points, slice_notes, pitched, loop_mode',
+        )
         .inFilter('id', sampleIds.toList());
     for (final row in response as List) {
       final map = row as Map<String, dynamic>;
@@ -174,12 +176,14 @@ Future<void> _sendPackOverWebUsb({
             .toList() ??
         List.of(defaultSliceNotes);
     final pitched = metadata['pitched'] as bool? ?? false;
+    final loopMode = metadata['loop_mode'] as int? ?? 0;
 
     final sampleInfo = buildSampleInfo(
       pcmData: pcmBytes,
       slicePoints: slicePoints,
       sliceNotes: sliceNotes,
       pitched: pitched,
+      loopMode: loopMode,
     );
 
     controller.updateStatus(
@@ -401,7 +405,7 @@ Future<void> _generateAndWriteFiles({
         .from('samples')
         .select(
           'id, pcm_file_path, slice_points, slice_notes, '
-          'pitched, base_note, fine_tune',
+          'pitched, base_note, fine_tune, loop_mode',
         )
         .inFilter('id', sampleIds.toList());
     for (final row in response as List) {
@@ -447,12 +451,14 @@ Future<void> _generateAndWriteFiles({
             .toList() ??
         List.of(defaultSliceNotes);
     final pitched = metadata['pitched'] as bool? ?? false;
+    final loopMode = metadata['loop_mode'] as int? ?? 0;
 
     sampleInfos[slotIndex] = buildSampleInfo(
       pcmData: pcmBytes,
       slicePoints: slicePoints,
       sliceNotes: sliceNotes,
       pitched: pitched,
+      loopMode: loopMode,
     );
     completedSteps++;
   }

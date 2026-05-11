@@ -18,6 +18,7 @@ abstract class SampleWrite with _$SampleWrite {
     @Default(0) int fineTune,
     @Default(false) bool pitched,
     @Default(defaultSliceNotes) List<int> sliceNotes,
+    @Default(0) int loopMode,
     String? contentHash,
   }) = _SampleWrite;
 }

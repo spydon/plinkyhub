@@ -42,6 +42,7 @@ abstract class PackUploadSample with _$PackUploadSample {
     @Default(0) int fineTune,
     @Default(false) bool pitched,
     @Default([]) List<int> sliceNotes,
+    @Default(0) int loopMode,
     String? contentHash,
     String? existingId,
   }) = _PackUploadSample;

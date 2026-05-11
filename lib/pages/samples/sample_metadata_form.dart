@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:plinkyhub/models/sample_loop_mode.dart';
 import 'package:plinkyhub/pages/samples/base_note_selector.dart';
+import 'package:plinkyhub/pages/samples/sample_loop_mode_selector.dart';
 import 'package:plinkyhub/pages/samples/sample_mode_selector.dart';
 import 'package:plinkyhub/pages/samples/slice_points_editor.dart';
 
@@ -13,6 +15,8 @@ class SampleMetadataForm extends StatelessWidget {
     required this.onIsPublicChanged,
     required this.pitched,
     required this.onPitchedChanged,
+    required this.loopMode,
+    required this.onLoopModeChanged,
     required this.baseNote,
     required this.onBaseNoteChanged,
     required this.fineTune,
@@ -36,6 +40,8 @@ class SampleMetadataForm extends StatelessWidget {
   final ValueChanged<bool?> onIsPublicChanged;
   final bool pitched;
   final ValueChanged<bool> onPitchedChanged;
+  final SampleLoopMode loopMode;
+  final ValueChanged<SampleLoopMode> onLoopModeChanged;
   final int baseNote;
   final ValueChanged<int> onBaseNoteChanged;
   final int fineTune;
@@ -90,6 +96,12 @@ class SampleMetadataForm extends StatelessWidget {
           pitched: pitched,
           enabled: enabled,
           onChanged: onPitchedChanged,
+        ),
+        const SizedBox(height: 16),
+        SampleLoopModeSelector(
+          loopMode: loopMode,
+          enabled: enabled,
+          onChanged: onLoopModeChanged,
         ),
         if (!pitched) ...[
           const SizedBox(height: 16),

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/sample_loop_mode.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
 import 'package:plinkyhub/pages/samples/sample_metadata_form.dart';
@@ -42,6 +43,7 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
   int _baseNote = 60;
   int _fineTune = 0;
   bool _pitched = false;
+  SampleLoopMode _loopMode = SampleLoopMode.oneShotSlice;
   List<double> _slicePoints = List.of(defaultSlicePoints);
   List<int> _sliceNotes = List.of(defaultSliceNotes);
   int? _pcmFrameCount;
@@ -58,6 +60,7 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
       _baseNote = sample.baseNote;
       _fineTune = sample.fineTune;
       _pitched = sample.pitched;
+      _loopMode = SampleLoopMode.fromValue(sample.loopMode);
       _slicePoints = List.of(sample.slicePoints);
       _sliceNotes = List.of(sample.sliceNotes);
       _fileName = sample.filePath.split('/').last;
@@ -103,6 +106,7 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
         _baseNote = sample.baseNote;
         _fineTune = sample.fineTune;
         _pitched = sample.pitched;
+        _loopMode = SampleLoopMode.fromValue(sample.loopMode);
         _slicePoints = List.of(sample.slicePoints);
         _sliceNotes = List.of(sample.sliceNotes);
         _fileName = sample.filePath.split('/').last;
@@ -135,6 +139,7 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
       _baseNote = 60;
       _fineTune = 0;
       _pitched = false;
+      _loopMode = SampleLoopMode.oneShotSlice;
       _slicePoints = List.of(defaultSlicePoints);
       _sliceNotes = List.of(defaultSliceNotes);
       _pcmFrameCount = null;
@@ -339,6 +344,7 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
             _slicePoints = sampleInfo.slicePoints;
             _sliceNotes = sampleInfo.sliceNotes;
             _pitched = sampleInfo.pitched;
+            _loopMode = SampleLoopMode.fromValue(sampleInfo.loopMode);
           }
         });
       }
@@ -391,6 +397,7 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
             fineTune: _fineTune,
             pitched: _pitched,
             sliceNotes: _sliceNotes,
+            loopMode: _loopMode.value,
             updatedAt: DateTime.now(),
           ) ??
           SavedSample(
@@ -408,6 +415,7 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
             fineTune: _fineTune,
             pitched: _pitched,
             sliceNotes: _sliceNotes,
+            loopMode: _loopMode.value,
           );
 
       if (widget.sampleToEdit != null) {
@@ -563,6 +571,8 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
         onIsPublicChanged: (value) => setState(() => _isPublic = value ?? true),
         pitched: _pitched,
         onPitchedChanged: (value) => setState(() => _pitched = value),
+        loopMode: _loopMode,
+        onLoopModeChanged: (value) => setState(() => _loopMode = value),
         baseNote: _baseNote,
         onBaseNoteChanged: (value) => setState(() => _baseNote = value),
         fineTune: _fineTune,

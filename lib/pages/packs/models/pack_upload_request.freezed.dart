@@ -634,7 +634,7 @@ as String?,
 /// @nodoc
 mixin _$PackUploadSample {
 
- int get slotIndex; String get userId; String get name; String get filePath; String get pcmFilePath; String get description; bool get isPublic; List<double> get slicePoints; int get baseNote; int get fineTune; bool get pitched; List<int> get sliceNotes; String? get contentHash; String? get existingId;
+ int get slotIndex; String get userId; String get name; String get filePath; String get pcmFilePath; String get description; bool get isPublic; List<double> get slicePoints; int get baseNote; int get fineTune; bool get pitched; List<int> get sliceNotes; int get loopMode; String? get contentHash; String? get existingId;
 /// Create a copy of PackUploadSample
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -647,16 +647,16 @@ $PackUploadSampleCopyWith<PackUploadSample> get copyWith => _$PackUploadSampleCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PackUploadSample&&(identical(other.slotIndex, slotIndex) || other.slotIndex == slotIndex)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other.slicePoints, slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other.sliceNotes, sliceNotes)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.existingId, existingId) || other.existingId == existingId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PackUploadSample&&(identical(other.slotIndex, slotIndex) || other.slotIndex == slotIndex)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other.slicePoints, slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other.sliceNotes, sliceNotes)&&(identical(other.loopMode, loopMode) || other.loopMode == loopMode)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.existingId, existingId) || other.existingId == existingId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,slotIndex,userId,name,filePath,pcmFilePath,description,isPublic,const DeepCollectionEquality().hash(slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(sliceNotes),contentHash,existingId);
+int get hashCode => Object.hash(runtimeType,slotIndex,userId,name,filePath,pcmFilePath,description,isPublic,const DeepCollectionEquality().hash(slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(sliceNotes),loopMode,contentHash,existingId);
 
 @override
 String toString() {
-  return 'PackUploadSample(slotIndex: $slotIndex, userId: $userId, name: $name, filePath: $filePath, pcmFilePath: $pcmFilePath, description: $description, isPublic: $isPublic, slicePoints: $slicePoints, baseNote: $baseNote, fineTune: $fineTune, pitched: $pitched, sliceNotes: $sliceNotes, contentHash: $contentHash, existingId: $existingId)';
+  return 'PackUploadSample(slotIndex: $slotIndex, userId: $userId, name: $name, filePath: $filePath, pcmFilePath: $pcmFilePath, description: $description, isPublic: $isPublic, slicePoints: $slicePoints, baseNote: $baseNote, fineTune: $fineTune, pitched: $pitched, sliceNotes: $sliceNotes, loopMode: $loopMode, contentHash: $contentHash, existingId: $existingId)';
 }
 
 
@@ -667,7 +667,7 @@ abstract mixin class $PackUploadSampleCopyWith<$Res>  {
   factory $PackUploadSampleCopyWith(PackUploadSample value, $Res Function(PackUploadSample) _then) = _$PackUploadSampleCopyWithImpl;
 @useResult
 $Res call({
- int slotIndex, String userId, String name, String filePath, String pcmFilePath, String description, bool isPublic, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, String? contentHash, String? existingId
+ int slotIndex, String userId, String name, String filePath, String pcmFilePath, String description, bool isPublic, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, int loopMode, String? contentHash, String? existingId
 });
 
 
@@ -684,7 +684,7 @@ class _$PackUploadSampleCopyWithImpl<$Res>
 
 /// Create a copy of PackUploadSample
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? slotIndex = null,Object? userId = null,Object? name = null,Object? filePath = null,Object? pcmFilePath = null,Object? description = null,Object? isPublic = null,Object? slicePoints = null,Object? baseNote = null,Object? fineTune = null,Object? pitched = null,Object? sliceNotes = null,Object? contentHash = freezed,Object? existingId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? slotIndex = null,Object? userId = null,Object? name = null,Object? filePath = null,Object? pcmFilePath = null,Object? description = null,Object? isPublic = null,Object? slicePoints = null,Object? baseNote = null,Object? fineTune = null,Object? pitched = null,Object? sliceNotes = null,Object? loopMode = null,Object? contentHash = freezed,Object? existingId = freezed,}) {
   return _then(_self.copyWith(
 slotIndex: null == slotIndex ? _self.slotIndex : slotIndex // ignore: cast_nullable_to_non_nullable
 as int,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -698,7 +698,8 @@ as List<double>,baseNote: null == baseNote ? _self.baseNote : baseNote // ignore
 as int,fineTune: null == fineTune ? _self.fineTune : fineTune // ignore: cast_nullable_to_non_nullable
 as int,pitched: null == pitched ? _self.pitched : pitched // ignore: cast_nullable_to_non_nullable
 as bool,sliceNotes: null == sliceNotes ? _self.sliceNotes : sliceNotes // ignore: cast_nullable_to_non_nullable
-as List<int>,contentHash: freezed == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
+as List<int>,loopMode: null == loopMode ? _self.loopMode : loopMode // ignore: cast_nullable_to_non_nullable
+as int,contentHash: freezed == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
 as String?,existingId: freezed == existingId ? _self.existingId : existingId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -785,10 +786,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int slotIndex,  String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  String? contentHash,  String? existingId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int slotIndex,  String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  int loopMode,  String? contentHash,  String? existingId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PackUploadSample() when $default != null:
-return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.contentHash,_that.existingId);case _:
+return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.loopMode,_that.contentHash,_that.existingId);case _:
   return orElse();
 
 }
@@ -806,10 +807,10 @@ return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcm
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int slotIndex,  String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  String? contentHash,  String? existingId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int slotIndex,  String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  int loopMode,  String? contentHash,  String? existingId)  $default,) {final _that = this;
 switch (_that) {
 case _PackUploadSample():
-return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.contentHash,_that.existingId);case _:
+return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.loopMode,_that.contentHash,_that.existingId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -826,10 +827,10 @@ return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcm
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int slotIndex,  String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  String? contentHash,  String? existingId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int slotIndex,  String userId,  String name,  String filePath,  String pcmFilePath,  String description,  bool isPublic,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  int loopMode,  String? contentHash,  String? existingId)?  $default,) {final _that = this;
 switch (_that) {
 case _PackUploadSample() when $default != null:
-return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.contentHash,_that.existingId);case _:
+return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.description,_that.isPublic,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.loopMode,_that.contentHash,_that.existingId);case _:
   return null;
 
 }
@@ -841,7 +842,7 @@ return $default(_that.slotIndex,_that.userId,_that.name,_that.filePath,_that.pcm
 @JsonSerializable(createFactory: false)
 
 class _PackUploadSample implements PackUploadSample {
-  const _PackUploadSample({required this.slotIndex, required this.userId, required this.name, required this.filePath, required this.pcmFilePath, this.description = '', this.isPublic = false, final  List<double> slicePoints = const [], this.baseNote = 60, this.fineTune = 0, this.pitched = false, final  List<int> sliceNotes = const [], this.contentHash, this.existingId}): _slicePoints = slicePoints,_sliceNotes = sliceNotes;
+  const _PackUploadSample({required this.slotIndex, required this.userId, required this.name, required this.filePath, required this.pcmFilePath, this.description = '', this.isPublic = false, final  List<double> slicePoints = const [], this.baseNote = 60, this.fineTune = 0, this.pitched = false, final  List<int> sliceNotes = const [], this.loopMode = 0, this.contentHash, this.existingId}): _slicePoints = slicePoints,_sliceNotes = sliceNotes;
   
 
 @override final  int slotIndex;
@@ -868,6 +869,7 @@ class _PackUploadSample implements PackUploadSample {
   return EqualUnmodifiableListView(_sliceNotes);
 }
 
+@override@JsonKey() final  int loopMode;
 @override final  String? contentHash;
 @override final  String? existingId;
 
@@ -884,16 +886,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PackUploadSample&&(identical(other.slotIndex, slotIndex) || other.slotIndex == slotIndex)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other._slicePoints, _slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other._sliceNotes, _sliceNotes)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.existingId, existingId) || other.existingId == existingId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PackUploadSample&&(identical(other.slotIndex, slotIndex) || other.slotIndex == slotIndex)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&const DeepCollectionEquality().equals(other._slicePoints, _slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other._sliceNotes, _sliceNotes)&&(identical(other.loopMode, loopMode) || other.loopMode == loopMode)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.existingId, existingId) || other.existingId == existingId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,slotIndex,userId,name,filePath,pcmFilePath,description,isPublic,const DeepCollectionEquality().hash(_slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(_sliceNotes),contentHash,existingId);
+int get hashCode => Object.hash(runtimeType,slotIndex,userId,name,filePath,pcmFilePath,description,isPublic,const DeepCollectionEquality().hash(_slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(_sliceNotes),loopMode,contentHash,existingId);
 
 @override
 String toString() {
-  return 'PackUploadSample(slotIndex: $slotIndex, userId: $userId, name: $name, filePath: $filePath, pcmFilePath: $pcmFilePath, description: $description, isPublic: $isPublic, slicePoints: $slicePoints, baseNote: $baseNote, fineTune: $fineTune, pitched: $pitched, sliceNotes: $sliceNotes, contentHash: $contentHash, existingId: $existingId)';
+  return 'PackUploadSample(slotIndex: $slotIndex, userId: $userId, name: $name, filePath: $filePath, pcmFilePath: $pcmFilePath, description: $description, isPublic: $isPublic, slicePoints: $slicePoints, baseNote: $baseNote, fineTune: $fineTune, pitched: $pitched, sliceNotes: $sliceNotes, loopMode: $loopMode, contentHash: $contentHash, existingId: $existingId)';
 }
 
 
@@ -904,7 +906,7 @@ abstract mixin class _$PackUploadSampleCopyWith<$Res> implements $PackUploadSamp
   factory _$PackUploadSampleCopyWith(_PackUploadSample value, $Res Function(_PackUploadSample) _then) = __$PackUploadSampleCopyWithImpl;
 @override @useResult
 $Res call({
- int slotIndex, String userId, String name, String filePath, String pcmFilePath, String description, bool isPublic, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, String? contentHash, String? existingId
+ int slotIndex, String userId, String name, String filePath, String pcmFilePath, String description, bool isPublic, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, int loopMode, String? contentHash, String? existingId
 });
 
 
@@ -921,7 +923,7 @@ class __$PackUploadSampleCopyWithImpl<$Res>
 
 /// Create a copy of PackUploadSample
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? slotIndex = null,Object? userId = null,Object? name = null,Object? filePath = null,Object? pcmFilePath = null,Object? description = null,Object? isPublic = null,Object? slicePoints = null,Object? baseNote = null,Object? fineTune = null,Object? pitched = null,Object? sliceNotes = null,Object? contentHash = freezed,Object? existingId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? slotIndex = null,Object? userId = null,Object? name = null,Object? filePath = null,Object? pcmFilePath = null,Object? description = null,Object? isPublic = null,Object? slicePoints = null,Object? baseNote = null,Object? fineTune = null,Object? pitched = null,Object? sliceNotes = null,Object? loopMode = null,Object? contentHash = freezed,Object? existingId = freezed,}) {
   return _then(_PackUploadSample(
 slotIndex: null == slotIndex ? _self.slotIndex : slotIndex // ignore: cast_nullable_to_non_nullable
 as int,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -935,7 +937,8 @@ as List<double>,baseNote: null == baseNote ? _self.baseNote : baseNote // ignore
 as int,fineTune: null == fineTune ? _self.fineTune : fineTune // ignore: cast_nullable_to_non_nullable
 as int,pitched: null == pitched ? _self.pitched : pitched // ignore: cast_nullable_to_non_nullable
 as bool,sliceNotes: null == sliceNotes ? _self._sliceNotes : sliceNotes // ignore: cast_nullable_to_non_nullable
-as List<int>,contentHash: freezed == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
+as List<int>,loopMode: null == loopMode ? _self.loopMode : loopMode // ignore: cast_nullable_to_non_nullable
+as int,contentHash: freezed == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
 as String?,existingId: freezed == existingId ? _self.existingId : existingId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

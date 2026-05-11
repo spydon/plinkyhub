@@ -85,6 +85,7 @@ class _SavePresetToPlinkyDialogState
               slicePoints: sample.slicePoints,
               sliceNotes: sample.sliceNotes,
               pitched: sample.pitched,
+              loopMode: sample.loopMode,
             );
 
             controller.updateStatus('Sending sample to Plinky...');
@@ -181,6 +182,7 @@ class _SavePresetToPlinkyDialogState
               slicePoints: sample.slicePoints,
               sliceNotes: sample.sliceNotes,
               pitched: sample.pitched,
+              loopMode: sample.loopMode,
             );
 
             setPresetSampleSlot(presetData, _selectedSampleSlot);

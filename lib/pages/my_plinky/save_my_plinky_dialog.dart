@@ -135,7 +135,7 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
           .from('samples')
           .select(
             'id, pcm_file_path, slice_points, slice_notes, '
-            'pitched, base_note, fine_tune',
+            'pitched, base_note, fine_tune, loop_mode',
           )
           .inFilter('id', linkedSampleIds.toList());
       for (final row in response as List) {
@@ -193,12 +193,14 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
               .toList() ??
           List.of(defaultSliceNotes);
       final pitched = metadata['pitched'] as bool? ?? false;
+      final loopMode = metadata['loop_mode'] as int? ?? 0;
 
       sampleInfos[slotIndex] = buildSampleInfo(
         pcmData: pcmBytes,
         slicePoints: slicePoints,
         sliceNotes: sliceNotes,
         pitched: pitched,
+        loopMode: loopMode,
       );
     }
 

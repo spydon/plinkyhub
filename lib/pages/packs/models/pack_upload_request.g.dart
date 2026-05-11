@@ -40,6 +40,7 @@ Map<String, dynamic> _$PackUploadSampleToJson(_PackUploadSample instance) =>
       'fine_tune': instance.fineTune,
       'pitched': instance.pitched,
       'slice_notes': instance.sliceNotes,
+      'loop_mode': instance.loopMode,
       'content_hash': instance.contentHash,
       'existing_id': instance.existingId,
     };

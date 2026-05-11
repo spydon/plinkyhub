@@ -672,6 +672,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
                 info?.slicePoints ?? List<double>.of(defaultSlicePoints),
             sliceNotes: info?.sliceNotes ?? List<int>.of(defaultSliceNotes),
             pitched: info?.pitched ?? false,
+            loopMode: info?.loopMode ?? 0,
             contentHash: _sampleHashes[slotIndex],
           ),
         );

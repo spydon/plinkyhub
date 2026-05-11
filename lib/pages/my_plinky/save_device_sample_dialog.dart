@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/sample_loop_mode.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/samples/models/sample_write.dart';
 import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
@@ -35,6 +36,7 @@ class _SaveDeviceSampleDialogState
   late List<double> _slicePoints;
   late List<int> _sliceNotes;
   late bool _pitched;
+  late SampleLoopMode _loopMode;
   int _baseNote = 60;
   int _fineTune = 0;
   bool _isPublic = true;
@@ -52,6 +54,7 @@ class _SaveDeviceSampleDialogState
         ? List.of(info.sliceNotes)
         : List.of(defaultSliceNotes);
     _pitched = info?.pitched ?? false;
+    _loopMode = SampleLoopMode.fromValue(info?.loopMode ?? 0);
     _wavBytes = plinkyPcmToWav(widget.pcmBytes);
   }
 
@@ -109,6 +112,7 @@ class _SaveDeviceSampleDialogState
         slicePoints: _slicePoints,
         sliceNotes: _sliceNotes,
         pitched: _pitched,
+        loopMode: _loopMode.value,
         baseNote: _baseNote,
         fineTune: _fineTune,
         contentHash: contentHash,
@@ -160,6 +164,8 @@ class _SaveDeviceSampleDialogState
                     setState(() => _isPublic = value ?? true),
                 pitched: _pitched,
                 onPitchedChanged: (value) => setState(() => _pitched = value),
+                loopMode: _loopMode,
+                onLoopModeChanged: (value) => setState(() => _loopMode = value),
                 baseNote: _baseNote,
                 onBaseNoteChanged: (value) => setState(() => _baseNote = value),
                 fineTune: _fineTune,

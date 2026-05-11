@@ -19,5 +19,6 @@ Map<String, dynamic> _$SampleWriteToJson(_SampleWrite instance) =>
       'fine_tune': instance.fineTune,
       'pitched': instance.pitched,
       'slice_notes': instance.sliceNotes,
+      'loop_mode': instance.loopMode,
       'content_hash': instance.contentHash,
     };

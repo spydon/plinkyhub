@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/sample_loop_mode.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
 import 'package:plinkyhub/pages/samples/sample_metadata_form.dart';
@@ -40,6 +41,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
   int _baseNote = 60;
   int _fineTune = 0;
   bool _pitched = false;
+  SampleLoopMode _loopMode = SampleLoopMode.oneShotSlice;
   List<double> _slicePoints = List.of(defaultSlicePoints);
   List<int> _sliceNotes = List.of(defaultSliceNotes);
 
@@ -65,6 +67,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
       _baseNote = 60;
       _fineTune = 0;
       _pitched = false;
+      _loopMode = SampleLoopMode.oneShotSlice;
       _slicePoints = List.of(defaultSlicePoints);
       _sliceNotes = List.of(defaultSliceNotes);
     });
@@ -143,6 +146,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
             _slicePoints = sampleInfo.slicePoints;
             _sliceNotes = sampleInfo.sliceNotes;
             _pitched = sampleInfo.pitched;
+            _loopMode = SampleLoopMode.fromValue(sampleInfo.loopMode);
           }
           _step = _LoadStep.review;
         });
@@ -189,6 +193,7 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
         fineTune: _fineTune,
         pitched: _pitched,
         sliceNotes: _sliceNotes,
+        loopMode: _loopMode.value,
       );
 
       await ref
@@ -281,6 +286,8 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
               setState(() => _isPublic = value ?? true),
           pitched: _pitched,
           onPitchedChanged: (value) => setState(() => _pitched = value),
+          loopMode: _loopMode,
+          onLoopModeChanged: (value) => setState(() => _loopMode = value),
           baseNote: _baseNote,
           onBaseNoteChanged: (value) => setState(() => _baseNote = value),
           fineTune: _fineTune,

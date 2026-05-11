@@ -78,6 +78,7 @@ class SavedSamplesNotifier extends SavedItemsNotifier<SavedSample> {
         fineTune: sample.fineTune,
         pitched: sample.pitched,
         sliceNotes: sample.sliceNotes,
+        loopMode: sample.loopMode,
         contentHash: computeContentHash(pcmBytes),
       );
       await supabase.from('samples').insert(write.toJson());
@@ -104,6 +105,7 @@ class SavedSamplesNotifier extends SavedItemsNotifier<SavedSample> {
         fineTune: sample.fineTune,
         pitched: sample.pitched,
         sliceNotes: sample.sliceNotes,
+        loopMode: sample.loopMode,
       );
       await supabase.from('samples').update(write.toJson()).eq('id', sample.id);
       await refreshAll();

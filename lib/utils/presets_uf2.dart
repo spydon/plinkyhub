@@ -330,11 +330,14 @@ void _writePage(
 /// [slicePoints] are fractional positions (0.0-1.0) for 8 slices.
 /// [sliceNotes] are Plinky note values (0-96, add 12 for MIDI).
 /// [pitched] whether the sample is in pitched/multisample mode.
+/// [loopMode] 2-bit loop mode: 0=one-shot slice, 1=loop slice,
+/// 2=one-shot all, 3=loop all.
 Uint8List buildSampleInfo({
   required Uint8List pcmData,
   required List<double> slicePoints,
   required List<int> sliceNotes,
   required bool pitched,
+  int loopMode = 0,
 }) {
   final sampleLength = pcmData.length ~/ 2; // 16-bit samples → frame count
   final info = ByteData(sampleInfoSize);
@@ -370,8 +373,7 @@ Uint8List buildSampleInfo({
   const pitchedOffset = notesOffset + 8; // 1068
   info.setUint8(pitchedOffset, pitched ? 1 : 0);
 
-  // loop mode: default to one-shot slice (0).
-  info.setUint8(pitchedOffset + 1, 0);
+  info.setUint8(pitchedOffset + 1, loopMode.clamp(0, 3));
 
   // paddy[2] already zero.
 
@@ -435,6 +437,7 @@ class ParsedSampleInfo {
     required this.slicePoints,
     required this.sliceNotes,
     required this.pitched,
+    required this.loopMode,
   });
 
   /// Total number of PCM frames in the sample.
@@ -448,6 +451,9 @@ class ParsedSampleInfo {
 
   /// Whether the sample is in pitched/multisample mode.
   final bool pitched;
+
+  /// Loop mode: 0=one-shot slice, 1=loop slice, 2=one-shot all, 3=loop all.
+  final int loopMode;
 }
 
 /// Parses a 1072-byte SampleInfo struct and returns extracted metadata.
@@ -493,11 +499,15 @@ ParsedSampleInfo? parseSampleInfo(Uint8List sampleInfoBytes) {
   const pitchedOffset = 1068;
   final pitched = data.getUint8(pitchedOffset) != 0;
 
+  // Read loop mode at offset 1069.
+  final loopMode = data.getUint8(pitchedOffset + 1).clamp(0, 3);
+
   return ParsedSampleInfo(
     sampleLength: sampleLength,
     slicePoints: slicePoints,
     sliceNotes: sliceNotes,
     pitched: pitched,
+    loopMode: loopMode,
   );
 }
 
