@@ -13,41 +13,30 @@ class SampleLoopModeSelector extends StatelessWidget {
   final bool enabled;
   final ValueChanged<SampleLoopMode> onChanged;
 
+  static const _labels = {
+    SampleLoopMode.oneShotSlice: 'One-shot, slice',
+    SampleLoopMode.loopSlice: 'Loop, slice',
+    SampleLoopMode.oneShotAll: 'One-shot, all',
+    SampleLoopMode.loopAll: 'Loop, all',
+  };
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Loop',
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: 8),
-        SegmentedButton<SampleLoopMode>(
-          segments: const [
-            ButtonSegment(
-              value: SampleLoopMode.oneShotSlice,
-              label: Text('One-shot\nslice', textAlign: TextAlign.center),
+    return DropdownButtonFormField<SampleLoopMode>(
+      initialValue: loopMode,
+      decoration: const InputDecoration(
+        labelText: 'Loop mode',
+        border: OutlineInputBorder(),
+      ),
+      items: SampleLoopMode.values
+          .map(
+            (mode) => DropdownMenuItem(
+              value: mode,
+              child: Text(_labels[mode]!),
             ),
-            ButtonSegment(
-              value: SampleLoopMode.loopSlice,
-              label: Text('Loop\nslice', textAlign: TextAlign.center),
-            ),
-            ButtonSegment(
-              value: SampleLoopMode.oneShotAll,
-              label: Text('One-shot\nall', textAlign: TextAlign.center),
-            ),
-            ButtonSegment(
-              value: SampleLoopMode.loopAll,
-              label: Text('Loop\nall', textAlign: TextAlign.center),
-            ),
-          ],
-          selected: {loopMode},
-          onSelectionChanged: enabled
-              ? (selection) => onChanged(selection.first)
-              : null,
-        ),
-      ],
+          )
+          .toList(),
+      onChanged: enabled ? (value) => onChanged(value!) : null,
     );
   }
 }
