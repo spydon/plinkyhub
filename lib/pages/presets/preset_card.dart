@@ -61,13 +61,22 @@ class _PresetCardState extends ConsumerState<PresetCard> {
                     ),
                   ),
                   if (preset.category.isNotEmpty)
-                    Chip(
-                      label: Text(
-                        PresetCategory.fromName(preset.category)?.label ??
-                            preset.category,
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      visualDensity: VisualDensity.compact,
+                    Builder(
+                      builder: (context) {
+                        final categoryLabel =
+                            PresetCategory.fromName(preset.category)?.label ??
+                            preset.category;
+                        if (categoryLabel.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return Chip(
+                          label: Text(
+                            categoryLabel,
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                        );
+                      },
                     ),
                 ],
               ),
