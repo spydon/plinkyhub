@@ -191,7 +191,7 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
 
       if (mounted) {
         setState(() {
-          _wavBytes = bytes;
+          _wavBytes = frameCount != null ? bytes : null;
           _pcmFrameCount = frameCount;
           _isConverting = false;
           _sampleTooLongWarning = warning;
@@ -546,22 +546,36 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
                     ],
                   ],
                 )
-              : Row(
+              : Column(
                   key: const ValueKey('clear-sample'),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: Text(
-                        _fileName ?? 'Sample loaded',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _fileName ?? 'Sample loaded',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        PlinkyButton(
+                          onPressed: _isUploading ? null : _clearSample,
+                          icon: Icons.clear,
+                          label: 'Clear sample',
+                        ),
+                      ],
+                    ),
+                    if (_sampleTooLongWarning != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _sampleTooLongWarning!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    PlinkyButton(
-                      onPressed: _isUploading ? null : _clearSample,
-                      icon: Icons.clear,
-                      label: 'Clear sample',
-                    ),
+                    ],
                   ],
                 ),
         ),
