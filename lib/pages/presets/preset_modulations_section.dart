@@ -48,9 +48,9 @@ class PresetModulationsSection extends StatelessWidget {
                     accelerometerYEntries.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _KnobRow(
-                    leftLabel: 'Accelerometer X',
+                    leftLabel: 'Mod Source X',
                     leftEntries: accelerometerXEntries,
-                    rightLabel: 'Accelerometer Y',
+                    rightLabel: 'Mod Source Y',
                     rightEntries: accelerometerYEntries,
                     isNarrow: isNarrow,
                     hideEmptySides: true,
