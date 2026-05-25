@@ -24,8 +24,8 @@ class PresetModulationsSection extends StatelessWidget {
 
     final knobAEntries = _collectEntries(preset, (m) => m.a);
     final knobBEntries = _collectEntries(preset, (m) => m.b);
-    final knobXEntries = _collectEntries(preset, (m) => m.x);
-    final knobYEntries = _collectEntries(preset, (m) => m.y);
+    final accelerometerXEntries = _collectEntries(preset, (m) => m.x);
+    final accelerometerYEntries = _collectEntries(preset, (m) => m.y);
 
     return Card(
       margin: const EdgeInsets.only(top: 8),
@@ -44,13 +44,14 @@ class PresetModulationsSection extends StatelessWidget {
                   rightEntries: knobBEntries,
                   isNarrow: isNarrow,
                 ),
-                if (knobXEntries.isNotEmpty || knobYEntries.isNotEmpty) ...[
+                if (accelerometerXEntries.isNotEmpty ||
+                    accelerometerYEntries.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _KnobRow(
-                    leftLabel: 'Knob X',
-                    leftEntries: knobXEntries,
-                    rightLabel: 'Knob Y',
-                    rightEntries: knobYEntries,
+                    leftLabel: 'Accelerometer X',
+                    leftEntries: accelerometerXEntries,
+                    rightLabel: 'Accelerometer Y',
+                    rightEntries: accelerometerYEntries,
                     isNarrow: isNarrow,
                     hideEmptySides: true,
                   ),
