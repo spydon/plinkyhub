@@ -127,10 +127,10 @@ Uint8List sampleToUf2(Uint8List data, {int slotIndex = 0}) {
     );
   }
 
-  final trimmedData = data.length > sampleSlotSize
-      ? data.sublist(0, sampleSlotSize)
-      : data;
-  return dataToUf2(trimmedData, sampleSlotAddresses[slotIndex]);
+  final paddedData = Uint8List(sampleSlotSize);
+  final sourceLength = data.length.clamp(0, sampleSlotSize);
+  paddedData.setRange(0, sourceLength, data);
+  return dataToUf2(paddedData, sampleSlotAddresses[slotIndex]);
 }
 
 /// Parses a UF2 file and extracts the raw data payload.
