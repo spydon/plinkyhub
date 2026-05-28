@@ -20,3 +20,6 @@ subject = "Reset your PlinkyHub password"
 [studio]
 enabled = true
 port = 54323
+
+[analytics]
+enabled = false
