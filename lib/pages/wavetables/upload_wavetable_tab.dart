@@ -6,8 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
-import 'package:plinkyhub/utils/wavetable.dart';
-import 'package:plinkyhub/utils/wt.dart';
+import 'package:plinkyhub/utils/wavetable_import.dart';
 import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
@@ -66,7 +65,7 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
     }
 
     try {
-      final uf2Bytes = _convertToWavetableUf2(fileBytes);
+      final uf2Bytes = importedFileToWavetableUf2(fileBytes);
       setState(() {
         _errorMessage = null;
         _selectedFileName = file.name;
@@ -87,24 +86,6 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
         _selectedFileBytes = null;
       });
     }
-  }
-
-  /// Converts a picked file into the internal wavetable UF2 format.
-  ///
-  /// `.wt` files are parsed and rendered into a wavetable UF2; `.uf2` files are
-  /// validated as Plinky wavetables and used as-is. Throws [FormatException]
-  /// if the file is neither.
-  Uint8List _convertToWavetableUf2(Uint8List fileBytes) {
-    if (isWtFile(fileBytes)) {
-      final slots = wtToWavetableSamples(fileBytes);
-      return generateWavetableUf2FromSamples(slots);
-    }
-    if (isWavetableUf2(fileBytes)) {
-      return fileBytes;
-    }
-    throw const FormatException(
-      'Unsupported file. Pick a Plinky wavetable UF2 or a .wt wavetable file.',
-    );
   }
 
   Future<void> _upload() async {

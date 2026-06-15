@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,7 @@ import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/utils/wavetable.dart';
+import 'package:plinkyhub/utils/wavetable_import.dart';
 import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 
@@ -163,6 +165,51 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
       }
       _updatePostEffectSamples();
     });
+  }
+
+  Future<void> _importFromFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['uf2', 'wt'],
+      withData: true,
+    );
+
+    final file = result?.files.single;
+    final bytes = file?.bytes;
+    if (file == null || bytes == null) {
+      return;
+    }
+
+    try {
+      final uf2Bytes = importedFileToWavetableUf2(bytes);
+      final samples = extractSamplesFromWavetableData(uf2ToData(uf2Bytes));
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _errorMessage = null;
+        for (var i = 0; i < samples.length && i < _slots.length; i++) {
+          _slots[i] = samples[i];
+          _effects[i].reset();
+        }
+        _selectedSlot = 0;
+        if (_nameController.text.trim().isEmpty) {
+          _nameController.text = file.name.replaceAll(
+            RegExp(r'\.(uf2|wt)$', caseSensitive: false),
+            '',
+          );
+        }
+        _updatePostEffectSamples();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Wavetable imported into slots')),
+      );
+    } on FormatException catch (error) {
+      setState(() => _errorMessage = error.message);
+    } on Exception catch (error) {
+      debugPrint('Failed to import wavetable: $error');
+      setState(() => _errorMessage = error.toString());
+    }
   }
 
   void _copyToAllSlots() {
@@ -434,6 +481,7 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
           isBusy: _isBusy,
           onCopyToAll: _copyToAllSlots,
           onSineAll: () => _applyPresetToAll(generateSinePreset),
+          onImport: _importFromFile,
         ),
         const SizedBox(height: 16),
         WaveformEffectsPanel(
@@ -532,6 +580,7 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
                     isBusy: _isBusy,
                     onCopyToAll: _copyToAllSlots,
                     onSineAll: () => _applyPresetToAll(generateSinePreset),
+                    onImport: _importFromFile,
                   ),
                   const SizedBox(height: 16),
                   WaveformEffectsPanel(
@@ -609,6 +658,8 @@ class _DrawWavetableDescription extends StatelessWidget {
       'Select a slot, then click and drag on the canvas to shape '
       'the waveform. Edit harmonics in the bar chart below. '
       'Use the waveshaper effects to further sculpt the sound. '
+      'You can also import a .wt or wavetable .uf2 file to load its '
+      'shapes into the slots for editing. '
       'A built-in saw and sine are added automatically as the '
       'first and last shapes.',
       style: theme.textTheme.bodyMedium?.copyWith(
@@ -820,11 +871,13 @@ class _BulkActions extends StatelessWidget {
     required this.isBusy,
     required this.onCopyToAll,
     required this.onSineAll,
+    required this.onImport,
   });
 
   final bool isBusy;
   final VoidCallback onCopyToAll;
   final VoidCallback onSineAll;
+  final VoidCallback onImport;
 
   @override
   Widget build(BuildContext context) {
@@ -845,6 +898,11 @@ class _BulkActions extends StatelessWidget {
             ActionChip(
               label: const Text('Reset all to sine'),
               onPressed: isBusy ? null : onSineAll,
+            ),
+            ActionChip(
+              avatar: const Icon(Icons.file_open, size: 18),
+              label: const Text('Import .wt / .uf2'),
+              onPressed: isBusy ? null : onImport,
             ),
           ],
         ),

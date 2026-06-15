@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/utils/wavetable.dart';
+import 'package:plinkyhub/utils/wavetable_import.dart';
 import 'package:plinkyhub/utils/wt.dart';
 import 'package:test/test.dart';
 
@@ -176,6 +177,30 @@ void main() {
       expect(
         _correlation(extracted.first, _makeSine(512)),
         greaterThan(0.9),
+      );
+    });
+  });
+
+  group('importedFileToWavetableUf2', () {
+    test('converts a .wt file into a wavetable UF2', () {
+      final wt = _buildWt([_makeSine(512)], 512, int16: true);
+      final uf2Bytes = importedFileToWavetableUf2(wt);
+      expect(isWavetableUf2(uf2Bytes), isTrue);
+    });
+
+    test('passes a wavetable UF2 through unchanged', () {
+      final slots = List<List<double>>.generate(
+        wavetableUserShapeCount,
+        (_) => _makeSine(512),
+      );
+      final uf2Bytes = generateWavetableUf2FromSamples(slots);
+      expect(importedFileToWavetableUf2(uf2Bytes), same(uf2Bytes));
+    });
+
+    test('rejects an unsupported file', () {
+      expect(
+        () => importedFileToWavetableUf2(Uint8List(64)),
+        throwsA(isA<FormatException>()),
       );
     });
   });
