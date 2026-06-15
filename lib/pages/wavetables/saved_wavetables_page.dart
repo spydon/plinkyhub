@@ -119,7 +119,7 @@ class _SavedWavetablesPageState extends ConsumerState<SavedWavetablesPage>
             Tab(text: 'My Wavetables'),
             Tab(text: 'Community Wavetables'),
             Tab(text: 'Create Wavetable'),
-            Tab(text: 'Upload'),
+            Tab(text: 'Import'),
           ],
         ),
         if (savedWavetablesState.errorMessage != null)

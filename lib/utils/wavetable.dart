@@ -260,6 +260,23 @@ Uint8List? extractWavetablePayloadFromCurrentUf2(Uint8List currentUf2Bytes) {
   return payload;
 }
 
+/// Returns whether [uf2Bytes] is a Plinky wavetable UF2 file (WAVETAB.UF2).
+///
+/// Identified by the UF2 magic in the first block and a first-block target
+/// address pointing at the wavetable flash region. This distinguishes a
+/// wavetable UF2 from a sample UF2 or a full firmware image.
+bool isWavetableUf2(Uint8List uf2Bytes) {
+  if (uf2Bytes.length < uf2BlockSize) {
+    return false;
+  }
+  final view = ByteData.sublistView(uf2Bytes);
+  if (view.getUint32(0, Endian.little) != magic1 ||
+      view.getUint32(4, Endian.little) != magic2) {
+    return false;
+  }
+  return view.getUint32(12, Endian.little) == wavetableBaseAddress;
+}
+
 /// Packs raw wavetable [rawData] into a WAVETAB.UF2-compatible file.
 ///
 /// The output uses the wavetable-specific UF2 flags and target addresses and
