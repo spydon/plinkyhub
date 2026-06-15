@@ -95,6 +95,8 @@ flutter run -d chrome --wasm
 
 ### Run against local Supabase
 
+#### Start Supabase
+
 Start the local Supabase stack (Postgres, Auth, Studio, etc.) from the repo
 root:
 
@@ -102,12 +104,22 @@ root:
 supabase start
 ```
 
-The CLI prints a local `API URL` and `anon key`. Put those into `.env`:
+The CLI prints a local `API -> Project URL` and `Authentication Keys -> Publishable`. Put those into `.env`:
 
 ```
 SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_ANON_KEY=<anon key printed by supabase start>
 ```
+
+*Note: if you are using podman on Linux, you will likely have to run `sudo supabase start` if you have an issue with `RLIMIT_NOFILE`.*
+
+#### Add Supabase user
+
+- Visit [http://127.0.0.1:54321/project/default/auth/users](http://127.0.0.1:54321/project/default/auth/users)
+- Add a user with the email and password you specified in `.env` as `DEV_EMAIL` and `DEV_PASSWORD`
+  - You will get a random uuid for your username (you can see this when you log in, or in the `profiles` table in the database).
+
+#### Run plinkyhub
 
 Migrations under `supabase/migrations/` are applied automatically on
 `supabase start`. Then run the app the same way:
@@ -116,7 +128,9 @@ Migrations under `supabase/migrations/` are applied automatically on
 flutter run -d chrome --wasm
 ```
 
-Stop the stack with `supabase stop` when you are done.
+#### Stopping Supabase
+
+Stop the stack with `supabase stop` when you are done (or `sudo supabase stop` if you started it with `sudo`).
 
 ### Building for production
 
