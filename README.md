@@ -125,7 +125,7 @@ Migrations under `supabase/migrations/` are applied automatically on
 `supabase start`. Then run the app the same way:
 
 ```bash
-flutter run -d chrome --wasm 
+flutter run -d chrome --wasm
 ```
 
 #### Stopping Supabase
