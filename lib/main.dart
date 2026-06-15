@@ -19,7 +19,6 @@ Future<void> main() async {
   usePathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
-  // Make sure SoLoud is initialized
   await SoLoud.instance.init(
     channels: Channels.mono,
   );
