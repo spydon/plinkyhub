@@ -45,6 +45,7 @@ class _WavetablePlayerState extends State<WavetablePlayer> {
       .toPCM16(frequency: _frequency, copies: _copies);
 
   bool _soloudReady = false;
+
   @override
   void initState() {
     super.initState();
