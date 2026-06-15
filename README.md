@@ -111,7 +111,16 @@ SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_ANON_KEY=<anon key printed by supabase start>
 ```
 
-*Note: if you are using podman on Linux, you will likely have to run `sudo supabase start` if you have an issue with `RLIMIT_NOFILE`.*
+*Note: if you are using podman on Linux with `RLIMIT_NOFILE`, you should do the following:*
+
+- Update the `/etc/systemd/user.conf` and set `DefaultLimitNOFILE=1048576` under the `[Manager]` section.
+- Update the PAM limits by adding the following lines to `/etc/security/limits.conf` (or a file in `/etc/security/limits.d/`):
+  ```
+  *           hard    nofile     1048576
+  ```
+- Reboot your system for the changes to take effect.
+
+This is because supabase requests a nofile rlimit of 1048576...
 
 #### Add Supabase user
 
@@ -130,7 +139,19 @@ flutter run -d chrome --wasm
 
 #### Stopping Supabase
 
-Stop the stack with `supabase stop` when you are done (or `sudo supabase stop` if you started it with `sudo`).
+Stop the stack with `supabase stop` when you are done.
+
+#### Resetting Supabase
+
+If you want to reset the database to a clean state, run:
+
+```bash
+supabase db reset
+```
+
+Don't forget to re-add your user after resetting.
+
+
 
 ### Building for production
 
