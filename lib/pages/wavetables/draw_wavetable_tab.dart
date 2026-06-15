@@ -9,10 +9,12 @@ import 'package:plinkyhub/pages/wavetables/utils/waveform_effects.dart';
 import 'package:plinkyhub/pages/wavetables/waveform_drawer.dart';
 import 'package:plinkyhub/pages/wavetables/waveform_effects_panel.dart';
 import 'package:plinkyhub/pages/wavetables/waveform_thumbnail.dart';
+import 'package:plinkyhub/pages/wavetables/wavetable_player.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/utils/wavetable.dart';
+import 'package:plinkyhub/utils/wavetable_cache.dart';
 import 'package:plinkyhub/utils/wavetable_import.dart';
 import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
@@ -50,9 +52,7 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
 
   late final List<List<double>> _slots;
   late final List<WaveformEffects> _effects;
-
-  /// Cached post-effect samples for the selected slot.
-  List<double>? _postEffectSamples;
+  late final WavetableCache _cache;
 
   bool get _isEditing => widget.wavetableToEdit != null;
 
@@ -69,6 +69,8 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
       wavetableUserShapeCount,
       (_) => WaveformEffects(),
     );
+    _cache = WavetableCache(_slots, _effects);
+
     if (widget.wavetableToEdit != null) {
       _nameController.addListener(_onNameChanged);
       _nameController.text = widget.wavetableToEdit!.name;
@@ -94,6 +96,7 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
         setState(() {
           for (var i = 0; i < samples.length; i++) {
             _slots[i] = samples[i];
+            _cache.invalidate(i, _slots[i], _effects[i]);
           }
           _isLoadingExisting = false;
         });
@@ -121,17 +124,6 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
 
   WaveformEffects get _currentEffects => _effects[_selectedSlot];
 
-  void _updatePostEffectSamples() {
-    if (_currentEffects.hasAnyEffect) {
-      _postEffectSamples = applyEffects(
-        _slots[_selectedSlot],
-        _currentEffects,
-      );
-    } else {
-      _postEffectSamples = null;
-    }
-  }
-
   void _resetForm() {
     setState(() {
       _nameController.clear();
@@ -143,10 +135,10 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
       _errorMessage = null;
       _selectedSlot = 0;
       _selectedTool = DrawingTool.pencil;
-      _postEffectSamples = null;
       for (var i = 0; i < _slots.length; i++) {
         _slots[i] = generateSinePreset();
         _effects[i].reset();
+        _cache.invalidate(i, _slots[i], _effects[i]);
       }
     });
   }
@@ -154,7 +146,11 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
   void _applyPresetToSlot(List<double> Function() generator) {
     setState(() {
       _slots[_selectedSlot] = generator();
-      _updatePostEffectSamples();
+      _cache.invalidate(
+        _selectedSlot,
+        _slots[_selectedSlot],
+        _effects[_selectedSlot],
+      );
     });
   }
 
@@ -162,8 +158,8 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
     setState(() {
       for (var i = 0; i < _slots.length; i++) {
         _slots[i] = generator();
+        _cache.invalidate(i, _slots[i], _effects[i]);
       }
-      _updatePostEffectSamples();
     });
   }
 
@@ -191,6 +187,7 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
         for (var i = 0; i < samples.length && i < _slots.length; i++) {
           _slots[i] = samples[i];
           _effects[i].reset();
+          _cache.invalidate(i, _slots[i], _effects[i]);
         }
         _selectedSlot = 0;
         if (_nameController.text.trim().isEmpty) {
@@ -199,7 +196,6 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
             '',
           );
         }
-        _updatePostEffectSamples();
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Wavetable imported into slots')),
@@ -217,6 +213,7 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
     setState(() {
       for (var i = 0; i < _slots.length; i++) {
         _slots[i] = List<double>.from(source);
+        _cache.invalidate(i, _slots[i], _effects[i]);
       }
     });
   }
@@ -228,7 +225,11 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
         _currentEffects,
       );
       _currentEffects.reset();
-      _postEffectSamples = null;
+      _cache.invalidate(
+        _selectedSlot,
+        _slots[_selectedSlot],
+        _effects[_selectedSlot],
+      );
     });
   }
 
@@ -354,8 +355,6 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
 
   @override
   Widget build(BuildContext context) {
-    _updatePostEffectSamples();
-
     final nameMatchesOriginal =
         _isEditing &&
         _nameController.text.trim() == widget.wavetableToEdit!.name;
@@ -425,6 +424,8 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
             icon: _isUploading ? Icons.hourglass_empty : buttonIcon,
             label: _isUploading ? 'Uploading...' : buttonLabel,
           ),
+        const SizedBox(height: 16),
+        WavetablePlayer(cache: _cache),
       ],
     );
 
@@ -437,7 +438,6 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
           onSlotSelected: (index) {
             setState(() {
               _selectedSlot = index;
-              _updatePostEffectSamples();
             });
           },
         ),
@@ -451,23 +451,31 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
         const SizedBox(height: 8),
         WaveformDrawer(
           samples: _slots[_selectedSlot],
-          postEffectSamples: _postEffectSamples,
+          postEffectSamples: _cache[_selectedSlot].postEffectSamples,
           tool: _selectedTool,
           onSamplesChanged: (updatedSamples) {
             setState(() {
               _slots[_selectedSlot] = updatedSamples;
-              _updatePostEffectSamples();
+              _cache.invalidate(
+                _selectedSlot,
+                _slots[_selectedSlot],
+                _effects[_selectedSlot],
+              );
             });
           },
         ),
         const SizedBox(height: 12),
         HarmonicEditor(
           samples: _slots[_selectedSlot],
-          postEffectSamples: _postEffectSamples,
+          postEffectSamples: _cache[_selectedSlot].postEffectSamples,
           onSamplesChanged: (updatedSamples) {
             setState(() {
               _slots[_selectedSlot] = updatedSamples;
-              _updatePostEffectSamples();
+              _cache.invalidate(
+                _selectedSlot,
+                _slots[_selectedSlot],
+                _effects[_selectedSlot],
+              );
             });
           },
         ),
@@ -488,7 +496,12 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
           effects: _currentEffects,
           enabled: !_isBusy,
           onEffectsChanged: () {
-            setState(_updatePostEffectSamples);
+            _cache.invalidate(
+              _selectedSlot,
+              _slots[_selectedSlot],
+              _effects[_selectedSlot],
+            );
+            setState(() {});
           },
           onApply: _bakeEffects,
         ),
@@ -536,7 +549,6 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
                     onSlotSelected: (index) {
                       setState(() {
                         _selectedSlot = index;
-                        _updatePostEffectSamples();
                       });
                     },
                   ),
@@ -550,23 +562,31 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
                   const SizedBox(height: 8),
                   WaveformDrawer(
                     samples: _slots[_selectedSlot],
-                    postEffectSamples: _postEffectSamples,
+                    postEffectSamples: _cache[_selectedSlot].postEffectSamples,
                     tool: _selectedTool,
                     onSamplesChanged: (updatedSamples) {
                       setState(() {
                         _slots[_selectedSlot] = updatedSamples;
-                        _updatePostEffectSamples();
+                        _cache.invalidate(
+                          _selectedSlot,
+                          _slots[_selectedSlot],
+                          _effects[_selectedSlot],
+                        );
                       });
                     },
                   ),
                   const SizedBox(height: 12),
                   HarmonicEditor(
                     samples: _slots[_selectedSlot],
-                    postEffectSamples: _postEffectSamples,
+                    postEffectSamples: _cache[_selectedSlot].postEffectSamples,
                     onSamplesChanged: (updatedSamples) {
                       setState(() {
                         _slots[_selectedSlot] = updatedSamples;
-                        _updatePostEffectSamples();
+                        _cache.invalidate(
+                          _selectedSlot,
+                          _slots[_selectedSlot],
+                          _effects[_selectedSlot],
+                        );
                       });
                     },
                   ),
@@ -587,7 +607,12 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
                     effects: _currentEffects,
                     enabled: !_isBusy,
                     onEffectsChanged: () {
-                      setState(_updatePostEffectSamples);
+                      _cache.invalidate(
+                        _selectedSlot,
+                        _slots[_selectedSlot],
+                        _effects[_selectedSlot],
+                      );
+                      setState(() {});
                     },
                     onApply: _bakeEffects,
                   ),

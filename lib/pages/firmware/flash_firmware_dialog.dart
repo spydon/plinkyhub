@@ -72,8 +72,9 @@ class _FlashFirmwareDialogState extends ConsumerState<FlashFirmwareDialog> {
       content: SizedBox(
         width: 400,
         child: switch (_step) {
-          _DialogStep.instructions =>
-            const TunnelOfLightsInstructions(itemType: 'firmware'),
+          _DialogStep.instructions => const TunnelOfLightsInstructions(
+            itemType: 'firmware',
+          ),
           _DialogStep.progress => SaveProgressView(
             statusMessage: _statusMessage,
           ),

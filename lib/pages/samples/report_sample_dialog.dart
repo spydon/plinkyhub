@@ -7,8 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum ReportReason {
   copyrightInfringement('copyright_infringement', 'Copyright infringement'),
-  other('other', 'Other')
-  ;
+  other('other', 'Other');
 
   const ReportReason(this.value, this.label);
 

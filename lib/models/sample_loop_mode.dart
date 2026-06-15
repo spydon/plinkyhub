@@ -2,8 +2,7 @@ enum SampleLoopMode {
   oneShotSlice,
   loopSlice,
   oneShotAll,
-  loopAll
-  ;
+  loopAll;
 
   int get value => index;
 

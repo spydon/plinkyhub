@@ -27,8 +27,7 @@ enum RandomizeGroup {
   modA('A'),
   modB('B'),
   modX('X'),
-  modY('Y')
-  ;
+  modY('Y');
 
   const RandomizeGroup(this.displayName);
   final String displayName;
@@ -60,8 +59,7 @@ enum PresetCategory implements LabeledEnum {
   sadness('Sadness'),
   wild('Wild'),
   gnarly('Gnarly'),
-  weird('Weird')
-  ;
+  weird('Weird');
 
   const PresetCategory(this.label);
 
