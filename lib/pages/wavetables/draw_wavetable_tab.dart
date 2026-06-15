@@ -425,8 +425,6 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
             label: _isUploading ? 'Uploading...' : buttonLabel,
           ),
         const SizedBox(height: 16),
-
-        /// WaveTable player
         WavetablePlayer(cache: _cache),
       ],
     );
