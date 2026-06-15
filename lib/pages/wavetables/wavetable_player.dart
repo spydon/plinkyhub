@@ -57,10 +57,10 @@ class _WavetablePlayerState extends State<WavetablePlayer> {
     });
   }
 
-  double _freqToSlider(double freq) =>
-      (log(freq) - log(_minFrequency)) /
+  double _frequencyToSlider(double frequency) =>
+      (log(frequency) - log(_minFrequency)) /
       (log(_maxFrequency) - log(_minFrequency));
-  double _sliderToFreq(double t) =>
+  double _sliderToFrequency(double t) =>
       exp(log(_minFrequency) + t * (log(_maxFrequency) - log(_minFrequency)));
 
   static int get _maxBufferBytes =>
@@ -153,8 +153,9 @@ class _WavetablePlayerState extends State<WavetablePlayer> {
           // Frequency slider (log scale: slider position maps to log frequency)
           Text('Frequency: ${_frequency.toStringAsFixed(1)} Hz'),
           Slider(
-            value: _freqToSlider(_frequency),
-            onChanged: (v) => setState(() => _frequency = _sliderToFreq(v)),
+            value: _frequencyToSlider(_frequency),
+            onChanged: (v) =>
+                setState(() => _frequency = _sliderToFrequency(v)),
             onChangeEnd: (_) => updateBuffer(),
           ),
           const SizedBox(height: 16),
