@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="PlinkyHub - Create, share and organize your Plinky synth presets.">
+  <meta name="theme-color" content="#00897B">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PlinkyHub">
+  <meta property="og:description" content="Create, share and organize your Plinky synth presets.">
+  <meta property="og:image" content="icons/Icon-512.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="PlinkyHub">
+  <meta name="twitter:description" content="Create, share and organize your Plinky synth presets.">
+  <meta name="twitter:image" content="icons/Icon-512.png">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="PlinkyHub">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>PlinkyHub</title>
+  <link rel="manifest" href="manifest.json">
+
+  <script src="assets/packages/flutter_soloud/web/libflutter_soloud_plugin.js" defer></script>
+  <script src="assets/packages/flutter_soloud/web/init_module.dart.js" defer></script>
+
+  <!-- MediaPipe Tasks Vision for webcam-based play mode.
+       The bundle is an ES module, so we import the symbols we need
+       and attach them to window so dart:js_interop can find them. -->
+  <script type="module">
+    import { FilesetResolver, HandLandmarker }
+      from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs';
+    window.FilesetResolver = FilesetResolver;
+    window.HandLandmarker = HandLandmarker;
+  </script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #141218;
+      height: 100%;
+    }
+
+    .loading-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading-container">
+    <canvas id="plinky-loader" width="160" height="160"></canvas>
+  </div>
+  <script>
+    (function() {
+      var canvas = document.getElementById('plinky-loader');
+      var ctx = canvas.getContext('2d');
+      var size = 160;
+      var gridSize = 8;
+      var cellSize = size / gridSize;
+      var arcRadius = cellSize * 0.35;
+      var gapAngle = 0.8;
+      var strokeWidth = cellSize * 0.12;
+      var fullSweep = Math.PI - gapAngle;
+      var sweepAngle = fullSweep * 0.85;
+      var offset = (fullSweep - sweepAngle) / 2;
+      var duration = 2000;
+      var startTime = performance.now();
+      var animationId;
+
+      function draw(timestamp) {
+        var progress = ((timestamp - startTime) % duration) / duration;
+        ctx.clearRect(0, 0, size, size);
+        ctx.lineWidth = strokeWidth;
+        ctx.lineCap = 'round';
+
+        for (var row = 0; row < gridSize; row++) {
+          for (var col = 0; col < gridSize; col++) {
+            var cx = (col + 0.5) * cellSize;
+            var cy = (row + 0.5) * cellSize;
+            var dx = (col - 3.5) / 3.5;
+            var dy = (row - 3.5) / 3.5;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+            var phase = ((progress - distance * 0.3) % 1.0 + 1.0) % 1.0;
+            var pulse = (Math.sin(phase * 2 * Math.PI) + 1) / 2;
+            var opacity = 0.15 + pulse * 0.85;
+
+            ctx.strokeStyle = 'rgba(0,137,123,' + opacity + ')';
+
+            // Left arc.
+            var leftStart = Math.PI / 2 + gapAngle / 2 + offset;
+            ctx.beginPath();
+            ctx.arc(cx, cy, arcRadius, leftStart, leftStart + sweepAngle);
+            ctx.stroke();
+
+            // Right arc.
+            var rightStart = -Math.PI / 2 + gapAngle / 2 + offset;
+            ctx.beginPath();
+            ctx.arc(cx, cy, arcRadius, rightStart, rightStart + sweepAngle);
+            ctx.stroke();
+          }
+        }
+        animationId = requestAnimationFrame(draw);
+      }
+
+      animationId = requestAnimationFrame(draw);
+
+      window.addEventListener('flutter-first-frame', function() {
+        cancelAnimationFrame(animationId);
+        var loader = document.getElementById('loading');
+        if (loader) loader.remove();
+      });
+    })();
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
