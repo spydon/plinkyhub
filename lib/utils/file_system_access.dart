@@ -42,6 +42,12 @@ extension type FileSystemFileHandle._(JSObject _) implements JSObject {
       _createWritable().toDart;
 }
 
+/// A JavaScript error-like object exposing a nullable [name], used to
+/// inspect `DOMException`s thrown across the JS interop boundary.
+extension type _JSErrorLike._(JSObject _) implements JSObject {
+  external String? get name;
+}
+
 /// A writable stream for writing data to a file on disk.
 extension type FileSystemWritableFileStream._(JSObject _) implements JSObject {
   @JS('write')
@@ -138,23 +144,39 @@ Future<void> writeFileToDirectory(
   ValueChanged<double>? onProgress,
   VoidCallback? onFinalize,
 }) async {
-  final fileHandle = await directory.getFileHandle(
-    fileName,
-    create: true,
-  );
-  final writable = await fileHandle.createWritable();
-  if (onProgress == null || data.isEmpty) {
-    await writable.write(data);
-  } else {
-    const chunkSize = 64 * 1024;
-    var position = 0;
-    while (position < data.length) {
-      final end = min(position + chunkSize, data.length);
-      await writable.write(data.sublist(position, end));
-      position = end;
-      onProgress(position / data.length);
+  try {
+    final fileHandle = await directory.getFileHandle(fileName, create: true);
+    final writable = await fileHandle.createWritable();
+    if (onProgress == null || data.isEmpty) {
+      await writable.write(data);
+    } else {
+      const chunkSize = 64 * 1024;
+      var position = 0;
+      while (position < data.length) {
+        final end = min(position + chunkSize, data.length);
+        await writable.write(data.sublist(position, end));
+        position = end;
+        onProgress(position / data.length);
+      }
     }
+    onFinalize?.call();
+    await writable.close();
+  } on Object catch (error) {
+    // Rejected JS promises surface `DOMException`s, which are not Dart
+    // `Exception`s and would otherwise escape callers' `on Exception`
+    // handlers and crash the app.
+    throw Exception(_describeWriteError(error, fileName));
   }
-  onFinalize?.call();
-  await writable.close();
+}
+
+/// Builds a human-readable message for an error thrown while writing to the
+/// Plinky drive, translating known `DOMException` names into guidance.
+String _describeWriteError(Object error, String fileName) {
+  final name = error is JSObject ? (error as _JSErrorLike).name : null;
+  if (name == 'NoModificationAllowedError') {
+    return 'Could not write "$fileName" to the Plinky drive. Make sure the '
+        'Plinky is mounted in disk mode and is not write-protected, then '
+        'try again.';
+  }
+  return 'Failed to write "$fileName" to the Plinky drive: $error';
 }
