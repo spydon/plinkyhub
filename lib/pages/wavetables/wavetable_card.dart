@@ -77,37 +77,43 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
               ),
               const SizedBox(height: 8),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  PlinkyButton(
-                    onPressed: () => _saveToPlinky(context),
-                    icon: Icons.upload,
-                    label: 'Upload to Plinky',
-                  ),
-                  if (widget.showExportButton) ...[
-                    const SizedBox(width: 8),
-                    PlinkyButton(
-                      onPressed: _export,
-                      icon: Icons.download,
-                      label: 'Export',
-                    ),
-                  ],
-                  const SizedBox(width: 8),
-                  StarButton(
-                    isStarred: wavetable.isStarred,
-                    starCount: wavetable.starCount,
-                    onToggle: ({required bool wasStarred}) => ref
-                        .read(savedWavetablesProvider.notifier)
-                        .toggleStar(
-                          wavetable.copyWith(isStarred: wasStarred),
+                  Expanded(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        PlinkyButton(
+                          onPressed: () => _saveToPlinky(context),
+                          icon: Icons.upload,
+                          label: 'Upload to Plinky',
                         ),
-                  ),
-                  if (wavetable.username.isNotEmpty)
-                    ShareLinkButton(
-                      username: wavetable.username,
-                      itemType: 'wavetable',
-                      itemSlug: wavetable.slug,
+                        if (widget.showExportButton)
+                          PlinkyButton(
+                            onPressed: _export,
+                            icon: Icons.download,
+                            label: 'Export',
+                          ),
+                        StarButton(
+                          isStarred: wavetable.isStarred,
+                          starCount: wavetable.starCount,
+                          onToggle: ({required bool wasStarred}) => ref
+                              .read(savedWavetablesProvider.notifier)
+                              .toggleStar(
+                                wavetable.copyWith(isStarred: wasStarred),
+                              ),
+                        ),
+                        if (wavetable.username.isNotEmpty)
+                          ShareLinkButton(
+                            username: wavetable.username,
+                            itemType: 'wavetable',
+                            itemSlug: wavetable.slug,
+                          ),
+                      ],
                     ),
-                  const Spacer(),
+                  ),
                   if (widget.isOwned) ...[
                     IconButton(
                       icon: const Icon(Icons.edit, size: 20),
