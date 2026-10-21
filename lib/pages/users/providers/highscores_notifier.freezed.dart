@@ -295,7 +295,6 @@ as String?,
 
 }
 
-
 /// @nodoc
 mixin _$UserHighscore implements DiagnosticableTreeMixin {
 
@@ -306,8 +305,6 @@ mixin _$UserHighscore implements DiagnosticableTreeMixin {
 @pragma('vm:prefer-inline')
 $UserHighscoreCopyWith<UserHighscore> get copyWith => _$UserHighscoreCopyWithImpl<UserHighscore>(this as UserHighscore, _$identity);
 
-  /// Serializes this UserHighscore to a JSON map.
-  Map<String, dynamic> toJson();
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -321,7 +318,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is UserHighscore&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.username, username) || other.username == username)&&(identical(other.totalStars, totalStars) || other.totalStars == totalStars)&&(identical(other.totalUploads, totalUploads) || other.totalUploads == totalUploads));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,userId,username,totalStars,totalUploads);
 
@@ -499,11 +496,11 @@ return $default(_that.userId,_that.username,_that.totalStars,_that.totalUploads)
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _UserHighscore with DiagnosticableTreeMixin implements UserHighscore {
   const _UserHighscore({required this.userId, required this.username, required this.totalStars, required this.totalUploads});
-  factory _UserHighscore.fromJson(Map<String, dynamic> json) => _$UserHighscoreFromJson(json);
+  
 
 @override final  String userId;
 @override final  String username;
@@ -516,10 +513,7 @@ class _UserHighscore with DiagnosticableTreeMixin implements UserHighscore {
 @pragma('vm:prefer-inline')
 _$UserHighscoreCopyWith<_UserHighscore> get copyWith => __$UserHighscoreCopyWithImpl<_UserHighscore>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$UserHighscoreToJson(this, );
-}
+
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
@@ -532,7 +526,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserHighscore&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.username, username) || other.username == username)&&(identical(other.totalStars, totalStars) || other.totalStars == totalStars)&&(identical(other.totalUploads, totalUploads) || other.totalUploads == totalUploads));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,userId,username,totalStars,totalUploads);
 

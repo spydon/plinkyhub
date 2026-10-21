@@ -56,3 +56,6 @@ app.*.map.json
 # supabase misc
 supabase/.branches/
 supabase/.temp/
+
+# Node tooling (pinned Supabase CLI)
+node_modules/

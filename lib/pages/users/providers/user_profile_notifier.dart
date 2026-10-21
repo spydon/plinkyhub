@@ -1,10 +1,14 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/models/saved_preset.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/users/models/user_profile_state.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final userProfileProvider =
@@ -17,98 +21,86 @@ final userProfileByUsernameProvider = FutureProvider.autoDispose
       final supabase = Supabase.instance.client;
       final currentUserId = ref.read(authenticationProvider).user?.id;
 
-      final profileResponse = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('username', username)
+      final profile = await supabase
+          .table(Profiles.table)
+          .selectOnly([Profiles.id])
+          .where(Profiles.username.eq(username))
           .maybeSingle();
 
-      if (profileResponse == null) {
+      if (profile == null) {
         throw Exception('User "$username" not found');
       }
 
-      final userId = profileResponse['id'] as String;
-      final isOwnProfile = currentUserId == userId;
+      final userId = profile.read(Profiles.id);
 
-      Future<Set<String>> fetchStarredIds(String table, String idColumn) async {
-        if (currentUserId == null) {
-          return {};
-        }
-        final stars = await supabase
-            .from(table)
-            .select(idColumn)
-            .eq('user_id', currentUserId);
-        return {
-          for (final row in stars as List)
-            (row as Map<String, dynamic>)[idColumn] as String,
-        };
-      }
-
-      var presetsQuery = supabase
-          .from('presets')
-          .select('*, profiles(username), preset_stars(count)')
-          .eq('user_id', userId);
-      if (!isOwnProfile) {
-        presetsQuery = presetsQuery.eq('is_public', true);
-      }
-
-      var packsQuery = supabase
-          .from('packs')
-          .select('*, pack_slots(*), profiles(username), pack_stars(count)')
-          .eq('user_id', userId);
-      if (!isOwnProfile) {
-        packsQuery = packsQuery.eq('is_public', true);
-      }
-
-      var samplesQuery = supabase
-          .from('samples')
-          .select('*, profiles(username), sample_stars(count)')
-          .eq('user_id', userId);
-      if (!isOwnProfile) {
-        samplesQuery = samplesQuery.eq('is_public', true);
-      }
-
-      final queryResults = await Future.wait([
-        presetsQuery.order('updated_at', ascending: false),
-        packsQuery.order('updated_at', ascending: false),
-        samplesQuery.order('updated_at', ascending: false),
-      ]);
-      final starredResults = await Future.wait([
-        fetchStarredIds('preset_stars', 'preset_id'),
-        fetchStarredIds('pack_stars', 'pack_id'),
-        fetchStarredIds('sample_stars', 'sample_id'),
-      ]);
-
-      final presetsResponse = queryResults[0];
-      final packsResponse = queryResults[1];
-      final samplesResponse = queryResults[2];
-      final starredPresetIds = starredResults[0];
-      final starredPackIds = starredResults[1];
-      final starredSampleIds = starredResults[2];
+      final (presets, packs, samples) = await (
+        _fetchItems(
+          supabase,
+          itemTable: presetsTable,
+          starTable: presetStarsTable,
+          selection: SavedPreset.selection,
+          fromRow: SavedPreset.fromRow,
+          userId: userId,
+          currentUserId: currentUserId,
+        ),
+        _fetchItems(
+          supabase,
+          itemTable: packsTable,
+          starTable: packStarsTable,
+          selection: SavedPack.selection,
+          fromRow: SavedPack.fromRow,
+          userId: userId,
+          currentUserId: currentUserId,
+        ),
+        _fetchItems(
+          supabase,
+          itemTable: samplesTable,
+          starTable: sampleStarsTable,
+          selection: SavedSample.selection,
+          fromRow: SavedSample.fromRow,
+          userId: userId,
+          currentUserId: currentUserId,
+        ),
+      ).wait;
 
       return UserProfileState(
         userId: userId,
         username: username,
-        presets: presetsResponse.map((map) {
-          return SavedPreset.fromJson({
-            ...map,
-            'is_starred': starredPresetIds.contains(map['id']),
-          });
-        }).toList(),
-        packs: packsResponse.map((map) {
-          return SavedPack.fromJson({
-            ...map,
-            'is_starred': starredPackIds.contains(map['id']),
-          });
-        }).toList(),
-        samples: samplesResponse.map((map) {
-          return SavedSample.fromJson({
-            ...map,
-            'is_starred': starredSampleIds.contains(map['id']),
-          });
-        }).toList(),
+        presets: presets,
+        packs: packs,
+        samples: samples,
       );
     });
+
+/// The items of [itemTable] owned by [userId], newest first, marked as starred
+/// when [currentUserId] starred them. Only public items are included unless
+/// [currentUserId] is the owner.
+Future<List<T>> _fetchItems<T, Row>(
+  SupabaseClient supabase, {
+  required ItemTable<Row> itemTable,
+  required StarTable<Object?, Object?> starTable,
+  required List<PostgrestSelectable<Row>> selection,
+  required T Function(PostgrestPartialRow<Row> row, {bool isStarred}) fromRow,
+  required String userId,
+  required String? currentUserId,
+}) async {
+  var filter = itemTable.userId.eq(userId);
+  if (currentUserId != userId) {
+    filter = filter & itemTable.isPublic.isTrue();
+  }
+  final rows = await supabase
+      .table(itemTable.table)
+      .selectOnly(selection)
+      .where(filter)
+      .order(itemTable.updatedAt.desc());
+  final starredIds = currentUserId == null
+      ? const <String>{}
+      : await starTable.fetchStarredItemIds(supabase, currentUserId);
+  return [
+    for (final row in rows)
+      fromRow(row, isStarred: starredIds.contains(row.read(itemTable.id))),
+  ];
+}
 
 class UserProfileNotifier extends Notifier<UserProfileState> {
   SupabaseClient get _supabase => Supabase.instance.client;
@@ -125,22 +117,41 @@ class UserProfileNotifier extends Notifier<UserProfileState> {
 
     try {
       final currentUserId = ref.read(authenticationProvider).user?.id;
-      final isOwnProfile = currentUserId == userId;
 
-      final presetsFuture = _fetchPresets(userId, isOwnProfile);
-      final packsFuture = _fetchPacks(userId, isOwnProfile);
-      final samplesFuture = _fetchSamples(userId, isOwnProfile);
-
-      final results = await Future.wait([
-        presetsFuture,
-        packsFuture,
-        samplesFuture,
-      ]);
+      final (presets, packs, samples) = await (
+        _fetchItems(
+          _supabase,
+          itemTable: presetsTable,
+          starTable: presetStarsTable,
+          selection: SavedPreset.selection,
+          fromRow: SavedPreset.fromRow,
+          userId: userId,
+          currentUserId: currentUserId,
+        ),
+        _fetchItems(
+          _supabase,
+          itemTable: packsTable,
+          starTable: packStarsTable,
+          selection: SavedPack.selection,
+          fromRow: SavedPack.fromRow,
+          userId: userId,
+          currentUserId: currentUserId,
+        ),
+        _fetchItems(
+          _supabase,
+          itemTable: samplesTable,
+          starTable: sampleStarsTable,
+          selection: SavedSample.selection,
+          fromRow: SavedSample.fromRow,
+          userId: userId,
+          currentUserId: currentUserId,
+        ),
+      ).wait;
 
       state = state.copyWith(
-        presets: results[0] as List<SavedPreset>,
-        packs: results[1] as List<SavedPack>,
-        samples: results[2] as List<SavedSample>,
+        presets: presets,
+        packs: packs,
+        samples: samples,
         isLoading: false,
       );
     } on Exception catch (error) {
@@ -150,98 +161,5 @@ class UserProfileNotifier extends Notifier<UserProfileState> {
         errorMessage: error.toString(),
       );
     }
-  }
-
-  Future<List<SavedPreset>> _fetchPresets(
-    String userId,
-    bool isOwnProfile,
-  ) async {
-    var query = _supabase
-        .from('presets')
-        .select('*, profiles(username), preset_stars(count)')
-        .eq('user_id', userId);
-
-    if (!isOwnProfile) {
-      query = query.eq('is_public', true);
-    }
-
-    final response = await query.order('updated_at', ascending: false);
-
-    final starredIds = await _fetchStarredIds('preset_stars', 'preset_id');
-    return (response as List).map((row) {
-      final map = row as Map<String, dynamic>;
-      return SavedPreset.fromJson({
-        ...map,
-        'is_starred': starredIds.contains(map['id']),
-      });
-    }).toList();
-  }
-
-  Future<List<SavedPack>> _fetchPacks(
-    String userId,
-    bool isOwnProfile,
-  ) async {
-    var query = _supabase
-        .from('packs')
-        .select('*, pack_slots(*), profiles(username), pack_stars(count)')
-        .eq('user_id', userId);
-
-    if (!isOwnProfile) {
-      query = query.eq('is_public', true);
-    }
-
-    final response = await query.order('updated_at', ascending: false);
-
-    final starredIds = await _fetchStarredIds('pack_stars', 'pack_id');
-    return (response as List).map((row) {
-      final map = row as Map<String, dynamic>;
-      return SavedPack.fromJson({
-        ...map,
-        'is_starred': starredIds.contains(map['id']),
-      });
-    }).toList();
-  }
-
-  Future<List<SavedSample>> _fetchSamples(
-    String userId,
-    bool isOwnProfile,
-  ) async {
-    var query = _supabase
-        .from('samples')
-        .select('*, profiles(username), sample_stars(count)')
-        .eq('user_id', userId);
-
-    if (!isOwnProfile) {
-      query = query.eq('is_public', true);
-    }
-
-    final response = await query.order('updated_at', ascending: false);
-
-    final starredIds = await _fetchStarredIds('sample_stars', 'sample_id');
-    return (response as List).map((row) {
-      final map = row as Map<String, dynamic>;
-      return SavedSample.fromJson({
-        ...map,
-        'is_starred': starredIds.contains(map['id']),
-      });
-    }).toList();
-  }
-
-  Future<Set<String>> _fetchStarredIds(
-    String table,
-    String idColumn,
-  ) async {
-    final userId = ref.read(authenticationProvider).user?.id;
-    if (userId == null) {
-      return {};
-    }
-    final stars = await _supabase
-        .from(table)
-        .select(idColumn)
-        .eq('user_id', userId);
-    return {
-      for (final row in stars as List)
-        (row as Map<String, dynamic>)[idColumn] as String,
-    };
   }
 }

@@ -1,9 +1,12 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/saved_items_state.dart';
-import 'package:plinkyhub/pages/patterns/models/pattern_write.dart';
 import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
 import 'package:plinkyhub/providers/saved_items_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,25 +15,31 @@ final savedPatternsProvider =
       SavedPatternsNotifier.new,
     );
 
-class SavedPatternsNotifier extends SavedItemsNotifier<SavedPattern> {
+class SavedPatternsNotifier
+    extends
+        SavedItemsNotifier<
+          SavedPattern,
+          PatternsRow,
+          PatternStarsRow,
+          PatternStarsInsert
+        > {
   @override
-  String get tableName => 'patterns';
+  ItemTable<PatternsRow> get itemTable => patternsTable;
 
   @override
-  String get starTableName => 'pattern_stars';
+  StarTable<PatternStarsRow, PatternStarsInsert> get starTable =>
+      patternStarsTable;
 
   @override
-  String get starIdColumn => 'pattern_id';
-
-  @override
-  String get selectQuery => '*, profiles(username), pattern_stars(count)';
+  List<PostgrestSelectable<PatternsRow>> get selection =>
+      SavedPattern.selection;
 
   @override
   String get itemLabel => 'pattern';
 
   @override
-  SavedPattern fromJson(Map<String, dynamic> json) =>
-      SavedPattern.fromJson(json);
+  SavedPattern fromRow(PostgrestPartialRow<PatternsRow> row) =>
+      SavedPattern.fromRow(row);
 
   @override
   SavedPattern withStarUpdate(
@@ -67,15 +76,18 @@ class SavedPatternsNotifier extends SavedItemsNotifier<SavedPattern> {
             fileOptions: const FileOptions(upsert: true),
           );
 
-      final write = PatternWrite(
-        userId: pattern.userId,
-        name: pattern.name,
-        filePath: pattern.filePath,
-        description: pattern.description,
-        isPublic: pattern.isPublic,
-        contentHash: computeContentHash(fileBytes),
-      );
-      await supabase.from('patterns').insert(write.toJson());
+      await supabase
+          .table(Patterns.table)
+          .insert(
+            PatternsInsert(
+              userId: pattern.userId,
+              name: pattern.name,
+              filePath: pattern.filePath,
+              description: pattern.description,
+              isPublic: pattern.isPublic,
+              contentHash: computeContentHash(fileBytes),
+            ),
+          );
 
       await refreshAll();
     } on Exception catch (error) {
@@ -87,17 +99,18 @@ class SavedPatternsNotifier extends SavedItemsNotifier<SavedPattern> {
   Future<void> updatePattern(SavedPattern pattern) async {
     setLoading();
     try {
-      final write = PatternWrite(
-        userId: pattern.userId,
-        name: pattern.name,
-        filePath: pattern.filePath,
-        description: pattern.description,
-        isPublic: pattern.isPublic,
-      );
       await supabase
-          .from('patterns')
-          .update(write.toJson())
-          .eq('id', pattern.id);
+          .table(Patterns.table)
+          .update(
+            PatternsUpdate(
+              userId: pattern.userId,
+              name: pattern.name,
+              filePath: pattern.filePath,
+              description: pattern.description,
+              isPublic: pattern.isPublic,
+            ).setContentHashToNull(),
+          )
+          .where(Patterns.id.eq(pattern.id));
       await refreshAll();
     } on Exception catch (error) {
       setError(error);

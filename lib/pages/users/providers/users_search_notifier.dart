@@ -1,10 +1,12 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'users_search_notifier.freezed.dart';
-part 'users_search_notifier.g.dart';
 
 final usersSearchProvider =
     NotifierProvider<UsersSearchNotifier, UsersSearchState>(
@@ -26,9 +28,6 @@ class UsersSearchState {
 @freezed
 abstract class UserProfile with _$UserProfile {
   const factory UserProfile({required String username}) = _UserProfile;
-
-  factory UserProfile.fromJson(Map<String, dynamic> json) =>
-      _$UserProfileFromJson(json);
 }
 
 class UsersSearchNotifier extends Notifier<UsersSearchState> {
@@ -41,16 +40,17 @@ class UsersSearchNotifier extends Notifier<UsersSearchState> {
     state = const UsersSearchState(isLoading: true);
 
     try {
-      final response = await _supabase
-          .from('profiles')
-          .select('username')
-          .ilike('username', '%$query%')
-          .order('username')
+      final rows = await _supabase
+          .table(Profiles.table)
+          .selectOnly([Profiles.username])
+          .where(Profiles.username.ilike('%$query%'))
+          .order(Profiles.username.asc())
           .limit(50);
 
-      final users = (response as List)
-          .map((row) => UserProfile.fromJson(row as Map<String, dynamic>))
-          .toList();
+      final users = [
+        for (final row in rows)
+          UserProfile(username: row.read(Profiles.username)),
+      ];
 
       state = UsersSearchState(users: users);
     } on Exception catch (error) {

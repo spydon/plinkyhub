@@ -11,7 +11,6 @@ part of 'matched_entry.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$MatchedEntry {
 
@@ -22,8 +21,6 @@ mixin _$MatchedEntry {
 @pragma('vm:prefer-inline')
 $MatchedEntryCopyWith<MatchedEntry> get copyWith => _$MatchedEntryCopyWithImpl<MatchedEntry>(this as MatchedEntry, _$identity);
 
-  /// Serializes this MatchedEntry to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -31,7 +28,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchedEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,id,name);
 
@@ -207,11 +204,11 @@ return $default(_that.id,_that.name);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _MatchedEntry implements MatchedEntry {
   const _MatchedEntry({required this.id, required this.name});
-  factory _MatchedEntry.fromJson(Map<String, dynamic> json) => _$MatchedEntryFromJson(json);
+  
 
 @override final  String id;
 @override final  String name;
@@ -222,17 +219,14 @@ class _MatchedEntry implements MatchedEntry {
 @pragma('vm:prefer-inline')
 _$MatchedEntryCopyWith<_MatchedEntry> get copyWith => __$MatchedEntryCopyWithImpl<_MatchedEntry>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$MatchedEntryToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchedEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,id,name);
 

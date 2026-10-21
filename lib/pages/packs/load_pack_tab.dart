@@ -1,3 +1,5 @@
+// ignore_for_file: experimental_member_use
+
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -6,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plinkyhub/models/category.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/matched_entry.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
@@ -15,6 +18,7 @@ import 'package:plinkyhub/pages/packs/providers/saved_packs_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
 import 'package:plinkyhub/services/sound_service.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/constants.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
@@ -401,10 +405,20 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
 
       final currentUserId = ref.read(authenticationProvider).user?.id;
       await Future.wait([
-        _findMatches('presets', _presetHashes, _matchedPresets, currentUserId),
-        _findMatches('samples', _sampleHashes, _matchedSamples, currentUserId),
         _findMatches(
-          'patterns',
+          presetsTable,
+          _presetHashes,
+          _matchedPresets,
+          currentUserId,
+        ),
+        _findMatches(
+          samplesTable,
+          _sampleHashes,
+          _matchedSamples,
+          currentUserId,
+        ),
+        _findMatches(
+          patternsTable,
           _patternHashes,
           _matchedPatterns,
           currentUserId,
@@ -443,8 +457,8 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     }
   }
 
-  Future<void> _findMatches(
-    String table,
+  Future<void> _findMatches<ItemRow>(
+    ItemTable<ItemRow> table,
     Map<int, String> hashes,
     Map<int, MatchedEntry> matches,
     String? currentUserId,
@@ -454,22 +468,22 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     }
 
     final uniqueHashes = hashes.values.toSet().toList();
-    var query = _supabase
-        .from(table)
-        .select('id, name, content_hash')
-        .inFilter('content_hash', uniqueHashes);
-    query = currentUserId != null
-        ? query.or('is_public.eq.true,user_id.eq.$currentUserId')
-        : query.eq('is_public', true);
-    final results = await query;
+    final visible = currentUserId != null
+        ? table.isPublic.isTrue() | table.userId.eq(currentUserId)
+        : table.isPublic.isTrue();
+    final rows = await _supabase
+        .table(table.table)
+        .selectOnly([table.id, table.name, table.contentHash])
+        .where(table.contentHash.inFilter(uniqueHashes) & visible);
 
-    final hashToEntry = <String, MatchedEntry>{};
-    for (final map in results) {
-      final hash = map['content_hash'] as String?;
-      if (hash != null) {
-        hashToEntry[hash] = MatchedEntry.fromJson(map);
-      }
-    }
+    final hashToEntry = <String, MatchedEntry>{
+      for (final row in rows)
+        if (row.read(table.contentHash) case final hash?)
+          hash: MatchedEntry(
+            id: row.read(table.id),
+            name: row.read(table.name),
+          ),
+    };
 
     for (final entry in hashes.entries) {
       final matched = hashToEntry[entry.value];
@@ -480,21 +494,26 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
   }
 
   Future<void> _findWavetableMatch(String? currentUserId) async {
-    if (_wavetableHash == null) {
+    final wavetableHash = _wavetableHash;
+    if (wavetableHash == null) {
       return;
     }
 
-    var query = _supabase
-        .from('wavetables')
-        .select('id, name, content_hash')
-        .eq('content_hash', _wavetableHash!);
-    query = currentUserId != null
-        ? query.or('is_public.eq.true,user_id.eq.$currentUserId')
-        : query.eq('is_public', true);
-    final results = await query.limit(1);
+    final visible = currentUserId != null
+        ? Wavetables.isPublic.isTrue() | Wavetables.userId.eq(currentUserId)
+        : Wavetables.isPublic.isTrue();
+    final rows = await _supabase
+        .table(Wavetables.table)
+        .selectOnly([Wavetables.id, Wavetables.name])
+        .where(Wavetables.contentHash.eq(wavetableHash) & visible)
+        .limit(1);
 
-    if (results.isNotEmpty) {
-      _matchedWavetable = MatchedEntry.fromJson(results.first);
+    if (rows.isNotEmpty) {
+      final row = rows.first;
+      _matchedWavetable = MatchedEntry(
+        id: row.read(Wavetables.id),
+        name: row.read(Wavetables.name),
+      );
     }
   }
 
@@ -525,19 +544,14 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
     }
 
     // Query the database for any pack with the same hash.
-    final results = await _supabase
-        .from('packs')
-        .select(
-          '*, pack_slots(*), profiles(username), '
-          'pack_stars(count)',
-        )
-        .eq('content_hash', packHash)
+    final rows = await _supabase
+        .table(Packs.table)
+        .selectOnly(SavedPack.selection)
+        .where(Packs.contentHash.eq(packHash))
         .limit(1);
 
-    if (results.isNotEmpty) {
-      return SavedPack.fromJson(
-        results.first,
-      );
+    if (rows.isNotEmpty) {
+      return SavedPack.fromRow(rows.first);
     }
 
     return null;
@@ -901,9 +915,13 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
         packSlotsData: slotUploads,
       );
 
-      await _supabase.rpc(
-        'create_pack_from_plinky',
-        params: request.toJson(),
+      await _supabase.rpc.createPackFromPlinky(
+        packData: request.packData,
+        samplesData: request.samplesData,
+        presetsData: request.presetsData,
+        wavetableData: request.wavetableData,
+        patternsData: request.patternsData,
+        packSlotsData: request.packSlotsData,
       );
 
       await ref.read(savedPacksProvider.notifier).fetchUserItems(force: true);

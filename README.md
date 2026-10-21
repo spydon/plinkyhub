@@ -58,6 +58,9 @@ If you run into any problems or have feature requests, you can:
   webcam-based play tab.
 - **freezed** + **json_serializable** for immutable models, generated via
   `build_runner`.
+- Typed database access through the `supabase_flutter` v3 table API, with the
+  row, insert, update and RPC types in `lib/supabase_schema.g.dart` generated
+  from the migrations by `supabase_typegen`.
 
 ## Running locally
 
@@ -151,6 +154,21 @@ supabase db reset
 
 Don't forget to re-add your user after resetting.
 
+#### Regenerating the database types
+
+`lib/supabase_schema.g.dart` is generated from the local database, so run
+this after adding a migration. It needs Node.js and the local stack running
+(`supabase db start` is enough):
+
+```bash
+npm install
+npm run generate-types
+```
+
+`package.json` pins the Supabase CLI to a version whose Dart generator also
+emits the typed RPC methods (`client.rpc.getUserHighscores()` and so on). An
+older global `supabase` CLI generates the tables but leaves out the RPC
+methods.
 
 
 ### Building for production

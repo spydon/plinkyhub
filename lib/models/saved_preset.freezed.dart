@@ -11,19 +11,16 @@ part of 'saved_preset.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$SavedPreset {
 
- String get id; String get userId; String get name; String get category; String get presetData; DateTime get createdAt; DateTime get updatedAt; String get slug; String get description; bool get isPublic;@JsonKey(readValue: _readUsername) String get username;@JsonKey(readValue: _readStarCount) int get starCount; bool get isStarred; String get youtubeUrl; String? get sampleId;@JsonKey(readValue: _readSampleName) String? get sampleName;@JsonKey(readValue: _readSampleSlug) String? get sampleSlug;@JsonKey(readValue: _readSampleUsername) String? get sampleUsername;
+ String get id; String get userId; String get name; String get category; String get presetData; DateTime get createdAt; DateTime get updatedAt; String get slug; String get description; bool get isPublic; String get username; int get starCount; bool get isStarred; String get youtubeUrl; String? get sampleId; String? get sampleName; String? get sampleSlug; String? get sampleUsername;
 /// Create a copy of SavedPreset
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $SavedPresetCopyWith<SavedPreset> get copyWith => _$SavedPresetCopyWithImpl<SavedPreset>(this as SavedPreset, _$identity);
 
-  /// Serializes this SavedPreset to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -31,7 +28,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is SavedPreset&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.presetData, presetData) || other.presetData == presetData)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.slug, slug) || other.slug == slug)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.username, username) || other.username == username)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.isStarred, isStarred) || other.isStarred == isStarred)&&(identical(other.youtubeUrl, youtubeUrl) || other.youtubeUrl == youtubeUrl)&&(identical(other.sampleId, sampleId) || other.sampleId == sampleId)&&(identical(other.sampleName, sampleName) || other.sampleName == sampleName)&&(identical(other.sampleSlug, sampleSlug) || other.sampleSlug == sampleSlug)&&(identical(other.sampleUsername, sampleUsername) || other.sampleUsername == sampleUsername));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,id,userId,name,category,presetData,createdAt,updatedAt,slug,description,isPublic,username,starCount,isStarred,youtubeUrl,sampleId,sampleName,sampleSlug,sampleUsername);
 
@@ -48,7 +45,7 @@ abstract mixin class $SavedPresetCopyWith<$Res>  {
   factory $SavedPresetCopyWith(SavedPreset value, $Res Function(SavedPreset) _then) = _$SavedPresetCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String name, String category, String presetData, DateTime createdAt, DateTime updatedAt, String slug, String description, bool isPublic,@JsonKey(readValue: _readUsername) String username,@JsonKey(readValue: _readStarCount) int starCount, bool isStarred, String youtubeUrl, String? sampleId,@JsonKey(readValue: _readSampleName) String? sampleName,@JsonKey(readValue: _readSampleSlug) String? sampleSlug,@JsonKey(readValue: _readSampleUsername) String? sampleUsername
+ String id, String userId, String name, String category, String presetData, DateTime createdAt, DateTime updatedAt, String slug, String description, bool isPublic, String username, int starCount, bool isStarred, String youtubeUrl, String? sampleId, String? sampleName, String? sampleSlug, String? sampleUsername
 });
 
 
@@ -170,7 +167,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String category,  String presetData,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic, @JsonKey(readValue: _readUsername)  String username, @JsonKey(readValue: _readStarCount)  int starCount,  bool isStarred,  String youtubeUrl,  String? sampleId, @JsonKey(readValue: _readSampleName)  String? sampleName, @JsonKey(readValue: _readSampleSlug)  String? sampleSlug, @JsonKey(readValue: _readSampleUsername)  String? sampleUsername)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String category,  String presetData,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic,  String username,  int starCount,  bool isStarred,  String youtubeUrl,  String? sampleId,  String? sampleName,  String? sampleSlug,  String? sampleUsername)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SavedPreset() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.category,_that.presetData,_that.createdAt,_that.updatedAt,_that.slug,_that.description,_that.isPublic,_that.username,_that.starCount,_that.isStarred,_that.youtubeUrl,_that.sampleId,_that.sampleName,_that.sampleSlug,_that.sampleUsername);case _:
@@ -191,7 +188,7 @@ return $default(_that.id,_that.userId,_that.name,_that.category,_that.presetData
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String category,  String presetData,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic, @JsonKey(readValue: _readUsername)  String username, @JsonKey(readValue: _readStarCount)  int starCount,  bool isStarred,  String youtubeUrl,  String? sampleId, @JsonKey(readValue: _readSampleName)  String? sampleName, @JsonKey(readValue: _readSampleSlug)  String? sampleSlug, @JsonKey(readValue: _readSampleUsername)  String? sampleUsername)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String category,  String presetData,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic,  String username,  int starCount,  bool isStarred,  String youtubeUrl,  String? sampleId,  String? sampleName,  String? sampleSlug,  String? sampleUsername)  $default,) {final _that = this;
 switch (_that) {
 case _SavedPreset():
 return $default(_that.id,_that.userId,_that.name,_that.category,_that.presetData,_that.createdAt,_that.updatedAt,_that.slug,_that.description,_that.isPublic,_that.username,_that.starCount,_that.isStarred,_that.youtubeUrl,_that.sampleId,_that.sampleName,_that.sampleSlug,_that.sampleUsername);case _:
@@ -211,7 +208,7 @@ return $default(_that.id,_that.userId,_that.name,_that.category,_that.presetData
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String category,  String presetData,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic, @JsonKey(readValue: _readUsername)  String username, @JsonKey(readValue: _readStarCount)  int starCount,  bool isStarred,  String youtubeUrl,  String? sampleId, @JsonKey(readValue: _readSampleName)  String? sampleName, @JsonKey(readValue: _readSampleSlug)  String? sampleSlug, @JsonKey(readValue: _readSampleUsername)  String? sampleUsername)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String category,  String presetData,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic,  String username,  int starCount,  bool isStarred,  String youtubeUrl,  String? sampleId,  String? sampleName,  String? sampleSlug,  String? sampleUsername)?  $default,) {final _that = this;
 switch (_that) {
 case _SavedPreset() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.category,_that.presetData,_that.createdAt,_that.updatedAt,_that.slug,_that.description,_that.isPublic,_that.username,_that.starCount,_that.isStarred,_that.youtubeUrl,_that.sampleId,_that.sampleName,_that.sampleSlug,_that.sampleUsername);case _:
@@ -223,11 +220,11 @@ return $default(_that.id,_that.userId,_that.name,_that.category,_that.presetData
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _SavedPreset implements SavedPreset {
-  const _SavedPreset({required this.id, required this.userId, required this.name, required this.category, required this.presetData, required this.createdAt, required this.updatedAt, this.slug = '', this.description = '', this.isPublic = false, @JsonKey(readValue: _readUsername) this.username = '', @JsonKey(readValue: _readStarCount) this.starCount = 0, this.isStarred = false, this.youtubeUrl = '', this.sampleId, @JsonKey(readValue: _readSampleName) this.sampleName, @JsonKey(readValue: _readSampleSlug) this.sampleSlug, @JsonKey(readValue: _readSampleUsername) this.sampleUsername});
-  factory _SavedPreset.fromJson(Map<String, dynamic> json) => _$SavedPresetFromJson(json);
+  const _SavedPreset({required this.id, required this.userId, required this.name, required this.category, required this.presetData, required this.createdAt, required this.updatedAt, this.slug = '', this.description = '', this.isPublic = false, this.username = '', this.starCount = 0, this.isStarred = false, this.youtubeUrl = '', this.sampleId, this.sampleName, this.sampleSlug, this.sampleUsername});
+  
 
 @override final  String id;
 @override final  String userId;
@@ -239,14 +236,14 @@ class _SavedPreset implements SavedPreset {
 @override@JsonKey() final  String slug;
 @override@JsonKey() final  String description;
 @override@JsonKey() final  bool isPublic;
-@override@JsonKey(readValue: _readUsername) final  String username;
-@override@JsonKey(readValue: _readStarCount) final  int starCount;
+@override@JsonKey() final  String username;
+@override@JsonKey() final  int starCount;
 @override@JsonKey() final  bool isStarred;
 @override@JsonKey() final  String youtubeUrl;
 @override final  String? sampleId;
-@override@JsonKey(readValue: _readSampleName) final  String? sampleName;
-@override@JsonKey(readValue: _readSampleSlug) final  String? sampleSlug;
-@override@JsonKey(readValue: _readSampleUsername) final  String? sampleUsername;
+@override final  String? sampleName;
+@override final  String? sampleSlug;
+@override final  String? sampleUsername;
 
 /// Create a copy of SavedPreset
 /// with the given fields replaced by the non-null parameter values.
@@ -254,17 +251,14 @@ class _SavedPreset implements SavedPreset {
 @pragma('vm:prefer-inline')
 _$SavedPresetCopyWith<_SavedPreset> get copyWith => __$SavedPresetCopyWithImpl<_SavedPreset>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$SavedPresetToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavedPreset&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.presetData, presetData) || other.presetData == presetData)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.slug, slug) || other.slug == slug)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.username, username) || other.username == username)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.isStarred, isStarred) || other.isStarred == isStarred)&&(identical(other.youtubeUrl, youtubeUrl) || other.youtubeUrl == youtubeUrl)&&(identical(other.sampleId, sampleId) || other.sampleId == sampleId)&&(identical(other.sampleName, sampleName) || other.sampleName == sampleName)&&(identical(other.sampleSlug, sampleSlug) || other.sampleSlug == sampleSlug)&&(identical(other.sampleUsername, sampleUsername) || other.sampleUsername == sampleUsername));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,id,userId,name,category,presetData,createdAt,updatedAt,slug,description,isPublic,username,starCount,isStarred,youtubeUrl,sampleId,sampleName,sampleSlug,sampleUsername);
 
@@ -281,7 +275,7 @@ abstract mixin class _$SavedPresetCopyWith<$Res> implements $SavedPresetCopyWith
   factory _$SavedPresetCopyWith(_SavedPreset value, $Res Function(_SavedPreset) _then) = __$SavedPresetCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String name, String category, String presetData, DateTime createdAt, DateTime updatedAt, String slug, String description, bool isPublic,@JsonKey(readValue: _readUsername) String username,@JsonKey(readValue: _readStarCount) int starCount, bool isStarred, String youtubeUrl, String? sampleId,@JsonKey(readValue: _readSampleName) String? sampleName,@JsonKey(readValue: _readSampleSlug) String? sampleSlug,@JsonKey(readValue: _readSampleUsername) String? sampleUsername
+ String id, String userId, String name, String category, String presetData, DateTime createdAt, DateTime updatedAt, String slug, String description, bool isPublic, String username, int starCount, bool isStarred, String youtubeUrl, String? sampleId, String? sampleName, String? sampleSlug, String? sampleUsername
 });
 
 

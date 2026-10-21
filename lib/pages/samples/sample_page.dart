@@ -1,11 +1,14 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/samples/sample_card.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
-import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -42,30 +45,25 @@ class _SamplePageState extends ConsumerState<SamplePage> {
     });
 
     try {
-      final response = await Supabase.instance.client
-          .from('samples')
-          .select(
-            '*, profiles(username), sample_stars(count)',
+      final row = await Supabase.instance.client
+          .table(Samples.table)
+          .selectOnly(SavedSample.selection)
+          .where(
+            Samples.slug.eq(widget.sampleSlug) &
+                samplesTable.ownedByUsername(widget.username),
           )
-          .eq('slug', widget.sampleSlug)
-          .eq('profiles.username', widget.username)
-          .not('profiles', 'is', null)
-          .order('updated_at', ascending: false)
+          .order(Samples.updatedAt.desc())
           .limit(1)
           .maybeSingle();
 
-      if (response != null) {
-        final isStarred = await fetchIsStarred(
-          starTableName: 'sample_stars',
-          idColumn: 'sample_id',
-          itemId: response['id'] as String,
+      if (row != null) {
+        final isStarred = await sampleStarsTable.isStarred(
+          Supabase.instance.client,
+          id: row.read(Samples.id),
           userId: ref.read(authenticationProvider).user?.id,
         );
         setState(() {
-          _sample = SavedSample.fromJson({
-            ...response,
-            'is_starred': isStarred,
-          });
+          _sample = SavedSample.fromRow(row, isStarred: isStarred);
           _isLoading = false;
         });
       } else {

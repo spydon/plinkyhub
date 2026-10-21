@@ -1,9 +1,13 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/matched_entry.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/pages/my_plinky/models/my_plinky_state.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/constants.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
@@ -213,9 +217,13 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
       final matchedPatterns = <int, MatchedEntry>{};
 
       await Future.wait([
-        _findMatches('presets', presetsResult.presetHashes, matchedPresets),
-        _findMatches('samples', samplesResult.sampleHashes, matchedSamples),
-        _findMatches('patterns', presetsResult.patternHashes, matchedPatterns),
+        _findMatches(presetsTable, presetsResult.presetHashes, matchedPresets),
+        _findMatches(samplesTable, samplesResult.sampleHashes, matchedSamples),
+        _findMatches(
+          patternsTable,
+          presetsResult.patternHashes,
+          matchedPatterns,
+        ),
         if (wavetableResult.wavetableHash != null)
           _findWavetableMatch(wavetableResult.wavetableHash!).then(
             (entry) => matchedWavetable = entry,
@@ -319,23 +327,20 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
   }
 
   Future<SavedPack?> _findMatchingPack(String packHash) async {
-    final results = await _supabase
-        .from('packs')
-        .select(
-          '*, pack_slots(*), profiles(username), '
-          'pack_stars(count)',
-        )
-        .eq('content_hash', packHash)
+    final rows = await _supabase
+        .table(Packs.table)
+        .selectOnly(SavedPack.selection)
+        .where(Packs.contentHash.eq(packHash))
         .limit(1);
 
-    if (results.isNotEmpty) {
-      return SavedPack.fromJson(results.first);
+    if (rows.isNotEmpty) {
+      return SavedPack.fromRow(rows.first);
     }
     return null;
   }
 
-  Future<void> _findMatches(
-    String table,
+  Future<void> _findMatches<Row>(
+    ItemTable<Row> table,
     Map<int, String> hashes,
     Map<int, MatchedEntry> matches,
   ) async {
@@ -343,19 +348,10 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
       return;
     }
 
-    final uniqueHashes = hashes.values.toSet().toList();
-    final results = await _supabase
-        .from(table)
-        .select('id, name, content_hash')
-        .inFilter('content_hash', uniqueHashes);
-
-    final hashToEntry = <String, MatchedEntry>{};
-    for (final map in results) {
-      final hash = map['content_hash'] as String?;
-      if (hash != null) {
-        hashToEntry[hash] = MatchedEntry.fromJson(map);
-      }
-    }
+    final hashToEntry = await table.findByContentHashes(
+      _supabase,
+      hashes.values,
+    );
 
     for (final entry in hashes.entries) {
       final matched = hashToEntry[entry.value];
@@ -366,14 +362,18 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
   }
 
   Future<MatchedEntry?> _findWavetableMatch(String hash) async {
-    final results = await _supabase
-        .from('wavetables')
-        .select('id, name, content_hash')
-        .eq('content_hash', hash)
+    final rows = await _supabase
+        .table(Wavetables.table)
+        .selectOnly([Wavetables.id, Wavetables.name])
+        .where(Wavetables.contentHash.eq(hash))
         .limit(1);
 
-    if (results.isNotEmpty) {
-      return MatchedEntry.fromJson(results.first);
+    if (rows.isNotEmpty) {
+      final row = rows.first;
+      return MatchedEntry(
+        id: row.read(Wavetables.id),
+        name: row.read(Wavetables.name),
+      );
     }
     return null;
   }

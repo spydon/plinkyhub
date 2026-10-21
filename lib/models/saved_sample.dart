@@ -1,8 +1,12 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/searchable.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'saved_sample.freezed.dart';
-part 'saved_sample.g.dart';
 
 const defaultSlicePoints = [0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875];
 
@@ -23,8 +27,8 @@ abstract class SavedSample with _$SavedSample implements Searchable {
     @Default('') String slug,
     @Default('') String description,
     @Default(false) bool isPublic,
-    @Default('') @JsonKey(readValue: _readUsername) String username,
-    @Default(0) @JsonKey(readValue: _readStarCount) int starCount,
+    @Default('') String username,
+    @Default(0) int starCount,
     @Default(false) bool isStarred,
     @Default(defaultSlicePoints) List<double> slicePoints,
     @Default(60) int baseNote,
@@ -35,25 +39,52 @@ abstract class SavedSample with _$SavedSample implements Searchable {
     String? contentHash,
   }) = _SavedSample;
 
-  factory SavedSample.fromJson(Map<String, dynamic> json) =>
-      _$SavedSampleFromJson(json);
-}
+  factory SavedSample.fromRow(
+    PostgrestPartialRow<SamplesRow> row, {
+    bool isStarred = false,
+  }) => SavedSample(
+    id: row.read(Samples.id),
+    userId: row.read(Samples.userId),
+    name: row.read(Samples.name),
+    filePath: row.read(Samples.filePath),
+    pcmFilePath: row.read(Samples.pcmFilePath),
+    createdAt: row.read(Samples.createdAt),
+    updatedAt: row.read(Samples.updatedAt),
+    slug: row.read(Samples.slug),
+    description: row.read(Samples.description),
+    isPublic: row.read(Samples.isPublic),
+    username: row.read(Samples.profiles)?.read(Profiles.username) ?? '',
+    starCount: readStarCount(row, Samples.sampleStars, sampleStarsTable),
+    isStarred: isStarred,
+    slicePoints: row.read(Samples.slicePoints),
+    baseNote: row.read(Samples.baseNote),
+    fineTune: row.read(Samples.fineTune),
+    pitched: row.read(Samples.pitched),
+    sliceNotes: row.read(Samples.sliceNotes),
+    loopMode: row.read(Samples.loopMode),
+    contentHash: row.read(Samples.contentHash),
+  );
 
-Object? _readUsername(Map<dynamic, dynamic> json, String key) {
-  final profiles = json['profiles'];
-  if (profiles is Map<String, dynamic>) {
-    return profiles['username'];
-  }
-  return json[key];
-}
-
-Object? _readStarCount(Map<dynamic, dynamic> json, String key) {
-  final starsList = json['sample_stars'];
-  if (starsList is List && starsList.isNotEmpty) {
-    final first = starsList.first;
-    if (first is Map<String, dynamic>) {
-      return first['count'];
-    }
-  }
-  return json[key];
+  /// The columns and relations [SavedSample.fromRow] reads.
+  static final selection = <PostgrestSelectable<SamplesRow>>[
+    Samples.id,
+    Samples.userId,
+    Samples.name,
+    Samples.filePath,
+    Samples.pcmFilePath,
+    Samples.createdAt,
+    Samples.updatedAt,
+    Samples.slug,
+    Samples.description,
+    Samples.isPublic,
+    Samples.slicePoints,
+    Samples.baseNote,
+    Samples.fineTune,
+    Samples.pitched,
+    Samples.sliceNotes,
+    Samples.loopMode,
+    Samples.contentHash,
+    Samples.profiles(Profiles.username),
+    Samples.sampleStars(sampleStarsTable.count),
+  ];
 }

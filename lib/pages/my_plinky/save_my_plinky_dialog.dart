@@ -1,10 +1,12 @@
+// ignore_for_file: experimental_member_use
+
 import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/preset.dart';
-import 'package:plinkyhub/models/saved_sample.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/uf2.dart';
@@ -113,14 +115,13 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
     final presetDataMap = <String, Uint8List>{};
     if (linkedPresetIds.isNotEmpty) {
       updateProgress('Fetching presets...');
-      final response = await _supabase
-          .from('presets')
-          .select('id, preset_data')
-          .inFilter('id', linkedPresetIds.toList());
-      for (final row in response as List) {
-        final map = row as Map<String, dynamic>;
-        presetDataMap[map['id'] as String] = Uint8List.fromList(
-          base64Decode(map['preset_data'] as String),
+      final rows = await _supabase
+          .table(Presets.table)
+          .selectOnly([Presets.id, Presets.presetData])
+          .where(Presets.id.inFilter(linkedPresetIds.toList()));
+      for (final row in rows) {
+        presetDataMap[row.read(Presets.id)] = Uint8List.fromList(
+          base64Decode(row.read(Presets.presetData)),
         );
       }
     } else {
@@ -128,19 +129,24 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
     }
 
     // Fetch sample metadata.
-    final sampleMetadataMap = <String, Map<String, dynamic>>{};
+    final sampleMetadataMap = <String, PostgrestPartialRow<SamplesRow>>{};
     if (linkedSampleIds.isNotEmpty) {
       updateProgress('Fetching sample metadata...');
-      final response = await _supabase
-          .from('samples')
-          .select(
-            'id, pcm_file_path, slice_points, slice_notes, '
-            'pitched, base_note, fine_tune, loop_mode',
-          )
-          .inFilter('id', linkedSampleIds.toList());
-      for (final row in response as List) {
-        final map = row as Map<String, dynamic>;
-        sampleMetadataMap[map['id'] as String] = map;
+      final rows = await _supabase
+          .table(Samples.table)
+          .selectOnly([
+            Samples.id,
+            Samples.pcmFilePath,
+            Samples.slicePoints,
+            Samples.sliceNotes,
+            Samples.pitched,
+            Samples.baseNote,
+            Samples.fineTune,
+            Samples.loopMode,
+          ])
+          .where(Samples.id.inFilter(linkedSampleIds.toList()));
+      for (final row in rows) {
+        sampleMetadataMap[row.read(Samples.id)] = row;
       }
     } else {
       completedSteps++;
@@ -175,32 +181,18 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
         'Downloading sample $sampleDownloadNumber/${sampleSlotMapping.length}...',
       );
 
-      final pcmFilePath = metadata['pcm_file_path'] as String;
       final pcmBytes = await _supabase.storage
           .from('samples')
-          .download(pcmFilePath);
+          .download(metadata.read(Samples.pcmFilePath));
 
       samplePcmData[slotIndex] = pcmBytes;
 
-      final slicePoints =
-          (metadata['slice_points'] as List?)
-              ?.map((value) => (value as num).toDouble())
-              .toList() ??
-          List.of(defaultSlicePoints);
-      final sliceNotes =
-          (metadata['slice_notes'] as List?)
-              ?.map((value) => (value as num).toInt())
-              .toList() ??
-          List.of(defaultSliceNotes);
-      final pitched = metadata['pitched'] as bool? ?? false;
-      final loopMode = metadata['loop_mode'] as int? ?? 0;
-
       sampleInfos[slotIndex] = buildSampleInfo(
         pcmData: pcmBytes,
-        slicePoints: slicePoints,
-        sliceNotes: sliceNotes,
-        pitched: pitched,
-        loopMode: loopMode,
+        slicePoints: metadata.read(Samples.slicePoints),
+        sliceNotes: metadata.read(Samples.sliceNotes),
+        pitched: metadata.read(Samples.pitched),
+        loopMode: metadata.read(Samples.loopMode),
       );
     }
 
@@ -240,10 +232,7 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
       for (final entry in linkedPatternIds) {
         final patternIndex = entry.key;
         final patternId = entry.value!;
-        final patternFilePath = await _fetchFilePath(
-          'patterns',
-          patternId,
-        );
+        final patternFilePath = await _fetchPatternFilePath(patternId);
         final patternBlob = await _supabase.storage
             .from('patterns')
             .download(patternFilePath);
@@ -294,8 +283,7 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
     // Write WAVETAB.UF2 if linked.
     if (widget.wavetableId != null) {
       updateProgress('Writing WAVETAB.UF2...');
-      final wavetableFilePath = await _fetchFilePath(
-        'wavetables',
+      final wavetableFilePath = await _fetchWavetableFilePath(
         widget.wavetableId!,
       );
       final wavetableBytes = await _supabase.storage
@@ -309,13 +297,22 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
     }
   }
 
-  Future<String> _fetchFilePath(String table, String id) async {
-    final response = await _supabase
-        .from(table)
-        .select('file_path')
-        .eq('id', id)
+  Future<String> _fetchPatternFilePath(String id) async {
+    final row = await _supabase
+        .table(Patterns.table)
+        .selectOnly([Patterns.filePath])
+        .where(Patterns.id.eq(id))
         .single();
-    return response['file_path'] as String;
+    return row.read(Patterns.filePath);
+  }
+
+  Future<String> _fetchWavetableFilePath(String id) async {
+    final row = await _supabase
+        .table(Wavetables.table)
+        .selectOnly([Wavetables.filePath])
+        .where(Wavetables.id.eq(id))
+        .single();
+    return row.read(Wavetables.filePath);
   }
 
   @override

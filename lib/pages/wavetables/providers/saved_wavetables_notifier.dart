@@ -1,9 +1,12 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/saved_items_state.dart';
 import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
-import 'package:plinkyhub/pages/wavetables/models/wavetable_write.dart';
 import 'package:plinkyhub/providers/saved_items_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,25 +15,31 @@ final savedWavetablesProvider =
       SavedWavetablesNotifier.new,
     );
 
-class SavedWavetablesNotifier extends SavedItemsNotifier<SavedWavetable> {
+class SavedWavetablesNotifier
+    extends
+        SavedItemsNotifier<
+          SavedWavetable,
+          WavetablesRow,
+          WavetableStarsRow,
+          WavetableStarsInsert
+        > {
   @override
-  String get tableName => 'wavetables';
+  ItemTable<WavetablesRow> get itemTable => wavetablesTable;
 
   @override
-  String get starTableName => 'wavetable_stars';
+  StarTable<WavetableStarsRow, WavetableStarsInsert> get starTable =>
+      wavetableStarsTable;
 
   @override
-  String get starIdColumn => 'wavetable_id';
-
-  @override
-  String get selectQuery => '*, profiles(username), wavetable_stars(count)';
+  List<PostgrestSelectable<WavetablesRow>> get selection =>
+      SavedWavetable.selection;
 
   @override
   String get itemLabel => 'wavetable';
 
   @override
-  SavedWavetable fromJson(Map<String, dynamic> json) =>
-      SavedWavetable.fromJson(json);
+  SavedWavetable fromRow(PostgrestPartialRow<WavetablesRow> row) =>
+      SavedWavetable.fromRow(row);
 
   @override
   SavedWavetable withStarUpdate(
@@ -69,23 +78,24 @@ class SavedWavetablesNotifier extends SavedItemsNotifier<SavedWavetable> {
             fileOptions: const FileOptions(upsert: true),
           );
 
-      final write = WavetableWrite(
-        userId: wavetable.userId,
-        name: wavetable.name,
-        filePath: wavetable.filePath,
-        description: wavetable.description,
-        isPublic: wavetable.isPublic,
-        youtubeUrl: wavetable.youtubeUrl,
-        contentHash: computeContentHash(uf2Bytes),
-      );
       final inserted = await supabase
-          .from('wavetables')
-          .insert(write.toJson())
+          .table(Wavetables.table)
+          .insert(
+            WavetablesInsert(
+              userId: wavetable.userId,
+              name: wavetable.name,
+              filePath: wavetable.filePath,
+              description: wavetable.description,
+              isPublic: wavetable.isPublic,
+              youtubeUrl: wavetable.youtubeUrl,
+              contentHash: computeContentHash(uf2Bytes),
+            ),
+          )
           .select()
           .single();
 
       await refreshAll();
-      return SavedWavetable.fromJson(inserted);
+      return SavedWavetable.fromFullRow(inserted);
     } on Exception catch (error) {
       setError(error);
       rethrow;
@@ -95,18 +105,19 @@ class SavedWavetablesNotifier extends SavedItemsNotifier<SavedWavetable> {
   Future<void> updateWavetable(SavedWavetable wavetable) async {
     setLoading();
     try {
-      final write = WavetableWrite(
-        userId: wavetable.userId,
-        name: wavetable.name,
-        filePath: wavetable.filePath,
-        description: wavetable.description,
-        isPublic: wavetable.isPublic,
-        youtubeUrl: wavetable.youtubeUrl,
-      );
       await supabase
-          .from('wavetables')
-          .update(write.toJson())
-          .eq('id', wavetable.id);
+          .table(Wavetables.table)
+          .update(
+            WavetablesUpdate(
+              userId: wavetable.userId,
+              name: wavetable.name,
+              filePath: wavetable.filePath,
+              description: wavetable.description,
+              isPublic: wavetable.isPublic,
+              youtubeUrl: wavetable.youtubeUrl,
+            ).setContentHashToNull(),
+          )
+          .where(Wavetables.id.eq(wavetable.id));
       await refreshAll();
     } on Exception catch (error) {
       setError(error);
@@ -127,19 +138,20 @@ class SavedWavetablesNotifier extends SavedItemsNotifier<SavedWavetable> {
             fileOptions: const FileOptions(upsert: true),
           );
 
-      final write = WavetableWrite(
-        userId: wavetable.userId,
-        name: wavetable.name,
-        filePath: wavetable.filePath,
-        description: wavetable.description,
-        isPublic: wavetable.isPublic,
-        youtubeUrl: wavetable.youtubeUrl,
-        contentHash: computeContentHash(uf2Bytes),
-      );
       await supabase
-          .from('wavetables')
-          .update(write.toJson())
-          .eq('id', wavetable.id);
+          .table(Wavetables.table)
+          .update(
+            WavetablesUpdate(
+              userId: wavetable.userId,
+              name: wavetable.name,
+              filePath: wavetable.filePath,
+              description: wavetable.description,
+              isPublic: wavetable.isPublic,
+              youtubeUrl: wavetable.youtubeUrl,
+              contentHash: computeContentHash(uf2Bytes),
+            ),
+          )
+          .where(Wavetables.id.eq(wavetable.id));
 
       await refreshAll();
     } on Exception catch (error) {

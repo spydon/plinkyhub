@@ -1,9 +1,12 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
 import 'package:plinkyhub/pages/presets/providers/saved_presets_notifier.dart';
 import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
 import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -163,38 +166,26 @@ Future<void> makeItemsPublic(PrivateItemSummary summary) async {
 
   if (summary.presetIds.isNotEmpty) {
     await supabase
-        .from('presets')
-        .update({'is_public': true})
-        .inFilter(
-          'id',
-          summary.presetIds,
-        );
+        .table(Presets.table)
+        .update(PresetsUpdate(isPublic: true))
+        .where(Presets.id.inFilter(summary.presetIds));
   }
   if (summary.sampleIds.isNotEmpty) {
     await supabase
-        .from('samples')
-        .update({'is_public': true})
-        .inFilter(
-          'id',
-          summary.sampleIds,
-        );
+        .table(Samples.table)
+        .update(SamplesUpdate(isPublic: true))
+        .where(Samples.id.inFilter(summary.sampleIds));
   }
   if (summary.patternIds.isNotEmpty) {
     await supabase
-        .from('patterns')
-        .update({'is_public': true})
-        .inFilter(
-          'id',
-          summary.patternIds,
-        );
+        .table(Patterns.table)
+        .update(PatternsUpdate(isPublic: true))
+        .where(Patterns.id.inFilter(summary.patternIds));
   }
-  if (summary.wavetableId != null) {
+  if (summary.wavetableId case final wavetableId?) {
     await supabase
-        .from('wavetables')
-        .update({'is_public': true})
-        .eq(
-          'id',
-          summary.wavetableId!,
-        );
+        .table(Wavetables.table)
+        .update(WavetablesUpdate(isPublic: true))
+        .where(Wavetables.id.eq(wavetableId));
   }
 }

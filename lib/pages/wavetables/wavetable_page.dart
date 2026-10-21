@@ -1,11 +1,14 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/wavetable_card.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
-import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -42,29 +45,25 @@ class _WavetablePageState extends ConsumerState<WavetablePage> {
     });
 
     try {
-      final response = await Supabase.instance.client
-          .from('wavetables')
-          .select(
-            '*, profiles(username), wavetable_stars(count)',
+      final row = await Supabase.instance.client
+          .table(Wavetables.table)
+          .selectOnly(SavedWavetable.selection)
+          .where(
+            Wavetables.slug.eq(widget.wavetableSlug) &
+                wavetablesTable.ownedByUsername(widget.username),
           )
-          .eq('slug', widget.wavetableSlug)
-          .eq('profiles.username', widget.username)
-          .not('profiles', 'is', null)
-          .order('updated_at', ascending: false)
+          .order(Wavetables.updatedAt.desc())
           .limit(1)
           .maybeSingle();
 
-      if (response != null) {
-        final isStarred = await fetchIsStarred(
-          starTableName: 'wavetable_stars',
-          idColumn: 'wavetable_id',
-          itemId: response['id'] as String,
+      if (row != null) {
+        final isStarred = await wavetableStarsTable.isStarred(
+          Supabase.instance.client,
+          id: row.read(Wavetables.id),
           userId: ref.read(authenticationProvider).user?.id,
         );
         setState(() {
-          _wavetable = SavedWavetable.fromJson(
-            {...response, 'is_starred': isStarred},
-          );
+          _wavetable = SavedWavetable.fromRow(row, isStarred: isStarred);
           _isLoading = false;
         });
       } else {

@@ -11,7 +11,6 @@ part of 'pack_slot.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$PackSlot {
 
@@ -22,8 +21,6 @@ mixin _$PackSlot {
 @pragma('vm:prefer-inline')
 $PackSlotCopyWith<PackSlot> get copyWith => _$PackSlotCopyWithImpl<PackSlot>(this as PackSlot, _$identity);
 
-  /// Serializes this PackSlot to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -31,7 +28,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is PackSlot&&(identical(other.id, id) || other.id == id)&&(identical(other.packId, packId) || other.packId == packId)&&(identical(other.slotNumber, slotNumber) || other.slotNumber == slotNumber)&&(identical(other.presetId, presetId) || other.presetId == presetId)&&(identical(other.sampleId, sampleId) || other.sampleId == sampleId)&&(identical(other.patternId, patternId) || other.patternId == patternId));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,id,packId,slotNumber,presetId,sampleId,patternId);
 
@@ -211,11 +208,11 @@ return $default(_that.id,_that.packId,_that.slotNumber,_that.presetId,_that.samp
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _PackSlot implements PackSlot {
   const _PackSlot({required this.id, required this.packId, required this.slotNumber, this.presetId, this.sampleId, this.patternId});
-  factory _PackSlot.fromJson(Map<String, dynamic> json) => _$PackSlotFromJson(json);
+  
 
 @override final  String id;
 @override final  String packId;
@@ -230,17 +227,14 @@ class _PackSlot implements PackSlot {
 @pragma('vm:prefer-inline')
 _$PackSlotCopyWith<_PackSlot> get copyWith => __$PackSlotCopyWithImpl<_PackSlot>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$PackSlotToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _PackSlot&&(identical(other.id, id) || other.id == id)&&(identical(other.packId, packId) || other.packId == packId)&&(identical(other.slotNumber, slotNumber) || other.slotNumber == slotNumber)&&(identical(other.presetId, presetId) || other.presetId == presetId)&&(identical(other.sampleId, sampleId) || other.sampleId == sampleId)&&(identical(other.patternId, patternId) || other.patternId == patternId));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,id,packId,slotNumber,presetId,sampleId,patternId);
 

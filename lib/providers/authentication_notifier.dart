@@ -1,8 +1,11 @@
+// ignore_for_file: experimental_member_use
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/authentication_state.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -53,23 +56,18 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
       );
     });
     ref.onDispose(() => _authSubscription?.cancel());
-    if (currentUser != null) {
-      Future.microtask(() async {
-        final username = await _fetchUsername(currentUser.id);
-        state = state.copyWith(username: username);
-      });
-    }
     return AuthenticationState(user: currentUser);
   }
 
   Future<String?> _fetchUsername(String userId) async {
     try {
-      final response = await _supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', userId)
+      final profile = await _supabase
+          .table(Profiles.table)
+          .selectOnly([Profiles.username])
+          .where(Profiles.id.eq(userId))
           .maybeSingle();
-      return response?['username'] as String?;
+      final username = profile?.read(Profiles.username);
+      return username;
     } on PostgrestException catch (error) {
       debugPrint('$error');
       return null;
@@ -79,12 +77,12 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
   Future<void> signIn(String email, String password) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final response = await _supabase.auth.signInWithPassword(
+      final session = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
       state = state.copyWith(
-        user: response.user,
+        user: session.user,
         isLoading: false,
       );
     } on AuthException catch (error) {

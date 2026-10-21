@@ -11,19 +11,16 @@ part of 'saved_sample.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$SavedSample {
 
- String get id; String get userId; String get name; String get filePath; String get pcmFilePath; DateTime get createdAt; DateTime get updatedAt; String get slug; String get description; bool get isPublic;@JsonKey(readValue: _readUsername) String get username;@JsonKey(readValue: _readStarCount) int get starCount; bool get isStarred; List<double> get slicePoints; int get baseNote; int get fineTune; bool get pitched; List<int> get sliceNotes; int get loopMode; String? get contentHash;
+ String get id; String get userId; String get name; String get filePath; String get pcmFilePath; DateTime get createdAt; DateTime get updatedAt; String get slug; String get description; bool get isPublic; String get username; int get starCount; bool get isStarred; List<double> get slicePoints; int get baseNote; int get fineTune; bool get pitched; List<int> get sliceNotes; int get loopMode; String? get contentHash;
 /// Create a copy of SavedSample
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $SavedSampleCopyWith<SavedSample> get copyWith => _$SavedSampleCopyWithImpl<SavedSample>(this as SavedSample, _$identity);
 
-  /// Serializes this SavedSample to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -31,7 +28,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is SavedSample&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.slug, slug) || other.slug == slug)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.username, username) || other.username == username)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.isStarred, isStarred) || other.isStarred == isStarred)&&const DeepCollectionEquality().equals(other.slicePoints, slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other.sliceNotes, sliceNotes)&&(identical(other.loopMode, loopMode) || other.loopMode == loopMode)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hashAll([runtimeType,id,userId,name,filePath,pcmFilePath,createdAt,updatedAt,slug,description,isPublic,username,starCount,isStarred,const DeepCollectionEquality().hash(slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(sliceNotes),loopMode,contentHash]);
 
@@ -48,7 +45,7 @@ abstract mixin class $SavedSampleCopyWith<$Res>  {
   factory $SavedSampleCopyWith(SavedSample value, $Res Function(SavedSample) _then) = _$SavedSampleCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String name, String filePath, String pcmFilePath, DateTime createdAt, DateTime updatedAt, String slug, String description, bool isPublic,@JsonKey(readValue: _readUsername) String username,@JsonKey(readValue: _readStarCount) int starCount, bool isStarred, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, int loopMode, String? contentHash
+ String id, String userId, String name, String filePath, String pcmFilePath, DateTime createdAt, DateTime updatedAt, String slug, String description, bool isPublic, String username, int starCount, bool isStarred, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, int loopMode, String? contentHash
 });
 
 
@@ -172,7 +169,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String filePath,  String pcmFilePath,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic, @JsonKey(readValue: _readUsername)  String username, @JsonKey(readValue: _readStarCount)  int starCount,  bool isStarred,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  int loopMode,  String? contentHash)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String filePath,  String pcmFilePath,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic,  String username,  int starCount,  bool isStarred,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  int loopMode,  String? contentHash)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SavedSample() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.createdAt,_that.updatedAt,_that.slug,_that.description,_that.isPublic,_that.username,_that.starCount,_that.isStarred,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.loopMode,_that.contentHash);case _:
@@ -193,7 +190,7 @@ return $default(_that.id,_that.userId,_that.name,_that.filePath,_that.pcmFilePat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String filePath,  String pcmFilePath,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic, @JsonKey(readValue: _readUsername)  String username, @JsonKey(readValue: _readStarCount)  int starCount,  bool isStarred,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  int loopMode,  String? contentHash)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String filePath,  String pcmFilePath,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic,  String username,  int starCount,  bool isStarred,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  int loopMode,  String? contentHash)  $default,) {final _that = this;
 switch (_that) {
 case _SavedSample():
 return $default(_that.id,_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.createdAt,_that.updatedAt,_that.slug,_that.description,_that.isPublic,_that.username,_that.starCount,_that.isStarred,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.loopMode,_that.contentHash);case _:
@@ -213,7 +210,7 @@ return $default(_that.id,_that.userId,_that.name,_that.filePath,_that.pcmFilePat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String filePath,  String pcmFilePath,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic, @JsonKey(readValue: _readUsername)  String username, @JsonKey(readValue: _readStarCount)  int starCount,  bool isStarred,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  int loopMode,  String? contentHash)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String filePath,  String pcmFilePath,  DateTime createdAt,  DateTime updatedAt,  String slug,  String description,  bool isPublic,  String username,  int starCount,  bool isStarred,  List<double> slicePoints,  int baseNote,  int fineTune,  bool pitched,  List<int> sliceNotes,  int loopMode,  String? contentHash)?  $default,) {final _that = this;
 switch (_that) {
 case _SavedSample() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.filePath,_that.pcmFilePath,_that.createdAt,_that.updatedAt,_that.slug,_that.description,_that.isPublic,_that.username,_that.starCount,_that.isStarred,_that.slicePoints,_that.baseNote,_that.fineTune,_that.pitched,_that.sliceNotes,_that.loopMode,_that.contentHash);case _:
@@ -225,11 +222,11 @@ return $default(_that.id,_that.userId,_that.name,_that.filePath,_that.pcmFilePat
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _SavedSample implements SavedSample {
-  const _SavedSample({required this.id, required this.userId, required this.name, required this.filePath, required this.pcmFilePath, required this.createdAt, required this.updatedAt, this.slug = '', this.description = '', this.isPublic = false, @JsonKey(readValue: _readUsername) this.username = '', @JsonKey(readValue: _readStarCount) this.starCount = 0, this.isStarred = false, final  List<double> slicePoints = defaultSlicePoints, this.baseNote = 60, this.fineTune = 0, this.pitched = false, final  List<int> sliceNotes = defaultSliceNotes, this.loopMode = 0, this.contentHash}): _slicePoints = slicePoints,_sliceNotes = sliceNotes;
-  factory _SavedSample.fromJson(Map<String, dynamic> json) => _$SavedSampleFromJson(json);
+  const _SavedSample({required this.id, required this.userId, required this.name, required this.filePath, required this.pcmFilePath, required this.createdAt, required this.updatedAt, this.slug = '', this.description = '', this.isPublic = false, this.username = '', this.starCount = 0, this.isStarred = false, final  List<double> slicePoints = defaultSlicePoints, this.baseNote = 60, this.fineTune = 0, this.pitched = false, final  List<int> sliceNotes = defaultSliceNotes, this.loopMode = 0, this.contentHash}): _slicePoints = slicePoints,_sliceNotes = sliceNotes;
+  
 
 @override final  String id;
 @override final  String userId;
@@ -241,8 +238,8 @@ class _SavedSample implements SavedSample {
 @override@JsonKey() final  String slug;
 @override@JsonKey() final  String description;
 @override@JsonKey() final  bool isPublic;
-@override@JsonKey(readValue: _readUsername) final  String username;
-@override@JsonKey(readValue: _readStarCount) final  int starCount;
+@override@JsonKey() final  String username;
+@override@JsonKey() final  int starCount;
 @override@JsonKey() final  bool isStarred;
  final  List<double> _slicePoints;
 @override@JsonKey() List<double> get slicePoints {
@@ -270,17 +267,14 @@ class _SavedSample implements SavedSample {
 @pragma('vm:prefer-inline')
 _$SavedSampleCopyWith<_SavedSample> get copyWith => __$SavedSampleCopyWithImpl<_SavedSample>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$SavedSampleToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavedSample&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.pcmFilePath, pcmFilePath) || other.pcmFilePath == pcmFilePath)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.slug, slug) || other.slug == slug)&&(identical(other.description, description) || other.description == description)&&(identical(other.isPublic, isPublic) || other.isPublic == isPublic)&&(identical(other.username, username) || other.username == username)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.isStarred, isStarred) || other.isStarred == isStarred)&&const DeepCollectionEquality().equals(other._slicePoints, _slicePoints)&&(identical(other.baseNote, baseNote) || other.baseNote == baseNote)&&(identical(other.fineTune, fineTune) || other.fineTune == fineTune)&&(identical(other.pitched, pitched) || other.pitched == pitched)&&const DeepCollectionEquality().equals(other._sliceNotes, _sliceNotes)&&(identical(other.loopMode, loopMode) || other.loopMode == loopMode)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hashAll([runtimeType,id,userId,name,filePath,pcmFilePath,createdAt,updatedAt,slug,description,isPublic,username,starCount,isStarred,const DeepCollectionEquality().hash(_slicePoints),baseNote,fineTune,pitched,const DeepCollectionEquality().hash(_sliceNotes),loopMode,contentHash]);
 
@@ -297,7 +291,7 @@ abstract mixin class _$SavedSampleCopyWith<$Res> implements $SavedSampleCopyWith
   factory _$SavedSampleCopyWith(_SavedSample value, $Res Function(_SavedSample) _then) = __$SavedSampleCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String name, String filePath, String pcmFilePath, DateTime createdAt, DateTime updatedAt, String slug, String description, bool isPublic,@JsonKey(readValue: _readUsername) String username,@JsonKey(readValue: _readStarCount) int starCount, bool isStarred, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, int loopMode, String? contentHash
+ String id, String userId, String name, String filePath, String pcmFilePath, DateTime createdAt, DateTime updatedAt, String slug, String description, bool isPublic, String username, int starCount, bool isStarred, List<double> slicePoints, int baseNote, int fineTune, bool pitched, List<int> sliceNotes, int loopMode, String? contentHash
 });
 
 

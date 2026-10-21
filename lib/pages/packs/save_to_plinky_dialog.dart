@@ -1,3 +1,5 @@
+// ignore_for_file: experimental_member_use
+
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -5,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
-import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/providers/plinky_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/uf2.dart';
@@ -81,35 +83,11 @@ Future<void> _sendPackOverWebUsb({
 
   // Fetch preset binary data.
   controller.updateStatus('Fetching presets...');
-  final presetDataMap = <String, Uint8List>{};
-  if (presetIds.isNotEmpty) {
-    final response = await supabase
-        .from('presets')
-        .select('id, preset_data')
-        .inFilter('id', presetIds.toList());
-    for (final row in response as List) {
-      final map = row as Map<String, dynamic>;
-      presetDataMap[map['id'] as String] = Uint8List.fromList(
-        base64Decode(map['preset_data'] as String),
-      );
-    }
-  }
+  final presetDataMap = await _fetchPresetData(supabase, presetIds);
 
   // Fetch sample metadata.
   controller.updateStatus('Fetching sample metadata...');
-  final sampleMetadataMap = <String, Map<String, dynamic>>{};
-  if (sampleIds.isNotEmpty) {
-    final response = await supabase
-        .from('samples')
-        .select(
-          'id, pcm_file_path, slice_points, slice_notes, pitched, loop_mode',
-        )
-        .inFilter('id', sampleIds.toList());
-    for (final row in response as List) {
-      final map = row as Map<String, dynamic>;
-      sampleMetadataMap[map['id'] as String] = map;
-    }
-  }
+  final sampleMetadataMap = await _fetchSampleMetadata(supabase, sampleIds);
 
   // Build sample slot mapping (pack slots 56-63 → Plinky 0-7).
   final sampleSlotMapping = <String, int>{};
@@ -163,27 +141,14 @@ Future<void> _sendPackOverWebUsb({
 
     final pcmBytes = await supabase.storage
         .from('samples')
-        .download(metadata['pcm_file_path'] as String);
-
-    final slicePoints =
-        (metadata['slice_points'] as List?)
-            ?.map((value) => (value as num).toDouble())
-            .toList() ??
-        List.of(defaultSlicePoints);
-    final sliceNotes =
-        (metadata['slice_notes'] as List?)
-            ?.map((value) => (value as num).toInt())
-            .toList() ??
-        List.of(defaultSliceNotes);
-    final pitched = metadata['pitched'] as bool? ?? false;
-    final loopMode = metadata['loop_mode'] as int? ?? 0;
+        .download(metadata.read(Samples.pcmFilePath));
 
     final sampleInfo = buildSampleInfo(
       pcmData: pcmBytes,
-      slicePoints: slicePoints,
-      sliceNotes: sliceNotes,
-      pitched: pitched,
-      loopMode: loopMode,
+      slicePoints: metadata.read(Samples.slicePoints),
+      sliceNotes: metadata.read(Samples.sliceNotes),
+      pitched: metadata.read(Samples.pitched),
+      loopMode: metadata.read(Samples.loopMode),
     );
 
     controller.updateStatus(
@@ -233,9 +198,8 @@ Future<void> _sendPackOverWebUsb({
   if (pack.wavetableId != null) {
     controller.updateStatus('Sending wavetable...');
 
-    final wavetableFilePath = await _fetchFilePath(
+    final wavetableFilePath = await _fetchWavetableFilePath(
       supabase,
-      'wavetables',
       pack.wavetableId!,
     );
     final uf2Bytes = await supabase.storage
@@ -382,37 +346,12 @@ Future<void> _generateAndWriteFiles({
 
   // Fetch presets from the database.
   reportProgress('Fetching presets...');
-  final presetDataMap = <String, Uint8List>{};
-  if (presetIds.isNotEmpty) {
-    final response = await supabase
-        .from('presets')
-        .select('id, preset_data')
-        .inFilter('id', presetIds.toList());
-    for (final row in response as List) {
-      final map = row as Map<String, dynamic>;
-      final id = map['id'] as String;
-      final presetData = map['preset_data'] as String;
-      presetDataMap[id] = Uint8List.fromList(base64Decode(presetData));
-    }
-  }
+  final presetDataMap = await _fetchPresetData(supabase, presetIds);
   completedSteps++;
 
   // Fetch sample metadata from the database.
   reportProgress('Fetching sample metadata...');
-  final sampleMetadataMap = <String, Map<String, dynamic>>{};
-  if (sampleIds.isNotEmpty) {
-    final response = await supabase
-        .from('samples')
-        .select(
-          'id, pcm_file_path, slice_points, slice_notes, '
-          'pitched, base_note, fine_tune, loop_mode',
-        )
-        .inFilter('id', sampleIds.toList());
-    for (final row in response as List) {
-      final map = row as Map<String, dynamic>;
-      sampleMetadataMap[map['id'] as String] = map;
-    }
-  }
+  final sampleMetadataMap = await _fetchSampleMetadata(supabase, sampleIds);
   completedSteps++;
 
   // Download sample PCM files and build SampleInfo structs.
@@ -433,32 +372,18 @@ Future<void> _generateAndWriteFiles({
       'Downloading sample $tunnelSampleNumber/${sampleSlotMapping.length}...',
     );
 
-    final pcmFilePath = metadata['pcm_file_path'] as String;
     final pcmBytes = await supabase.storage
         .from('samples')
-        .download(pcmFilePath);
+        .download(metadata.read(Samples.pcmFilePath));
 
     samplePcmData[slotIndex] = pcmBytes;
 
-    final slicePoints =
-        (metadata['slice_points'] as List?)
-            ?.map((value) => (value as num).toDouble())
-            .toList() ??
-        List.of(defaultSlicePoints);
-    final sliceNotes =
-        (metadata['slice_notes'] as List?)
-            ?.map((value) => (value as num).toInt())
-            .toList() ??
-        List.of(defaultSliceNotes);
-    final pitched = metadata['pitched'] as bool? ?? false;
-    final loopMode = metadata['loop_mode'] as int? ?? 0;
-
     sampleInfos[slotIndex] = buildSampleInfo(
       pcmData: pcmBytes,
-      slicePoints: slicePoints,
-      sliceNotes: sliceNotes,
-      pitched: pitched,
-      loopMode: loopMode,
+      slicePoints: metadata.read(Samples.slicePoints),
+      sliceNotes: metadata.read(Samples.sliceNotes),
+      pitched: metadata.read(Samples.pitched),
+      loopMode: metadata.read(Samples.loopMode),
     );
     completedSteps++;
   }
@@ -503,9 +428,8 @@ Future<void> _generateAndWriteFiles({
     reportProgress('Fetching patterns...');
     patternQuarters = List<Uint8List?>.filled(patternCount * 4, null);
     for (final slot in patternSlots) {
-      final patternFilePath = await _fetchFilePath(
+      final patternFilePath = await _fetchPatternFilePath(
         supabase,
-        'patterns',
         slot.patternId!,
       );
       final patternBlob = await supabase.storage
@@ -578,9 +502,8 @@ Future<void> _generateAndWriteFiles({
   if (hasWavetable) {
     reportProgress('Writing WAVETAB.UF2...');
 
-    final wavetableFilePath = await _fetchFilePath(
+    final wavetableFilePath = await _fetchWavetableFilePath(
       supabase,
-      'wavetables',
       pack.wavetableId!,
     );
     final wavetableBytes = await supabase.storage
@@ -591,15 +514,63 @@ Future<void> _generateAndWriteFiles({
   }
 }
 
-Future<String> _fetchFilePath(
+Future<Map<String, Uint8List>> _fetchPresetData(
   SupabaseClient supabase,
-  String table,
+  Set<String> presetIds,
+) async {
+  if (presetIds.isEmpty) {
+    return {};
+  }
+  final rows = await supabase
+      .table(Presets.table)
+      .selectOnly([Presets.id, Presets.presetData])
+      .where(Presets.id.inFilter(presetIds.toList()));
+  return {
+    for (final row in rows)
+      row.read(Presets.id): Uint8List.fromList(
+        base64Decode(row.read(Presets.presetData)),
+      ),
+  };
+}
+
+Future<Map<String, PostgrestPartialRow<SamplesRow>>> _fetchSampleMetadata(
+  SupabaseClient supabase,
+  Set<String> sampleIds,
+) async {
+  if (sampleIds.isEmpty) {
+    return {};
+  }
+  final rows = await supabase
+      .table(Samples.table)
+      .selectOnly([
+        Samples.id,
+        Samples.pcmFilePath,
+        Samples.slicePoints,
+        Samples.sliceNotes,
+        Samples.pitched,
+        Samples.loopMode,
+      ])
+      .where(Samples.id.inFilter(sampleIds.toList()));
+  return {for (final row in rows) row.read(Samples.id): row};
+}
+
+Future<String> _fetchWavetableFilePath(
+  SupabaseClient supabase,
   String id,
 ) async {
-  final response = await supabase
-      .from(table)
-      .select('file_path')
-      .eq('id', id)
+  final row = await supabase
+      .table(Wavetables.table)
+      .selectOnly([Wavetables.filePath])
+      .where(Wavetables.id.eq(id))
       .single();
-  return response['file_path'] as String;
+  return row.read(Wavetables.filePath);
+}
+
+Future<String> _fetchPatternFilePath(SupabaseClient supabase, String id) async {
+  final row = await supabase
+      .table(Patterns.table)
+      .selectOnly([Patterns.filePath])
+      .where(Patterns.id.eq(id))
+      .single();
+  return row.read(Patterns.filePath);
 }

@@ -26,7 +26,7 @@ dependencies:
   json_annotation: ^4.11.0
   pointer_interceptor: ^0.10.1+2
   shared_preferences: ^2.5.3
-  supabase_flutter: ^2.12.2
+  supabase_flutter: 3.0.0-dev.11
   web: ^1.1.1
 
 dev_dependencies:
@@ -36,6 +36,7 @@ dev_dependencies:
     sdk: flutter
   freezed: ^3.2.5
   json_serializable: ^6.13.1
+  supabase_typegen: ^0.6.0
   test: any
 
 flutter:

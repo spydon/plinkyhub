@@ -1,5 +1,8 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/saved_items_state.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
@@ -10,31 +13,32 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 ///
 /// Provides generic implementations of fetch (user / starred / public),
 /// star toggling, name uniqueness checks, and simple delete.
-/// Subclasses supply table names and model-specific operations.
-abstract class SavedItemsNotifier<T extends Searchable>
+/// Subclasses supply the tables and model-specific operations.
+abstract class SavedItemsNotifier<
+  T extends Searchable,
+  Row,
+  StarRow,
+  StarInsert
+>
     extends Notifier<SavedItemsState<T>> {
   SupabaseClient get supabase => Supabase.instance.client;
 
   // ---- Configuration (override in subclasses) ----
 
-  /// Main database table (e.g. `'presets'`).
-  String get tableName;
+  /// Main database table (e.g. [presetsTable]).
+  ItemTable<Row> get itemTable;
 
-  /// Star join table (e.g. `'preset_stars'`).
-  String get starTableName;
+  /// Star join table (e.g. [presetStarsTable]).
+  StarTable<StarRow, StarInsert> get starTable;
 
-  /// Foreign-key column in the star table (e.g. `'preset_id'`).
-  String get starIdColumn;
-
-  /// Supabase select expression including relations
-  /// (e.g. `'*, profiles(username), preset_stars(count)'`).
-  String get selectQuery;
+  /// The columns and relations a row of [itemTable] is read with.
+  List<PostgrestSelectable<Row>> get selection;
 
   /// Singular label used in error messages (e.g. `'preset'`).
   String get itemLabel;
 
-  /// Deserialise a row from the database.
-  T fromJson(Map<String, dynamic> json);
+  /// Read an item from a row selected with [selection].
+  T fromRow(PostgrestPartialRow<Row> row);
 
   /// Return a copy of [item] with updated star fields.
   T withStarUpdate(T item, {required bool isStarred, required int starCount});
@@ -57,21 +61,16 @@ abstract class SavedItemsNotifier<T extends Searchable>
     if (userId == null) {
       return {};
     }
-    final stars = await supabase
-        .from(starTableName)
-        .select(starIdColumn)
-        .eq('user_id', userId);
-    return {
-      for (final row in stars as List)
-        (row as Map<String, dynamic>)[starIdColumn] as String,
-    };
+    return starTable.fetchStarredItemIds(supabase, userId);
   }
 
-  List<T> applyStarred(List<dynamic> response, Set<String> starredIds) {
-    return response.map((row) {
-      final map = row as Map<String, dynamic>;
-      final item = fromJson(map);
-      if (starredIds.contains(map['id'])) {
+  List<T> applyStarred(
+    List<PostgrestPartialRow<Row>> rows,
+    Set<String> starredIds,
+  ) {
+    return rows.map((row) {
+      final item = fromRow(row);
+      if (starredIds.contains(item.id)) {
         return withStarUpdate(item, isStarred: true, starCount: item.starCount);
       }
       return item;
@@ -92,14 +91,14 @@ abstract class SavedItemsNotifier<T extends Searchable>
 
     state = state.copyWith(isLoading: true, errorMessage: () => null);
     try {
-      final response = await supabase
-          .from(tableName)
-          .select(selectQuery)
-          .eq('user_id', userId)
-          .order('updated_at', ascending: false);
+      final rows = await supabase
+          .table(itemTable.table)
+          .selectOnly(selection)
+          .where(itemTable.userId.eq(userId))
+          .order(itemTable.updatedAt.desc());
 
       final starredIds = await fetchStarredIds();
-      final items = applyStarred(response as List, starredIds);
+      final items = applyStarred(rows, starredIds);
 
       state = state.copyWith(
         userItems: items,
@@ -130,14 +129,16 @@ abstract class SavedItemsNotifier<T extends Searchable>
         return;
       }
 
-      final response = await supabase
-          .from(tableName)
-          .select(selectQuery)
-          .inFilter('id', starredIds.toList())
-          .neq('user_id', userId);
+      final rows = await supabase
+          .table(itemTable.table)
+          .selectOnly(selection)
+          .where(
+            itemTable.id.inFilter(starredIds.toList()) &
+                itemTable.userId.neq(userId),
+          );
 
-      final items = (response as List).map((row) {
-        final item = fromJson(row as Map<String, dynamic>);
+      final items = rows.map((row) {
+        final item = fromRow(row);
         return withStarUpdate(
           item,
           isStarred: true,
@@ -158,13 +159,13 @@ abstract class SavedItemsNotifier<T extends Searchable>
 
     state = state.copyWith(isLoading: true, errorMessage: () => null);
     try {
-      final response = await supabase
-          .from(tableName)
-          .select(selectQuery)
-          .eq('is_public', true);
+      final rows = await supabase
+          .table(itemTable.table)
+          .selectOnly(selection)
+          .where(itemTable.isPublic.isTrue());
 
       final starredIds = await fetchStarredIds();
-      final items = applyStarred(response as List, starredIds);
+      final items = applyStarred(rows, starredIds);
       state = state.copyWith(
         publicItems: items,
         isLoading: false,
@@ -187,7 +188,7 @@ abstract class SavedItemsNotifier<T extends Searchable>
   Future<void> deleteItem(String id) async {
     state = state.copyWith(isLoading: true, errorMessage: () => null);
     try {
-      await supabase.from(tableName).delete().eq('id', id);
+      await supabase.table(itemTable.table).delete().where(itemTable.id.eq(id));
       await fetchUserItems(force: true);
       await fetchPublicItems(force: true);
     } on Exception catch (error) {
@@ -241,15 +242,15 @@ abstract class SavedItemsNotifier<T extends Searchable>
     try {
       if (item.isStarred) {
         await supabase
-            .from(starTableName)
+            .table(starTable.table)
             .delete()
-            .eq(starIdColumn, item.id)
-            .eq('user_id', userId);
+            .where(
+              starTable.itemId.eq(item.id) & starTable.userId.eq(userId),
+            );
       } else {
-        await supabase.from(starTableName).insert({
-          starIdColumn: item.id,
-          'user_id': userId,
-        });
+        await supabase
+            .table(starTable.table)
+            .insert(starTable.createInsert(itemId: item.id, userId: userId));
       }
     } on Exception catch (error) {
       debugPrint('$error');
@@ -296,26 +297,4 @@ abstract class SavedItemsNotifier<T extends Searchable>
     await fetchUserItems(force: true);
     await fetchPublicItems(force: true);
   }
-}
-
-/// Returns whether the signed-in user has starred the given item.
-///
-/// [starTableName] is the star join table (e.g. `'preset_stars'`).
-/// [idColumn] is the item FK column (e.g. `'preset_id'`).
-Future<bool> fetchIsStarred({
-  required String starTableName,
-  required String idColumn,
-  required String itemId,
-  required String? userId,
-}) async {
-  if (userId == null) {
-    return false;
-  }
-  final result = await Supabase.instance.client
-      .from(starTableName)
-      .select(idColumn)
-      .eq(idColumn, itemId)
-      .eq('user_id', userId)
-      .maybeSingle();
-  return result != null;
 }

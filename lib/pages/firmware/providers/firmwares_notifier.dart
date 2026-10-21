@@ -1,8 +1,11 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/firmware/models/firmwares_state.dart';
 import 'package:plinkyhub/pages/firmware/models/saved_firmware.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final firmwaresProvider = NotifierProvider<FirmwaresNotifier, FirmwaresState>(
@@ -21,16 +24,12 @@ class FirmwaresNotifier extends Notifier<FirmwaresState> {
   Future<void> fetchFirmwares() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final response = await _supabase
-          .from('firmwares')
-          .select('*, profiles(username)')
-          .order('is_pinned', ascending: false)
-          .order('created_at', ascending: false);
-      final firmwares = (response as List)
-          .map(
-            (row) => SavedFirmware.fromJson(row as Map<String, dynamic>),
-          )
-          .toList();
+      final rows = await _supabase
+          .table(Firmwares.table)
+          .selectOnly(SavedFirmware.selection)
+          .order(Firmwares.isPinned.desc())
+          .order(Firmwares.createdAt.desc());
+      final firmwares = rows.map(SavedFirmware.fromRow).toList();
       state = state.copyWith(firmwares: firmwares, isLoading: false);
     } on Exception catch (error) {
       debugPrint('$error');
@@ -59,14 +58,18 @@ class FirmwaresNotifier extends Notifier<FirmwaresState> {
         .from('firmwares')
         .uploadBinary(storagePath, fileBytes);
 
-    await _supabase.from('firmwares').insert({
-      'user_id': userId,
-      'name': name,
-      'version': version,
-      'description': description,
-      'is_beta': isBeta,
-      'file_path': storagePath,
-    });
+    await _supabase
+        .table(Firmwares.table)
+        .insert(
+          FirmwaresInsert(
+            userId: userId,
+            name: name,
+            version: version,
+            description: description,
+            isBeta: isBeta,
+            filePath: storagePath,
+          ),
+        );
 
     await fetchFirmwares();
   }
@@ -81,15 +84,17 @@ class FirmwaresNotifier extends Notifier<FirmwaresState> {
   }) async {
     try {
       await _supabase
-          .from('firmwares')
-          .update({
-            'name': name,
-            'version': version,
-            'description': description,
-            'is_beta': isBeta,
-            'is_pinned': isPinned,
-          })
-          .eq('id', id);
+          .table(Firmwares.table)
+          .update(
+            FirmwaresUpdate(
+              name: name,
+              version: version,
+              description: description,
+              isBeta: isBeta,
+              isPinned: isPinned,
+            ),
+          )
+          .where(Firmwares.id.eq(id));
       await fetchFirmwares();
     } on Exception catch (error) {
       debugPrint('$error');
@@ -100,9 +105,9 @@ class FirmwaresNotifier extends Notifier<FirmwaresState> {
   Future<void> togglePinned(SavedFirmware firmware) async {
     try {
       await _supabase
-          .from('firmwares')
-          .update({'is_pinned': !firmware.isPinned})
-          .eq('id', firmware.id);
+          .table(Firmwares.table)
+          .update(FirmwaresUpdate(isPinned: !firmware.isPinned))
+          .where(Firmwares.id.eq(firmware.id));
       await fetchFirmwares();
     } on Exception catch (error) {
       debugPrint('$error');
@@ -113,7 +118,10 @@ class FirmwaresNotifier extends Notifier<FirmwaresState> {
   Future<void> deleteFirmware(String id, String filePath) async {
     try {
       await _supabase.storage.from('firmwares').remove([filePath]);
-      await _supabase.from('firmwares').delete().eq('id', id);
+      await _supabase
+          .table(Firmwares.table)
+          .delete()
+          .where(Firmwares.id.eq(id));
       await fetchFirmwares();
     } on Exception catch (error) {
       debugPrint('$error');
