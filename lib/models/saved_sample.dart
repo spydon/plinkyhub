@@ -1,8 +1,10 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:plinkyhub/models/searchable.dart';
+// ignore_for_file: experimental_member_use
 
-part 'saved_sample.freezed.dart';
-part 'saved_sample.g.dart';
+import 'package:flutter/foundation.dart';
+import 'package:plinkyhub/models/item_table.dart';
+import 'package:plinkyhub/models/searchable.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 const defaultSlicePoints = [0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875];
 
@@ -10,50 +12,98 @@ const defaultSlicePoints = [0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875];
 /// to MIDI note 60).
 const defaultSliceNotes = [48, 48, 48, 48, 48, 48, 48, 48];
 
-@freezed
-abstract class SavedSample with _$SavedSample implements Searchable {
-  const factory SavedSample({
-    required String id,
-    required String userId,
-    required String name,
-    required String filePath,
-    required String pcmFilePath,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    @Default('') String slug,
-    @Default('') String description,
-    @Default(false) bool isPublic,
-    @Default('') @JsonKey(readValue: _readUsername) String username,
-    @Default(0) @JsonKey(readValue: _readStarCount) int starCount,
-    @Default(false) bool isStarred,
-    @Default(defaultSlicePoints) List<double> slicePoints,
-    @Default(60) int baseNote,
-    @Default(0) int fineTune,
-    @Default(false) bool pitched,
-    @Default(defaultSliceNotes) List<int> sliceNotes,
-    @Default(0) int loopMode,
-    String? contentHash,
-  }) = _SavedSample;
+@immutable
+class SavedSample with Searchable {
+  SavedSample(this.row, {this.isStarred = false, int? starCount})
+    : starCount =
+          starCount ??
+          readStarCount(row, Samples.sampleStars, sampleStarsTable);
 
-  factory SavedSample.fromJson(Map<String, dynamic> json) =>
-      _$SavedSampleFromJson(json);
-}
+  final PostgrestPartialRow<SamplesRow> row;
 
-Object? _readUsername(Map<dynamic, dynamic> json, String key) {
-  final profiles = json['profiles'];
-  if (profiles is Map<String, dynamic>) {
-    return profiles['username'];
-  }
-  return json[key];
-}
+  @override
+  final bool isStarred;
 
-Object? _readStarCount(Map<dynamic, dynamic> json, String key) {
-  final starsList = json['sample_stars'];
-  if (starsList is List && starsList.isNotEmpty) {
-    final first = starsList.first;
-    if (first is Map<String, dynamic>) {
-      return first['count'];
-    }
-  }
-  return json[key];
+  @override
+  final int starCount;
+
+  @override
+  late final String id = row.read(Samples.id);
+
+  @override
+  String get userId => row.read(Samples.userId);
+
+  @override
+  late final String name = row.read(Samples.name);
+
+  String get filePath => row.read(Samples.filePath);
+
+  String get pcmFilePath => row.read(Samples.pcmFilePath);
+
+  DateTime get createdAt => row.read(Samples.createdAt);
+
+  @override
+  late final DateTime updatedAt = row.read(Samples.updatedAt);
+
+  String get slug => row.read(Samples.slug);
+
+  @override
+  String get description => row.read(Samples.description);
+
+  bool get isPublic => row.read(Samples.isPublic);
+
+  @override
+  String get username =>
+      row.read(Samples.profiles)?.read(Profiles.username) ?? '';
+
+  List<double> get slicePoints => row.read(Samples.slicePoints);
+
+  int get baseNote => row.read(Samples.baseNote);
+
+  int get fineTune => row.read(Samples.fineTune);
+
+  bool get pitched => row.read(Samples.pitched);
+
+  List<int> get sliceNotes => row.read(Samples.sliceNotes);
+
+  int get loopMode => row.read(Samples.loopMode);
+
+  String? get contentHash => row.read(Samples.contentHash);
+
+  SavedSample withStar({required bool isStarred, required int starCount}) =>
+      SavedSample(row, isStarred: isStarred, starCount: starCount);
+
+  @override
+  bool operator ==(Object other) =>
+      other is SavedSample &&
+      other.id == id &&
+      other.updatedAt == updatedAt &&
+      other.isStarred == isStarred &&
+      other.starCount == starCount;
+
+  @override
+  int get hashCode => Object.hash(id, updatedAt, isStarred, starCount);
+
+  /// The columns and relations the getters read.
+  static final selection = <PostgrestSelectable<SamplesRow>>[
+    Samples.id,
+    Samples.userId,
+    Samples.name,
+    Samples.filePath,
+    Samples.pcmFilePath,
+    Samples.createdAt,
+    Samples.updatedAt,
+    Samples.slug,
+    Samples.description,
+    Samples.isPublic,
+    Samples.slicePoints,
+    Samples.baseNote,
+    Samples.fineTune,
+    Samples.pitched,
+    Samples.sliceNotes,
+    Samples.loopMode,
+    Samples.contentHash,
+    Samples.profiles(Profiles.username),
+    Samples.sampleStars(sampleStarsTable.count),
+  ];
 }

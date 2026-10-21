@@ -11,7 +11,6 @@ part of 'users_search_notifier.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$UserProfile implements DiagnosticableTreeMixin {
 
@@ -22,8 +21,6 @@ mixin _$UserProfile implements DiagnosticableTreeMixin {
 @pragma('vm:prefer-inline')
 $UserProfileCopyWith<UserProfile> get copyWith => _$UserProfileCopyWithImpl<UserProfile>(this as UserProfile, _$identity);
 
-  /// Serializes this UserProfile to a JSON map.
-  Map<String, dynamic> toJson();
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -37,7 +34,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfile&&(identical(other.username, username) || other.username == username));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,username);
 
@@ -212,11 +209,11 @@ return $default(_that.username);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _UserProfile with DiagnosticableTreeMixin implements UserProfile {
   const _UserProfile({required this.username});
-  factory _UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
+  
 
 @override final  String username;
 
@@ -226,10 +223,7 @@ class _UserProfile with DiagnosticableTreeMixin implements UserProfile {
 @pragma('vm:prefer-inline')
 _$UserProfileCopyWith<_UserProfile> get copyWith => __$UserProfileCopyWithImpl<_UserProfile>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$UserProfileToJson(this, );
-}
+
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
@@ -242,7 +236,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfile&&(identical(other.username, username) || other.username == username));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,username);
 

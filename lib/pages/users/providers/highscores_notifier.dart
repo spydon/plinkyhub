@@ -1,10 +1,12 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'highscores_notifier.freezed.dart';
-part 'highscores_notifier.g.dart';
 
 final highscoresProvider =
     NotifierProvider<HighscoresNotifier, HighscoresState>(
@@ -30,8 +32,12 @@ abstract class UserHighscore with _$UserHighscore {
     required int totalUploads,
   }) = _UserHighscore;
 
-  factory UserHighscore.fromJson(Map<String, dynamic> json) =>
-      _$UserHighscoreFromJson(json);
+  factory UserHighscore.fromRow(GetUserHighscoresRow row) => UserHighscore(
+    userId: row.userId ?? '',
+    username: row.username ?? '',
+    totalStars: row.totalStars ?? 0,
+    totalUploads: row.totalUploads ?? 0,
+  );
 }
 
 class HighscoresNotifier extends Notifier<HighscoresState> {
@@ -44,10 +50,8 @@ class HighscoresNotifier extends Notifier<HighscoresState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      final response = await _supabase.rpc('get_user_highscores');
-      final highscores = (response as List)
-          .map((row) => UserHighscore.fromJson(row as Map<String, dynamic>))
-          .toList();
+      final rows = await _supabase.rpc.getUserHighscores();
+      final highscores = rows.map(UserHighscore.fromRow).toList();
 
       state = HighscoresState(
         highscores: highscores,

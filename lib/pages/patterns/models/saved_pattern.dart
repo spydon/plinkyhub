@@ -1,46 +1,82 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+// ignore_for_file: experimental_member_use
+
+import 'package:flutter/foundation.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/searchable.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-part 'saved_pattern.freezed.dart';
-part 'saved_pattern.g.dart';
+@immutable
+class SavedPattern with Searchable {
+  SavedPattern(this.row, {this.isStarred = false, int? starCount})
+    : starCount =
+          starCount ??
+          readStarCount(row, Patterns.patternStars, patternStarsTable);
 
-@freezed
-abstract class SavedPattern with _$SavedPattern implements Searchable {
-  const factory SavedPattern({
-    required String id,
-    required String userId,
-    required String name,
-    required String filePath,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    @Default('') String slug,
-    @Default('') String description,
-    @Default(false) bool isPublic,
-    @Default('') @JsonKey(readValue: _readUsername) String username,
-    @Default(0) @JsonKey(readValue: _readStarCount) int starCount,
-    @Default(false) bool isStarred,
-    String? contentHash,
-  }) = _SavedPattern;
+  final PostgrestPartialRow<PatternsRow> row;
 
-  factory SavedPattern.fromJson(Map<String, dynamic> json) =>
-      _$SavedPatternFromJson(json);
-}
+  @override
+  final bool isStarred;
 
-Object? _readUsername(Map<dynamic, dynamic> json, String key) {
-  final profiles = json['profiles'];
-  if (profiles is Map<String, dynamic>) {
-    return profiles['username'];
-  }
-  return json[key];
-}
+  @override
+  final int starCount;
 
-Object? _readStarCount(Map<dynamic, dynamic> json, String key) {
-  final starsList = json['pattern_stars'];
-  if (starsList is List && starsList.isNotEmpty) {
-    final first = starsList.first;
-    if (first is Map<String, dynamic>) {
-      return first['count'];
-    }
-  }
-  return json[key];
+  @override
+  late final String id = row.read(Patterns.id);
+
+  @override
+  String get userId => row.read(Patterns.userId);
+
+  @override
+  late final String name = row.read(Patterns.name);
+
+  String get filePath => row.read(Patterns.filePath);
+
+  DateTime get createdAt => row.read(Patterns.createdAt);
+
+  @override
+  late final DateTime updatedAt = row.read(Patterns.updatedAt);
+
+  String get slug => row.read(Patterns.slug);
+
+  @override
+  String get description => row.read(Patterns.description);
+
+  bool get isPublic => row.read(Patterns.isPublic);
+
+  @override
+  String get username =>
+      row.read(Patterns.profiles)?.read(Profiles.username) ?? '';
+
+  String? get contentHash => row.read(Patterns.contentHash);
+
+  SavedPattern withStar({required bool isStarred, required int starCount}) =>
+      SavedPattern(row, isStarred: isStarred, starCount: starCount);
+
+  @override
+  bool operator ==(Object other) =>
+      other is SavedPattern &&
+      other.id == id &&
+      other.updatedAt == updatedAt &&
+      other.isStarred == isStarred &&
+      other.starCount == starCount;
+
+  @override
+  int get hashCode => Object.hash(id, updatedAt, isStarred, starCount);
+
+  /// The columns and relations the getters read.
+  static final selection = <PostgrestSelectable<PatternsRow>>[
+    Patterns.id,
+    Patterns.userId,
+    Patterns.name,
+    Patterns.filePath,
+    Patterns.createdAt,
+    Patterns.updatedAt,
+    Patterns.slug,
+    Patterns.description,
+    Patterns.isPublic,
+    Patterns.contentHash,
+    Patterns.profiles(Profiles.username),
+    Patterns.patternStars(patternStarsTable.count),
+  ];
 }

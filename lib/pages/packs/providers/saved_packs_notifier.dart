@@ -1,51 +1,45 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/item_table.dart';
+import 'package:plinkyhub/models/pack_slot.dart';
 import 'package:plinkyhub/models/saved_items_state.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
-import 'package:plinkyhub/pages/packs/models/pack_slot_write.dart';
-import 'package:plinkyhub/pages/packs/models/pack_write.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/providers/saved_items_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/constants.dart';
-
-/// A slot entry for creating or updating a pack.
-typedef PackSlotEntry = ({
-  int slotNumber,
-  String? presetId,
-  String? sampleId,
-  String? patternId,
-});
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final savedPacksProvider =
     NotifierProvider<SavedPacksNotifier, SavedItemsState<SavedPack>>(
       SavedPacksNotifier.new,
     );
 
-class SavedPacksNotifier extends SavedItemsNotifier<SavedPack> {
+class SavedPacksNotifier
+    extends
+        SavedItemsNotifier<SavedPack, PacksRow, PackStarsRow, PackStarsInsert> {
   @override
-  String get tableName => 'packs';
+  ItemTable<PacksRow> get itemTable => packsTable;
 
   @override
-  String get starTableName => 'pack_stars';
+  StarTable<PackStarsRow, PackStarsInsert> get starTable => packStarsTable;
 
   @override
-  String get starIdColumn => 'pack_id';
-
-  @override
-  String get selectQuery =>
-      '*, pack_slots(*), profiles(username), pack_stars(count)';
+  List<PostgrestSelectable<PacksRow>> get selection => SavedPack.selection;
 
   @override
   String get itemLabel => 'pack';
 
   @override
-  SavedPack fromJson(Map<String, dynamic> json) => SavedPack.fromJson(json);
+  SavedPack fromRow(PostgrestPartialRow<PacksRow> row) => SavedPack(row);
 
   @override
   SavedPack withStarUpdate(
     SavedPack item, {
     required bool isStarred,
     required int starCount,
-  }) => item.copyWith(isStarred: isStarred, starCount: starCount);
+  }) => item.withStar(isStarred: isStarred, starCount: starCount);
 
   void startEditing(SavedPack pack) {
     state = state.copyWith(editingItem: () => pack);
@@ -71,23 +65,23 @@ class SavedPacksNotifier extends SavedItemsNotifier<SavedPack> {
 
     setLoading();
     try {
-      final write = PackWrite(
-        userId: userId,
-        name: name,
-        description: description,
-        isPublic: isPublic,
-        wavetableId: wavetableId,
-        youtubeUrl: youtubeUrl,
-        contentHash: contentHash,
-      );
-      final packResponse = await supabase
-          .from('packs')
-          .insert(write.toJson())
-          .select('id')
+      final pack = await supabase
+          .table(Packs.table)
+          .insert(
+            PacksInsert(
+              userId: userId,
+              name: name,
+              description: description,
+              isPublic: isPublic,
+              wavetableId: wavetableId,
+              youtubeUrl: youtubeUrl,
+              contentHash: contentHash,
+            ),
+          )
+          .selectOnly([Packs.id])
           .single();
 
-      final packId = packResponse['id'] as String;
-      await _insertSlots(packId, slots);
+      await _insertSlots(pack.read(Packs.id), slots);
 
       await refreshAll();
     } on Exception catch (error) {
@@ -101,22 +95,18 @@ class SavedPacksNotifier extends SavedItemsNotifier<SavedPack> {
     String? description,
     bool? isPublic,
   }) async {
-    if (name != null) {}
-
     setLoading();
     try {
-      final updates = <String, dynamic>{};
-      if (name != null) {
-        updates['name'] = name;
-      }
-      if (description != null) {
-        updates['description'] = description;
-      }
-      if (isPublic != null) {
-        updates['is_public'] = isPublic;
-      }
-
-      await supabase.from('packs').update(updates).eq('id', id);
+      await supabase
+          .table(Packs.table)
+          .update(
+            PacksUpdate(
+              name: name,
+              description: description,
+              isPublic: isPublic,
+            ),
+          )
+          .where(Packs.id.eq(id));
       await refreshAll();
     } on Exception catch (error) {
       setError(error);
@@ -135,18 +125,18 @@ class SavedPacksNotifier extends SavedItemsNotifier<SavedPack> {
               slot.patternId != null,
         )
         .map(
-          (slot) => PackSlotWrite(
+          (slot) => PackSlotsInsert(
             packId: packId,
             slotNumber: slot.slotNumber,
             presetId: slot.presetId,
             sampleId: slot.sampleId,
             patternId: slot.patternId,
-          ).toJson(),
+          ),
         )
         .toList();
 
     if (slotRows.isNotEmpty) {
-      await supabase.from('pack_slots').insert(slotRows);
+      await supabase.table(PackSlots.table).insertAll(slotRows);
     }
   }
 
@@ -166,16 +156,23 @@ class SavedPacksNotifier extends SavedItemsNotifier<SavedPack> {
 
     setLoading();
     try {
-      final write = PackWrite(
-        userId: userId,
-        name: name,
-        description: description,
-        isPublic: isPublic,
-        wavetableId: wavetableId,
-        youtubeUrl: youtubeUrl,
-      );
-      await supabase.from('packs').update(write.toJson()).eq('id', id);
-      await supabase.from('pack_slots').delete().eq('pack_id', id);
+      await supabase
+          .table(Packs.table)
+          .update(
+            PacksUpdate(
+              userId: userId,
+              name: name,
+              description: description,
+              isPublic: isPublic,
+              wavetableId: wavetableId,
+              youtubeUrl: youtubeUrl,
+            ).setContentHashToNull(),
+          )
+          .where(Packs.id.eq(id));
+      await supabase
+          .table(PackSlots.table)
+          .delete()
+          .where(PackSlots.packId.eq(id));
       await _insertSlots(id, slots);
 
       await refreshAll();

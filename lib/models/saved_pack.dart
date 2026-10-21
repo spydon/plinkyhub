@@ -1,49 +1,90 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+// ignore_for_file: experimental_member_use
+
+import 'package:flutter/foundation.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/pack_slot.dart';
 import 'package:plinkyhub/models/searchable.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-part 'saved_pack.freezed.dart';
-part 'saved_pack.g.dart';
+@immutable
+class SavedPack with Searchable {
+  SavedPack(this.row, {this.isStarred = false, int? starCount})
+    : starCount =
+          starCount ?? readStarCount(row, Packs.packStars, packStarsTable);
 
-@freezed
-abstract class SavedPack with _$SavedPack implements Searchable {
-  const factory SavedPack({
-    required String id,
-    required String userId,
-    required String name,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    @Default('') String slug,
-    @Default('') String description,
-    @Default(false) bool isPublic,
-    @Default('') @JsonKey(readValue: _readUsername) String username,
-    @Default(0) @JsonKey(readValue: _readStarCount) int starCount,
-    @Default(false) bool isStarred,
-    @Default([]) @JsonKey(name: 'pack_slots') List<PackSlot> slots,
-    String? wavetableId,
-    @Default('') String youtubeUrl,
-    String? contentHash,
-  }) = _SavedPack;
+  final PostgrestPartialRow<PacksRow> row;
 
-  factory SavedPack.fromJson(Map<String, dynamic> json) =>
-      _$SavedPackFromJson(json);
-}
+  @override
+  final bool isStarred;
 
-Object? _readUsername(Map<dynamic, dynamic> json, String key) {
-  final profiles = json['profiles'];
-  if (profiles is Map<String, dynamic>) {
-    return profiles['username'];
-  }
-  return json[key];
-}
+  @override
+  final int starCount;
 
-Object? _readStarCount(Map<dynamic, dynamic> json, String key) {
-  final starsList = json['pack_stars'];
-  if (starsList is List && starsList.isNotEmpty) {
-    final first = starsList.first;
-    if (first is Map<String, dynamic>) {
-      return first['count'];
-    }
-  }
-  return json[key];
+  @override
+  late final String id = row.read(Packs.id);
+
+  @override
+  String get userId => row.read(Packs.userId);
+
+  @override
+  late final String name = row.read(Packs.name);
+
+  DateTime get createdAt => row.read(Packs.createdAt);
+
+  @override
+  late final DateTime updatedAt = row.read(Packs.updatedAt);
+
+  String get slug => row.read(Packs.slug);
+
+  @override
+  String get description => row.read(Packs.description);
+
+  bool get isPublic => row.read(Packs.isPublic);
+
+  @override
+  String get username =>
+      row.read(Packs.profiles)?.read(Profiles.username) ?? '';
+
+  late final List<PackSlot> slots = List.unmodifiable([
+    for (final slot in row.read(Packs.packSlots)) PackSlot(slot),
+  ]);
+
+  String get wavetableId => row.read(Packs.wavetableId);
+
+  String get youtubeUrl => row.read(Packs.youtubeUrl);
+
+  String? get contentHash => row.read(Packs.contentHash);
+
+  SavedPack withStar({required bool isStarred, required int starCount}) =>
+      SavedPack(row, isStarred: isStarred, starCount: starCount);
+
+  @override
+  bool operator ==(Object other) =>
+      other is SavedPack &&
+      other.id == id &&
+      other.updatedAt == updatedAt &&
+      other.isStarred == isStarred &&
+      other.starCount == starCount;
+
+  @override
+  int get hashCode => Object.hash(id, updatedAt, isStarred, starCount);
+
+  /// The columns and relations the getters read.
+  static final selection = <PostgrestSelectable<PacksRow>>[
+    Packs.id,
+    Packs.userId,
+    Packs.name,
+    Packs.createdAt,
+    Packs.updatedAt,
+    Packs.slug,
+    Packs.description,
+    Packs.isPublic,
+    Packs.wavetableId,
+    Packs.youtubeUrl,
+    Packs.contentHash,
+    Packs.packSlots.select(),
+    Packs.profiles(Profiles.username),
+    Packs.packStars(packStarsTable.count),
+  ];
 }

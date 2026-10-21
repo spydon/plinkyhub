@@ -1,11 +1,14 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/pages/packs/pack_card.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
-import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -42,28 +45,25 @@ class _PackPageState extends ConsumerState<PackPage> {
     });
 
     try {
-      final response = await Supabase.instance.client
-          .from('packs')
-          .select(
-            '*, pack_slots(*), profiles(username), '
-            'pack_stars(count)',
+      final row = await Supabase.instance.client
+          .table(Packs.table)
+          .selectOnly(SavedPack.selection)
+          .where(
+            Packs.slug.eq(widget.packSlug) &
+                packsTable.ownedByUsername(widget.username),
           )
-          .eq('slug', widget.packSlug)
-          .eq('profiles.username', widget.username)
-          .not('profiles', 'is', null)
-          .order('updated_at', ascending: false)
+          .order(Packs.updatedAt.desc())
           .limit(1)
           .maybeSingle();
 
-      if (response != null) {
-        final isStarred = await fetchIsStarred(
-          starTableName: 'pack_stars',
-          idColumn: 'pack_id',
-          itemId: response['id'] as String,
+      if (row != null) {
+        final isStarred = await packStarsTable.isStarred(
+          Supabase.instance.client,
+          id: row.read(Packs.id),
           userId: ref.read(authenticationProvider).user?.id,
         );
         setState(() {
-          _pack = SavedPack.fromJson({...response, 'is_starred': isStarred});
+          _pack = SavedPack(row, isStarred: isStarred);
           _isLoading = false;
         });
       } else {

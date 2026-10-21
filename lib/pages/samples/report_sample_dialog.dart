@@ -1,6 +1,9 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -48,12 +51,16 @@ class _ReportSampleDialogState extends ConsumerState<ReportSampleDialog> {
     });
 
     try {
-      await Supabase.instance.client.from('reports').insert({
-        'reporter_id': userId,
-        'sample_id': widget.sampleId,
-        'reason': _reason.value,
-        'description': _descriptionController.text.trim(),
-      });
+      await Supabase.instance.client
+          .table(Reports.table)
+          .insert(
+            ReportsInsert(
+              reporterId: userId,
+              sampleId: widget.sampleId,
+              reason: _reason.value,
+              description: _descriptionController.text.trim(),
+            ),
+          );
 
       if (mounted) {
         Navigator.of(context).pop();

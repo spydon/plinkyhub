@@ -1,47 +1,85 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+// ignore_for_file: experimental_member_use
+
+import 'package:flutter/foundation.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/searchable.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-part 'saved_wavetable.freezed.dart';
-part 'saved_wavetable.g.dart';
+@immutable
+class SavedWavetable with Searchable {
+  SavedWavetable(this.row, {this.isStarred = false, int? starCount})
+    : starCount =
+          starCount ??
+          readStarCount(row, Wavetables.wavetableStars, wavetableStarsTable);
 
-@freezed
-abstract class SavedWavetable with _$SavedWavetable implements Searchable {
-  const factory SavedWavetable({
-    required String id,
-    required String userId,
-    required String name,
-    required String filePath,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    @Default('') String slug,
-    @Default('') String description,
-    @Default(false) bool isPublic,
-    @Default('') @JsonKey(readValue: _readUsername) String username,
-    @Default(0) @JsonKey(readValue: _readStarCount) int starCount,
-    @Default(false) bool isStarred,
-    @Default('') String youtubeUrl,
-    String? contentHash,
-  }) = _SavedWavetable;
+  final PostgrestPartialRow<WavetablesRow> row;
 
-  factory SavedWavetable.fromJson(Map<String, dynamic> json) =>
-      _$SavedWavetableFromJson(json);
-}
+  @override
+  final bool isStarred;
 
-Object? _readUsername(Map<dynamic, dynamic> json, String key) {
-  final profiles = json['profiles'];
-  if (profiles is Map<String, dynamic>) {
-    return profiles['username'];
-  }
-  return json[key];
-}
+  @override
+  final int starCount;
 
-Object? _readStarCount(Map<dynamic, dynamic> json, String key) {
-  final starsList = json['wavetable_stars'];
-  if (starsList is List && starsList.isNotEmpty) {
-    final first = starsList.first;
-    if (first is Map<String, dynamic>) {
-      return first['count'];
-    }
-  }
-  return json[key];
+  @override
+  late final String id = row.read(Wavetables.id);
+
+  @override
+  String get userId => row.read(Wavetables.userId);
+
+  @override
+  late final String name = row.read(Wavetables.name);
+
+  String get filePath => row.read(Wavetables.filePath);
+
+  DateTime get createdAt => row.read(Wavetables.createdAt);
+
+  @override
+  late final DateTime updatedAt = row.read(Wavetables.updatedAt);
+
+  String get slug => row.read(Wavetables.slug);
+
+  @override
+  String get description => row.read(Wavetables.description);
+
+  bool get isPublic => row.read(Wavetables.isPublic);
+
+  @override
+  String get username =>
+      row.read(Wavetables.profiles)?.read(Profiles.username) ?? '';
+
+  String get youtubeUrl => row.read(Wavetables.youtubeUrl);
+
+  String? get contentHash => row.read(Wavetables.contentHash);
+
+  SavedWavetable withStar({required bool isStarred, required int starCount}) =>
+      SavedWavetable(row, isStarred: isStarred, starCount: starCount);
+
+  @override
+  bool operator ==(Object other) =>
+      other is SavedWavetable &&
+      other.id == id &&
+      other.updatedAt == updatedAt &&
+      other.isStarred == isStarred &&
+      other.starCount == starCount;
+
+  @override
+  int get hashCode => Object.hash(id, updatedAt, isStarred, starCount);
+
+  /// The columns and relations the getters read.
+  static final selection = <PostgrestSelectable<WavetablesRow>>[
+    Wavetables.id,
+    Wavetables.userId,
+    Wavetables.name,
+    Wavetables.filePath,
+    Wavetables.createdAt,
+    Wavetables.updatedAt,
+    Wavetables.slug,
+    Wavetables.description,
+    Wavetables.isPublic,
+    Wavetables.youtubeUrl,
+    Wavetables.contentHash,
+    Wavetables.profiles(Profiles.username),
+    Wavetables.wavetableStars(wavetableStarsTable.count),
+  ];
 }

@@ -1,13 +1,15 @@
+// ignore_for_file: experimental_member_use
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/sample_loop_mode.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
-import 'package:plinkyhub/pages/samples/models/sample_write.dart';
 import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
 import 'package:plinkyhub/pages/samples/sample_metadata_form.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/wav.dart';
@@ -102,31 +104,32 @@ class _SaveDeviceSampleDialogState
             fileOptions: const FileOptions(upsert: true),
           );
 
-      final write = SampleWrite(
-        userId: userId,
-        name: name,
-        filePath: filePath,
-        pcmFilePath: pcmFilePath,
-        description: _descriptionController.text.trim(),
-        isPublic: _isPublic,
-        slicePoints: _slicePoints,
-        sliceNotes: _sliceNotes,
-        pitched: _pitched,
-        loopMode: _loopMode.value,
-        baseNote: _baseNote,
-        fineTune: _fineTune,
-        contentHash: contentHash,
-      );
       final result = await supabase
-          .from('samples')
-          .insert(write.toJson())
-          .select('id')
+          .table(Samples.table)
+          .insert(
+            SamplesInsert(
+              userId: userId,
+              name: name,
+              filePath: filePath,
+              pcmFilePath: pcmFilePath,
+              description: _descriptionController.text.trim(),
+              isPublic: _isPublic,
+              slicePoints: _slicePoints,
+              sliceNotes: _sliceNotes,
+              pitched: _pitched,
+              loopMode: _loopMode.value,
+              baseNote: _baseNote,
+              fineTune: _fineTune,
+              contentHash: contentHash,
+            ),
+          )
+          .selectOnly([Samples.id])
           .single();
 
       await ref.read(savedSamplesProvider.notifier).refreshAll();
 
       if (mounted) {
-        Navigator.of(context).pop(result['id'] as String);
+        Navigator.of(context).pop(result.read(Samples.id));
       }
     } on Exception catch (error) {
       if (mounted) {

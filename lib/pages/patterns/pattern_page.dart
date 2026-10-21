@@ -1,6 +1,9 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/pages/patterns/models/pattern_data.dart';
 import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
 import 'package:plinkyhub/pages/patterns/pattern_card.dart';
@@ -8,8 +11,8 @@ import 'package:plinkyhub/pages/patterns/pattern_playback_panel.dart';
 import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
 import 'package:plinkyhub/pages/patterns/utils/pattern_decoder.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
-import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/widgets/copyable_error_message.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -49,19 +52,18 @@ class _PatternPageState extends ConsumerState<PatternPage> {
     });
 
     try {
-      final response = await Supabase.instance.client
-          .from('patterns')
-          .select(
-            '*, profiles(username), pattern_stars(count)',
+      final row = await Supabase.instance.client
+          .table(Patterns.table)
+          .selectOnly(SavedPattern.selection)
+          .where(
+            Patterns.slug.eq(widget.patternSlug) &
+                patternsTable.ownedByUsername(widget.username),
           )
-          .eq('slug', widget.patternSlug)
-          .eq('profiles.username', widget.username)
-          .not('profiles', 'is', null)
-          .order('updated_at', ascending: false)
+          .order(Patterns.updatedAt.desc())
           .limit(1)
           .maybeSingle();
 
-      if (response == null) {
+      if (row == null) {
         setState(() {
           _isLoading = false;
           _errorMessage = 'Pattern not found';
@@ -69,16 +71,12 @@ class _PatternPageState extends ConsumerState<PatternPage> {
         return;
       }
 
-      final isStarred = await fetchIsStarred(
-        starTableName: 'pattern_stars',
-        idColumn: 'pattern_id',
-        itemId: response['id'] as String,
+      final isStarred = await patternStarsTable.isStarred(
+        Supabase.instance.client,
+        id: row.read(Patterns.id),
         userId: ref.read(authenticationProvider).user?.id,
       );
-      final pattern = SavedPattern.fromJson({
-        ...response,
-        'is_starred': isStarred,
-      });
+      final pattern = SavedPattern(row, isStarred: isStarred);
       if (!mounted) {
         return;
       }

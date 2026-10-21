@@ -5,6 +5,7 @@ import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
 import 'package:plinkyhub/pages/patterns/providers/saved_patterns_notifier.dart';
 import 'package:plinkyhub/pages/patterns/save_pattern_to_plinky_dialog.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/widgets/confirm_delete_dialog.dart';
 import 'package:plinkyhub/widgets/pack_usage_check.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
@@ -111,7 +112,12 @@ class _PatternHeaderState extends ConsumerState<PatternHeader> {
               starCount: pattern.starCount,
               onToggle: ({required bool wasStarred}) => ref
                   .read(savedPatternsProvider.notifier)
-                  .toggleStar(pattern.copyWith(isStarred: wasStarred)),
+                  .toggleStar(
+                    pattern.withStar(
+                      isStarred: wasStarred,
+                      starCount: pattern.starCount,
+                    ),
+                  ),
             ),
             if (pattern.username.isNotEmpty)
               ShareLinkButton(
@@ -131,7 +137,8 @@ class _PatternHeaderState extends ConsumerState<PatternHeader> {
                   ref
                       .read(savedPatternsProvider.notifier)
                       .updatePattern(
-                        pattern.copyWith(isPublic: !pattern.isPublic),
+                        pattern.id,
+                        PatternsUpdate(isPublic: !pattern.isPublic),
                       );
                 },
               ),

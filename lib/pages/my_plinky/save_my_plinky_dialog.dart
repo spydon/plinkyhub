@@ -1,11 +1,13 @@
-import 'dart:convert';
+// ignore_for_file: experimental_member_use
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/preset.dart';
-import 'package:plinkyhub/models/saved_sample.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
+import 'package:plinkyhub/utils/item_downloads.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
@@ -110,38 +112,19 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
     }
 
     // Fetch linked presets from DB.
-    final presetDataMap = <String, Uint8List>{};
+    var presetDataMap = <String, Uint8List>{};
     if (linkedPresetIds.isNotEmpty) {
       updateProgress('Fetching presets...');
-      final response = await _supabase
-          .from('presets')
-          .select('id, preset_data')
-          .inFilter('id', linkedPresetIds.toList());
-      for (final row in response as List) {
-        final map = row as Map<String, dynamic>;
-        presetDataMap[map['id'] as String] = Uint8List.fromList(
-          base64Decode(map['preset_data'] as String),
-        );
-      }
+      presetDataMap = await fetchPresetData(_supabase, linkedPresetIds);
     } else {
       completedSteps++;
     }
 
     // Fetch sample metadata.
-    final sampleMetadataMap = <String, Map<String, dynamic>>{};
+    var sampleMetadataMap = <String, PostgrestPartialRow<SamplesRow>>{};
     if (linkedSampleIds.isNotEmpty) {
       updateProgress('Fetching sample metadata...');
-      final response = await _supabase
-          .from('samples')
-          .select(
-            'id, pcm_file_path, slice_points, slice_notes, '
-            'pitched, base_note, fine_tune, loop_mode',
-          )
-          .inFilter('id', linkedSampleIds.toList());
-      for (final row in response as List) {
-        final map = row as Map<String, dynamic>;
-        sampleMetadataMap[map['id'] as String] = map;
-      }
+      sampleMetadataMap = await fetchSampleMetadata(_supabase, linkedSampleIds);
     } else {
       completedSteps++;
     }
@@ -175,32 +158,18 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
         'Downloading sample $sampleDownloadNumber/${sampleSlotMapping.length}...',
       );
 
-      final pcmFilePath = metadata['pcm_file_path'] as String;
       final pcmBytes = await _supabase.storage
           .from('samples')
-          .download(pcmFilePath);
+          .download(metadata.read(Samples.pcmFilePath));
 
       samplePcmData[slotIndex] = pcmBytes;
 
-      final slicePoints =
-          (metadata['slice_points'] as List?)
-              ?.map((value) => (value as num).toDouble())
-              .toList() ??
-          List.of(defaultSlicePoints);
-      final sliceNotes =
-          (metadata['slice_notes'] as List?)
-              ?.map((value) => (value as num).toInt())
-              .toList() ??
-          List.of(defaultSliceNotes);
-      final pitched = metadata['pitched'] as bool? ?? false;
-      final loopMode = metadata['loop_mode'] as int? ?? 0;
-
       sampleInfos[slotIndex] = buildSampleInfo(
         pcmData: pcmBytes,
-        slicePoints: slicePoints,
-        sliceNotes: sliceNotes,
-        pitched: pitched,
-        loopMode: loopMode,
+        slicePoints: metadata.read(Samples.slicePoints),
+        sliceNotes: metadata.read(Samples.sliceNotes),
+        pitched: metadata.read(Samples.pitched),
+        loopMode: metadata.read(Samples.loopMode),
       );
     }
 
@@ -240,8 +209,8 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
       for (final entry in linkedPatternIds) {
         final patternIndex = entry.key;
         final patternId = entry.value!;
-        final patternFilePath = await _fetchFilePath(
-          'patterns',
+        final patternFilePath = await fetchPatternFilePath(
+          _supabase,
           patternId,
         );
         final patternBlob = await _supabase.storage
@@ -294,8 +263,8 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
     // Write WAVETAB.UF2 if linked.
     if (widget.wavetableId != null) {
       updateProgress('Writing WAVETAB.UF2...');
-      final wavetableFilePath = await _fetchFilePath(
-        'wavetables',
+      final wavetableFilePath = await fetchWavetableFilePath(
+        _supabase,
         widget.wavetableId!,
       );
       final wavetableBytes = await _supabase.storage
@@ -307,15 +276,6 @@ class _SaveMyPlinkyDialogState extends ConsumerState<SaveMyPlinkyDialog> {
         wavetableBytes,
       );
     }
-  }
-
-  Future<String> _fetchFilePath(String table, String id) async {
-    final response = await _supabase
-        .from(table)
-        .select('file_path')
-        .eq('id', id)
-        .single();
-    return response['file_path'] as String;
   }
 
   @override

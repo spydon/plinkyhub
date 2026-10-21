@@ -1,0 +1,11 @@
+{
+  "name": "plinkyhub-tooling",
+  "private": true,
+  "description": "Pins the Supabase CLI used to generate lib/supabase_schema.g.dart.",
+  "scripts": {
+    "generate-types": "supabase gen types --lang dart --local --schema public > lib/supabase_schema.g.dart"
+  },
+  "devDependencies": {
+    "supabase": "2.122.0-beta.12"
+  }
+}

@@ -1,10 +1,13 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/saved_items_state.dart';
 import 'package:plinkyhub/models/saved_sample.dart';
-import 'package:plinkyhub/pages/samples/models/sample_write.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/providers/saved_items_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,34 +16,49 @@ final savedSamplesProvider =
       SavedSamplesNotifier.new,
     );
 
-class SavedSamplesNotifier extends SavedItemsNotifier<SavedSample> {
+class SavedSamplesNotifier
+    extends
+        SavedItemsNotifier<
+          SavedSample,
+          SamplesRow,
+          SampleStarsRow,
+          SampleStarsInsert
+        > {
   @override
-  String get tableName => 'samples';
+  ItemTable<SamplesRow> get itemTable => samplesTable;
 
   @override
-  String get starTableName => 'sample_stars';
+  StarTable<SampleStarsRow, SampleStarsInsert> get starTable =>
+      sampleStarsTable;
 
   @override
-  String get starIdColumn => 'sample_id';
-
-  @override
-  String get selectQuery => '*, profiles(username), sample_stars(count)';
+  List<PostgrestSelectable<SamplesRow>> get selection => SavedSample.selection;
 
   @override
   String get itemLabel => 'sample';
 
   @override
-  SavedSample fromJson(Map<String, dynamic> json) => SavedSample.fromJson(json);
+  SavedSample fromRow(PostgrestPartialRow<SamplesRow> row) => SavedSample(row);
 
   @override
   SavedSample withStarUpdate(
     SavedSample item, {
     required bool isStarred,
     required int starCount,
-  }) => item.copyWith(isStarred: isStarred, starCount: starCount);
+  }) => item.withStar(isStarred: isStarred, starCount: starCount);
 
-  Future<void> saveSample(
-    SavedSample sample, {
+  Future<void> saveSample({
+    required String name,
+    required String filePath,
+    required String pcmFilePath,
+    required String description,
+    required bool isPublic,
+    required List<double> slicePoints,
+    required int baseNote,
+    required int fineTune,
+    required bool pitched,
+    required List<int> sliceNotes,
+    required int loopMode,
     required Uint8List wavBytes,
     required Uint8List pcmBytes,
   }) async {
@@ -54,34 +72,37 @@ class SavedSamplesNotifier extends SavedItemsNotifier<SavedSample> {
       await supabase.storage
           .from('samples')
           .uploadBinary(
-            sample.filePath,
+            filePath,
             wavBytes,
             fileOptions: const FileOptions(upsert: true),
           );
       await supabase.storage
           .from('samples')
           .uploadBinary(
-            sample.pcmFilePath,
+            pcmFilePath,
             pcmBytes,
             fileOptions: const FileOptions(upsert: true),
           );
 
-      final write = SampleWrite(
-        userId: sample.userId,
-        name: sample.name,
-        filePath: sample.filePath,
-        pcmFilePath: sample.pcmFilePath,
-        description: sample.description,
-        isPublic: sample.isPublic,
-        slicePoints: sample.slicePoints,
-        baseNote: sample.baseNote,
-        fineTune: sample.fineTune,
-        pitched: sample.pitched,
-        sliceNotes: sample.sliceNotes,
-        loopMode: sample.loopMode,
-        contentHash: computeContentHash(pcmBytes),
-      );
-      await supabase.from('samples').insert(write.toJson());
+      await supabase
+          .table(Samples.table)
+          .insert(
+            SamplesInsert(
+              userId: userId,
+              name: name,
+              filePath: filePath,
+              pcmFilePath: pcmFilePath,
+              description: description,
+              isPublic: isPublic,
+              slicePoints: slicePoints,
+              baseNote: baseNote,
+              fineTune: fineTune,
+              pitched: pitched,
+              sliceNotes: sliceNotes,
+              loopMode: loopMode,
+              contentHash: computeContentHash(pcmBytes),
+            ),
+          );
 
       await refreshAll();
     } on Exception catch (error) {
@@ -90,24 +111,13 @@ class SavedSamplesNotifier extends SavedItemsNotifier<SavedSample> {
     }
   }
 
-  Future<void> updateSample(SavedSample sample) async {
+  Future<void> updateSample(String id, SamplesUpdate update) async {
     setLoading();
     try {
-      final write = SampleWrite(
-        userId: sample.userId,
-        name: sample.name,
-        filePath: sample.filePath,
-        pcmFilePath: sample.pcmFilePath,
-        description: sample.description,
-        isPublic: sample.isPublic,
-        slicePoints: sample.slicePoints,
-        baseNote: sample.baseNote,
-        fineTune: sample.fineTune,
-        pitched: sample.pitched,
-        sliceNotes: sample.sliceNotes,
-        loopMode: sample.loopMode,
-      );
-      await supabase.from('samples').update(write.toJson()).eq('id', sample.id);
+      await supabase
+          .table(Samples.table)
+          .update(update)
+          .where(Samples.id.eq(id));
       await refreshAll();
     } on Exception catch (error) {
       setError(error);

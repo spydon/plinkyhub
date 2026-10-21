@@ -1,48 +1,55 @@
+// ignore_for_file: experimental_member_use
+
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/preset.dart';
 import 'package:plinkyhub/models/saved_items_state.dart';
 import 'package:plinkyhub/models/saved_preset.dart';
-import 'package:plinkyhub/pages/presets/models/preset_write.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/providers/plinky_notifier.dart';
 import 'package:plinkyhub/providers/saved_items_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final savedPresetsProvider =
     NotifierProvider<SavedPresetsNotifier, SavedItemsState<SavedPreset>>(
       SavedPresetsNotifier.new,
     );
 
-class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
+class SavedPresetsNotifier
+    extends
+        SavedItemsNotifier<
+          SavedPreset,
+          PresetsRow,
+          PresetStarsRow,
+          PresetStarsInsert
+        > {
   @override
-  String get tableName => 'presets';
+  ItemTable<PresetsRow> get itemTable => presetsTable;
 
   @override
-  String get starTableName => 'preset_stars';
+  StarTable<PresetStarsRow, PresetStarsInsert> get starTable =>
+      presetStarsTable;
 
   @override
-  String get starIdColumn => 'preset_id';
-
-  @override
-  String get selectQuery =>
-      '*, profiles(username), preset_stars(count), '
-      'samples(name, slug, profiles(username))';
+  List<PostgrestSelectable<PresetsRow>> get selection => SavedPreset.selection;
 
   @override
   String get itemLabel => 'preset';
 
   @override
-  SavedPreset fromJson(Map<String, dynamic> json) => SavedPreset.fromJson(json);
+  SavedPreset fromRow(PostgrestPartialRow<PresetsRow> row) => SavedPreset(row);
 
   @override
   SavedPreset withStarUpdate(
     SavedPreset item, {
     required bool isStarred,
     required int starCount,
-  }) => item.copyWith(isStarred: isStarred, starCount: starCount);
+  }) => item.withStar(isStarred: isStarred, starCount: starCount);
 
   Future<void> savePreset(
     Preset preset, {
@@ -59,18 +66,21 @@ class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
     setLoading();
     try {
       final presetBytes = Uint8List.view(preset.buffer);
-      final write = PresetWrite(
-        userId: userId,
-        name: preset.name,
-        category: preset.category.name,
-        presetData: base64Encode(presetBytes),
-        description: description,
-        isPublic: isPublic,
-        youtubeUrl: youtubeUrl,
-        sampleId: sampleId,
-        contentHash: computePresetContentHash(presetBytes),
-      );
-      await supabase.from('presets').insert(write.toJson());
+      await supabase
+          .table(Presets.table)
+          .insert(
+            PresetsInsert(
+              userId: userId,
+              name: preset.name,
+              category: preset.category.name,
+              presetData: base64Encode(presetBytes),
+              description: description,
+              isPublic: isPublic,
+              youtubeUrl: youtubeUrl,
+              sampleId: sampleId,
+              contentHash: computePresetContentHash(presetBytes),
+            ),
+          );
       await refreshAll();
     } on Exception catch (error) {
       setError(error);
@@ -93,7 +103,7 @@ class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
     setLoading();
     try {
       final presetBytes = Uint8List.view(preset.buffer);
-      final write = PresetWrite(
+      final update = PresetsUpdate(
         userId: existing.userId,
         name: preset.name,
         category: preset.category.name,
@@ -104,8 +114,10 @@ class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
         sampleId: sampleId,
         contentHash: computePresetContentHash(presetBytes),
       );
-      final json = write.toJson();
-      await supabase.from('presets').update(json).eq('id', id);
+      await supabase
+          .table(Presets.table)
+          .update(sampleId == null ? update.setSampleIdToNull() : update)
+          .where(Presets.id.eq(id));
       await refreshAll();
     } on Exception catch (error) {
       setError(error);
@@ -122,23 +134,20 @@ class SavedPresetsNotifier extends SavedItemsNotifier<SavedPreset> {
   }) async {
     setLoading();
     try {
-      final updates = <String, dynamic>{};
-      if (description != null) {
-        updates['description'] = description;
-      }
-      if (isPublic != null) {
-        updates['is_public'] = isPublic;
-      }
-      if (youtubeUrl != null) {
-        updates['youtube_url'] = youtubeUrl;
-      }
-      if (sampleId != null) {
-        updates['sample_id'] = sampleId;
-      } else if (clearSample) {
-        updates['sample_id'] = null;
-      }
-
-      await supabase.from('presets').update(updates).eq('id', id);
+      final update = PresetsUpdate(
+        description: description,
+        isPublic: isPublic,
+        youtubeUrl: youtubeUrl,
+        sampleId: sampleId,
+      );
+      await supabase
+          .table(Presets.table)
+          .update(
+            sampleId == null && clearSample
+                ? update.setSampleIdToNull()
+                : update,
+          )
+          .where(Presets.id.eq(id));
       await refreshAll();
     } on Exception catch (error) {
       setError(error);

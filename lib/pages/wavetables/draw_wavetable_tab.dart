@@ -298,12 +298,11 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
         await ref
             .read(savedWavetablesProvider.notifier)
             .updateWavetableContent(
-              existing.copyWith(
-                name: name,
-                description: _descriptionController.text.trim(),
-                isPublic: _isPublic,
-                youtubeUrl: _youtubeUrlController.text.trim(),
-              ),
+              existing,
+              name: name,
+              description: _descriptionController.text.trim(),
+              isPublic: _isPublic,
+              youtubeUrl: _youtubeUrlController.text.trim(),
               uf2Bytes: uf2Bytes,
             );
 
@@ -321,21 +320,16 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
         final timestamp = DateTime.now().millisecondsSinceEpoch;
         final storageName = '${name}_$timestamp.uf2';
 
-        final wavetable = SavedWavetable(
-          id: '',
-          userId: userId,
-          name: name,
-          filePath: '$userId/$storageName',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          description: _descriptionController.text.trim(),
-          isPublic: _isPublic,
-          youtubeUrl: _youtubeUrlController.text.trim(),
-        );
-
         final saved = await ref
             .read(savedWavetablesProvider.notifier)
-            .saveWavetable(wavetable, uf2Bytes: uf2Bytes);
+            .saveWavetable(
+              name: name,
+              filePath: '$userId/$storageName',
+              description: _descriptionController.text.trim(),
+              isPublic: _isPublic,
+              youtubeUrl: _youtubeUrlController.text.trim(),
+              uf2Bytes: uf2Bytes,
+            );
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

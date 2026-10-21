@@ -1,13 +1,15 @@
-import 'dart:convert';
+// ignore_for_file: experimental_member_use
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/pack_slot.dart';
 import 'package:plinkyhub/models/preset.dart';
-import 'package:plinkyhub/models/saved_pack.dart';
-import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/providers/plinky_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
+import 'package:plinkyhub/utils/item_downloads.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/widgets/plinky_transfer_dialog.dart';
@@ -15,19 +17,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SaveToPlinkyDialog extends ConsumerWidget {
   const SaveToPlinkyDialog({
-    required this.pack,
+    required this.slots,
+    required this.wavetableId,
     this.clearEmpty = true,
     super.key,
   });
 
-  final SavedPack pack;
+  final List<PackSlotEntry> slots;
+
+  final String? wavetableId;
 
   /// When true (default), unselected slots are cleared on the device. When
   /// false, only the explicitly selected slots are written and the rest are
   /// preserved.
   final bool clearEmpty;
 
-  bool get _hasPatterns => pack.slots.any((slot) => slot.patternId != null);
+  bool get _hasPatterns => slots.any((slot) => slot.patternId != null);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,14 +45,16 @@ class SaveToPlinkyDialog extends ConsumerWidget {
                   'and will be skipped.'
             : null,
         onWebUsbSave: (ref, controller) => _sendPackOverWebUsb(
-          pack: pack,
+          slots: slots,
+          wavetableId: wavetableId,
           ref: ref,
           controller: controller,
           clearEmpty: clearEmpty,
         ),
         onTunnelOfLightsSave: (directory, ref, controller) =>
             _generateAndWriteFiles(
-              pack: pack,
+              slots: slots,
+              wavetableId: wavetableId,
               directory: directory,
               controller: controller,
               clearEmpty: clearEmpty,
@@ -58,14 +65,14 @@ class SaveToPlinkyDialog extends ConsumerWidget {
 }
 
 Future<void> _sendPackOverWebUsb({
-  required SavedPack pack,
+  required List<PackSlotEntry> slots,
+  required String? wavetableId,
   required WidgetRef ref,
   required PlinkyTransferController controller,
   required bool clearEmpty,
 }) async {
   final supabase = Supabase.instance.client;
   final notifier = ref.read(plinkyProvider.notifier);
-  final slots = pack.slots;
 
   // Collect unique IDs.
   final presetIds = <String>{};
@@ -81,35 +88,11 @@ Future<void> _sendPackOverWebUsb({
 
   // Fetch preset binary data.
   controller.updateStatus('Fetching presets...');
-  final presetDataMap = <String, Uint8List>{};
-  if (presetIds.isNotEmpty) {
-    final response = await supabase
-        .from('presets')
-        .select('id, preset_data')
-        .inFilter('id', presetIds.toList());
-    for (final row in response as List) {
-      final map = row as Map<String, dynamic>;
-      presetDataMap[map['id'] as String] = Uint8List.fromList(
-        base64Decode(map['preset_data'] as String),
-      );
-    }
-  }
+  final presetDataMap = await fetchPresetData(supabase, presetIds);
 
   // Fetch sample metadata.
   controller.updateStatus('Fetching sample metadata...');
-  final sampleMetadataMap = <String, Map<String, dynamic>>{};
-  if (sampleIds.isNotEmpty) {
-    final response = await supabase
-        .from('samples')
-        .select(
-          'id, pcm_file_path, slice_points, slice_notes, pitched, loop_mode',
-        )
-        .inFilter('id', sampleIds.toList());
-    for (final row in response as List) {
-      final map = row as Map<String, dynamic>;
-      sampleMetadataMap[map['id'] as String] = map;
-    }
-  }
+  final sampleMetadataMap = await fetchSampleMetadata(supabase, sampleIds);
 
   // Build sample slot mapping (pack slots 56-63 → Plinky 0-7).
   final sampleSlotMapping = <String, int>{};
@@ -143,7 +126,7 @@ Future<void> _sendPackOverWebUsb({
   // Count total work items for progress.
   final totalSamples = sampleSlotMapping.length + emptySampleSlots.length;
   final totalPresets = filledPresetSlots.length + emptyPresetIndices.length;
-  final wavetableSteps = pack.wavetableId != null ? 1 : 0;
+  final wavetableSteps = wavetableId != null ? 1 : 0;
   final totalSteps = totalSamples + totalPresets + wavetableSteps;
   var completedSteps = 0;
 
@@ -163,27 +146,14 @@ Future<void> _sendPackOverWebUsb({
 
     final pcmBytes = await supabase.storage
         .from('samples')
-        .download(metadata['pcm_file_path'] as String);
-
-    final slicePoints =
-        (metadata['slice_points'] as List?)
-            ?.map((value) => (value as num).toDouble())
-            .toList() ??
-        List.of(defaultSlicePoints);
-    final sliceNotes =
-        (metadata['slice_notes'] as List?)
-            ?.map((value) => (value as num).toInt())
-            .toList() ??
-        List.of(defaultSliceNotes);
-    final pitched = metadata['pitched'] as bool? ?? false;
-    final loopMode = metadata['loop_mode'] as int? ?? 0;
+        .download(metadata.read(Samples.pcmFilePath));
 
     final sampleInfo = buildSampleInfo(
       pcmData: pcmBytes,
-      slicePoints: slicePoints,
-      sliceNotes: sliceNotes,
-      pitched: pitched,
-      loopMode: loopMode,
+      slicePoints: metadata.read(Samples.slicePoints),
+      sliceNotes: metadata.read(Samples.sliceNotes),
+      pitched: metadata.read(Samples.pitched),
+      loopMode: metadata.read(Samples.loopMode),
     );
 
     controller.updateStatus(
@@ -230,13 +200,12 @@ Future<void> _sendPackOverWebUsb({
   // Upload wavetable via WebUSB (cmd=5). Wavetable is global state, not a
   // numbered slot, so the clearEmpty toggle doesn't apply to it: we only
   // overwrite when one is explicitly selected.
-  if (pack.wavetableId != null) {
+  if (wavetableId != null) {
     controller.updateStatus('Sending wavetable...');
 
-    final wavetableFilePath = await _fetchFilePath(
+    final wavetableFilePath = await fetchWavetableFilePath(
       supabase,
-      'wavetables',
-      pack.wavetableId!,
+      wavetableId,
     );
     final uf2Bytes = await supabase.storage
         .from('wavetables')
@@ -304,13 +273,13 @@ Future<void> _sendPackOverWebUsb({
 }
 
 Future<void> _generateAndWriteFiles({
-  required SavedPack pack,
+  required List<PackSlotEntry> slots,
+  required String? wavetableId,
   required FileSystemDirectoryHandle directory,
   required PlinkyTransferController controller,
   required bool clearEmpty,
 }) async {
   final supabase = Supabase.instance.client;
-  final slots = pack.slots;
 
   // Collect unique IDs from the pack slots by range.
   final presetIds = <String>{};
@@ -346,7 +315,7 @@ Future<void> _generateAndWriteFiles({
             slot.slotNumber < sampleSlotStart,
       )
       .toList();
-  final hasWavetable = pack.wavetableId != null;
+  final hasWavetable = wavetableId != null;
   final sampleFilesToWrite = clearEmpty
       ? sampleCount
       : sampleSlotMapping.length;
@@ -382,37 +351,12 @@ Future<void> _generateAndWriteFiles({
 
   // Fetch presets from the database.
   reportProgress('Fetching presets...');
-  final presetDataMap = <String, Uint8List>{};
-  if (presetIds.isNotEmpty) {
-    final response = await supabase
-        .from('presets')
-        .select('id, preset_data')
-        .inFilter('id', presetIds.toList());
-    for (final row in response as List) {
-      final map = row as Map<String, dynamic>;
-      final id = map['id'] as String;
-      final presetData = map['preset_data'] as String;
-      presetDataMap[id] = Uint8List.fromList(base64Decode(presetData));
-    }
-  }
+  final presetDataMap = await fetchPresetData(supabase, presetIds);
   completedSteps++;
 
   // Fetch sample metadata from the database.
   reportProgress('Fetching sample metadata...');
-  final sampleMetadataMap = <String, Map<String, dynamic>>{};
-  if (sampleIds.isNotEmpty) {
-    final response = await supabase
-        .from('samples')
-        .select(
-          'id, pcm_file_path, slice_points, slice_notes, '
-          'pitched, base_note, fine_tune, loop_mode',
-        )
-        .inFilter('id', sampleIds.toList());
-    for (final row in response as List) {
-      final map = row as Map<String, dynamic>;
-      sampleMetadataMap[map['id'] as String] = map;
-    }
-  }
+  final sampleMetadataMap = await fetchSampleMetadata(supabase, sampleIds);
   completedSteps++;
 
   // Download sample PCM files and build SampleInfo structs.
@@ -433,32 +377,18 @@ Future<void> _generateAndWriteFiles({
       'Downloading sample $tunnelSampleNumber/${sampleSlotMapping.length}...',
     );
 
-    final pcmFilePath = metadata['pcm_file_path'] as String;
     final pcmBytes = await supabase.storage
         .from('samples')
-        .download(pcmFilePath);
+        .download(metadata.read(Samples.pcmFilePath));
 
     samplePcmData[slotIndex] = pcmBytes;
 
-    final slicePoints =
-        (metadata['slice_points'] as List?)
-            ?.map((value) => (value as num).toDouble())
-            .toList() ??
-        List.of(defaultSlicePoints);
-    final sliceNotes =
-        (metadata['slice_notes'] as List?)
-            ?.map((value) => (value as num).toInt())
-            .toList() ??
-        List.of(defaultSliceNotes);
-    final pitched = metadata['pitched'] as bool? ?? false;
-    final loopMode = metadata['loop_mode'] as int? ?? 0;
-
     sampleInfos[slotIndex] = buildSampleInfo(
       pcmData: pcmBytes,
-      slicePoints: slicePoints,
-      sliceNotes: sliceNotes,
-      pitched: pitched,
-      loopMode: loopMode,
+      slicePoints: metadata.read(Samples.slicePoints),
+      sliceNotes: metadata.read(Samples.sliceNotes),
+      pitched: metadata.read(Samples.pitched),
+      loopMode: metadata.read(Samples.loopMode),
     );
     completedSteps++;
   }
@@ -503,9 +433,8 @@ Future<void> _generateAndWriteFiles({
     reportProgress('Fetching patterns...');
     patternQuarters = List<Uint8List?>.filled(patternCount * 4, null);
     for (final slot in patternSlots) {
-      final patternFilePath = await _fetchFilePath(
+      final patternFilePath = await fetchPatternFilePath(
         supabase,
-        'patterns',
         slot.patternId!,
       );
       final patternBlob = await supabase.storage
@@ -578,10 +507,9 @@ Future<void> _generateAndWriteFiles({
   if (hasWavetable) {
     reportProgress('Writing WAVETAB.UF2...');
 
-    final wavetableFilePath = await _fetchFilePath(
+    final wavetableFilePath = await fetchWavetableFilePath(
       supabase,
-      'wavetables',
-      pack.wavetableId!,
+      wavetableId,
     );
     final wavetableBytes = await supabase.storage
         .from('wavetables')
@@ -589,17 +517,4 @@ Future<void> _generateAndWriteFiles({
     await writeFileToDirectory(directory, 'WAVETAB.UF2', wavetableBytes);
     completedSteps++;
   }
-}
-
-Future<String> _fetchFilePath(
-  SupabaseClient supabase,
-  String table,
-  String id,
-) async {
-  final response = await supabase
-      .from(table)
-      .select('file_path')
-      .eq('id', id)
-      .single();
-  return response['file_path'] as String;
 }

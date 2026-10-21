@@ -6,6 +6,7 @@ import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/pages/wavetables/save_wavetable_to_plinky_dialog.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/widgets/confirm_delete_dialog.dart';
 import 'package:plinkyhub/widgets/pack_usage_check.dart';
 import 'package:plinkyhub/widgets/plinky_button.dart';
@@ -102,7 +103,10 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
                           onToggle: ({required bool wasStarred}) => ref
                               .read(savedWavetablesProvider.notifier)
                               .toggleStar(
-                                wavetable.copyWith(isStarred: wasStarred),
+                                wavetable.withStar(
+                                  isStarred: wasStarred,
+                                  starCount: wavetable.starCount,
+                                ),
                               ),
                         ),
                         if (wavetable.username.isNotEmpty)
@@ -137,9 +141,8 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
                         ref
                             .read(savedWavetablesProvider.notifier)
                             .updateWavetable(
-                              wavetable.copyWith(
-                                isPublic: !wavetable.isPublic,
-                              ),
+                              wavetable.id,
+                              WavetablesUpdate(isPublic: !wavetable.isPublic),
                             );
                       },
                     ),

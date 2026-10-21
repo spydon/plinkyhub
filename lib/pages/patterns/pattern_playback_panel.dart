@@ -40,7 +40,10 @@ class _PatternPlaybackPanelState extends ConsumerState<PatternPlaybackPanel> {
   List<List<int>> _normalizedGrid(PatternData patternData) {
     return [
       for (final step in patternData.grid)
-        [for (var row = 0; row < 8; row++) row < step.length ? step[row] : 0],
+        [
+          for (var row = 0; row < 8; row++)
+            if (row < step.length) step[row] else 0,
+        ],
     ];
   }
 

@@ -110,7 +110,12 @@ class _PackCardState extends ConsumerState<PackCard> {
                     starCount: pack.starCount,
                     onToggle: ({required bool wasStarred}) => ref
                         .read(savedPacksProvider.notifier)
-                        .toggleStar(pack.copyWith(isStarred: wasStarred)),
+                        .toggleStar(
+                          pack.withStar(
+                            isStarred: wasStarred,
+                            starCount: pack.starCount,
+                          ),
+                        ),
                   ),
                   if (pack.username.isNotEmpty)
                     ShareLinkButton(
@@ -214,7 +219,10 @@ class _PackCardState extends ConsumerState<PackCard> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => SaveToPlinkyDialog(pack: widget.pack),
+      builder: (context) => SaveToPlinkyDialog(
+        slots: [for (final slot in widget.pack.slots) slot.entry],
+        wavetableId: widget.pack.wavetableId,
+      ),
     );
   }
 

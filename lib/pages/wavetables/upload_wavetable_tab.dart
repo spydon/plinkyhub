@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
 import 'package:plinkyhub/pages/wavetables/providers/saved_wavetables_notifier.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/utils/wavetable_import.dart';
@@ -106,21 +105,16 @@ class _UploadWavetableTabState extends ConsumerState<UploadWavetableTab> {
           : 'wavetable';
       final storageName = '${name}_$timestamp.uf2';
 
-      final wavetable = SavedWavetable(
-        id: '',
-        userId: userId,
-        name: name,
-        filePath: '$userId/$storageName',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        description: _descriptionController.text.trim(),
-        isPublic: _isPublic,
-        youtubeUrl: _youtubeUrlController.text.trim(),
-      );
-
       await ref
           .read(savedWavetablesProvider.notifier)
-          .saveWavetable(wavetable, uf2Bytes: _selectedFileBytes!);
+          .saveWavetable(
+            name: name,
+            filePath: '$userId/$storageName',
+            description: _descriptionController.text.trim(),
+            isPublic: _isPublic,
+            youtubeUrl: _youtubeUrlController.text.trim(),
+            uf2Bytes: _selectedFileBytes!,
+          );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

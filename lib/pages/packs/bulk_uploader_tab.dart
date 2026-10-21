@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:plinkyhub/models/pack_slot.dart';
-import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/pages/packs/pattern_section.dart';
 import 'package:plinkyhub/pages/packs/preset_slots_grid.dart';
 import 'package:plinkyhub/pages/packs/samples_section.dart';
@@ -152,29 +151,30 @@ class _BulkUploaderTabState extends State<BulkUploaderTab> {
       return;
     }
 
-    final pack = _buildTransientPack();
+    final slots = _buildSlots();
 
     await showDialog<void>(
       context: context,
       builder: (context) => SaveToPlinkyDialog(
-        pack: pack,
+        slots: slots,
+        wavetableId: _wavetableId,
         clearEmpty: _clearEmpty,
       ),
     );
   }
 
-  SavedPack _buildTransientPack() {
-    final slots = <PackSlot>[];
+  List<PackSlotEntry> _buildSlots() {
+    final slots = <PackSlotEntry>[];
 
     for (var i = 0; i < 32; i++) {
       final presetId = _slots[i].presetId;
       if (presetId != null) {
         slots.add(
-          PackSlot(
-            id: '',
-            packId: '',
+          (
             slotNumber: presetSlotStart + i,
             presetId: presetId,
+            sampleId: null,
+            patternId: null,
           ),
         );
       }
@@ -184,10 +184,10 @@ class _BulkUploaderTabState extends State<BulkUploaderTab> {
       final patternId = entry.value;
       if (patternId != null) {
         slots.add(
-          PackSlot(
-            id: '',
-            packId: '',
+          (
             slotNumber: patternSlotStart + entry.key,
+            presetId: null,
+            sampleId: null,
             patternId: patternId,
           ),
         );
@@ -223,25 +223,16 @@ class _BulkUploaderTabState extends State<BulkUploaderTab> {
       final sampleId = assignedSampleSlots[i];
       if (sampleId != null) {
         slots.add(
-          PackSlot(
-            id: '',
-            packId: '',
+          (
             slotNumber: sampleSlotStart + i,
+            presetId: null,
             sampleId: sampleId,
+            patternId: null,
           ),
         );
       }
     }
 
-    final now = DateTime.now();
-    return SavedPack(
-      id: '',
-      userId: '',
-      name: '',
-      createdAt: now,
-      updatedAt: now,
-      slots: slots,
-      wavetableId: _wavetableId,
-    );
+    return slots;
   }
 }

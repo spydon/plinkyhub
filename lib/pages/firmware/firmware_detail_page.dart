@@ -1,3 +1,5 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:plinkyhub/pages/firmware/firmware_card.dart';
 import 'package:plinkyhub/pages/firmware/models/saved_firmware.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/widgets/plinky_loading_animation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -38,17 +41,17 @@ class _FirmwareDetailPageState extends ConsumerState<FirmwareDetailPage> {
     });
 
     try {
-      final response = await Supabase.instance.client
-          .from('firmwares')
-          .select('*, profiles(username)')
-          .eq('name', widget.firmwareName)
-          .order('updated_at', ascending: false)
+      final row = await Supabase.instance.client
+          .table(Firmwares.table)
+          .selectOnly(SavedFirmware.selection)
+          .where(Firmwares.name.eq(widget.firmwareName))
+          .order(Firmwares.updatedAt.desc())
           .limit(1)
           .maybeSingle();
 
-      if (response != null) {
+      if (row != null) {
         setState(() {
-          _firmware = SavedFirmware.fromJson(response);
+          _firmware = SavedFirmware(row);
           _isLoading = false;
         });
       } else {
