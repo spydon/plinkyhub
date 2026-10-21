@@ -108,7 +108,7 @@ class SavedPatternsNotifier
               filePath: pattern.filePath,
               description: pattern.description,
               isPublic: pattern.isPublic,
-            ).setContentHashToNull(),
+            ),
           )
           .where(Patterns.id.eq(pattern.id));
       await refreshAll();

@@ -467,23 +467,11 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       return;
     }
 
-    final uniqueHashes = hashes.values.toSet().toList();
-    final visible = currentUserId != null
-        ? table.isPublic.isTrue() | table.userId.eq(currentUserId)
-        : table.isPublic.isTrue();
-    final rows = await _supabase
-        .table(table.table)
-        .selectOnly([table.id, table.name, table.contentHash])
-        .where(table.contentHash.inFilter(uniqueHashes) & visible);
-
-    final hashToEntry = <String, MatchedEntry>{
-      for (final row in rows)
-        if (row.read(table.contentHash) case final hash?)
-          hash: MatchedEntry(
-            id: row.read(table.id),
-            name: row.read(table.name),
-          ),
-    };
+    final hashToEntry = await table.findByContentHashes(
+      _supabase,
+      hashes.values,
+      filter: table.visibleTo(currentUserId),
+    );
 
     for (final entry in hashes.entries) {
       final matched = hashToEntry[entry.value];
@@ -499,21 +487,13 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
       return;
     }
 
-    final visible = currentUserId != null
-        ? Wavetables.isPublic.isTrue() | Wavetables.userId.eq(currentUserId)
-        : Wavetables.isPublic.isTrue();
-    final rows = await _supabase
-        .table(Wavetables.table)
-        .selectOnly([Wavetables.id, Wavetables.name])
-        .where(Wavetables.contentHash.eq(wavetableHash) & visible)
-        .limit(1);
-
-    if (rows.isNotEmpty) {
-      final row = rows.first;
-      _matchedWavetable = MatchedEntry(
-        id: row.read(Wavetables.id),
-        name: row.read(Wavetables.name),
-      );
+    final matches = await wavetablesTable.findByContentHashes(
+      _supabase,
+      [wavetableHash],
+      filter: wavetablesTable.visibleTo(currentUserId),
+    );
+    if (matches[wavetableHash] case final matched?) {
+      _matchedWavetable = matched;
     }
   }
 

@@ -115,7 +115,7 @@ class SavedWavetablesNotifier
               description: wavetable.description,
               isPublic: wavetable.isPublic,
               youtubeUrl: wavetable.youtubeUrl,
-            ).setContentHashToNull(),
+            ),
           )
           .where(Wavetables.id.eq(wavetable.id));
       await refreshAll();

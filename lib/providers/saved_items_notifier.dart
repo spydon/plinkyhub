@@ -25,10 +25,10 @@ abstract class SavedItemsNotifier<
 
   // ---- Configuration (override in subclasses) ----
 
-  /// Main database table (e.g. [presetsTable]).
+  /// Main database table, such as [presetsTable].
   ItemTable<Row> get itemTable;
 
-  /// Star join table (e.g. [presetStarsTable]).
+  /// Star join table, such as [presetStarsTable].
   StarTable<StarRow, StarInsert> get starTable;
 
   /// The columns and relations a row of [itemTable] is read with.

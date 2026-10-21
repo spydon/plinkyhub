@@ -121,7 +121,7 @@ class SavedSamplesNotifier
               pitched: sample.pitched,
               sliceNotes: sample.sliceNotes,
               loopMode: sample.loopMode,
-            ).setContentHashToNull(),
+            ),
           )
           .where(Samples.id.eq(sample.id));
       await refreshAll();

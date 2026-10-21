@@ -1,6 +1,5 @@
 // ignore_for_file: experimental_member_use
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/providers/plinky_notifier.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
+import 'package:plinkyhub/utils/item_downloads.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/widgets/plinky_transfer_dialog.dart';
@@ -83,11 +83,11 @@ Future<void> _sendPackOverWebUsb({
 
   // Fetch preset binary data.
   controller.updateStatus('Fetching presets...');
-  final presetDataMap = await _fetchPresetData(supabase, presetIds);
+  final presetDataMap = await fetchPresetData(supabase, presetIds);
 
   // Fetch sample metadata.
   controller.updateStatus('Fetching sample metadata...');
-  final sampleMetadataMap = await _fetchSampleMetadata(supabase, sampleIds);
+  final sampleMetadataMap = await fetchSampleMetadata(supabase, sampleIds);
 
   // Build sample slot mapping (pack slots 56-63 → Plinky 0-7).
   final sampleSlotMapping = <String, int>{};
@@ -198,7 +198,7 @@ Future<void> _sendPackOverWebUsb({
   if (pack.wavetableId != null) {
     controller.updateStatus('Sending wavetable...');
 
-    final wavetableFilePath = await _fetchWavetableFilePath(
+    final wavetableFilePath = await fetchWavetableFilePath(
       supabase,
       pack.wavetableId!,
     );
@@ -346,12 +346,12 @@ Future<void> _generateAndWriteFiles({
 
   // Fetch presets from the database.
   reportProgress('Fetching presets...');
-  final presetDataMap = await _fetchPresetData(supabase, presetIds);
+  final presetDataMap = await fetchPresetData(supabase, presetIds);
   completedSteps++;
 
   // Fetch sample metadata from the database.
   reportProgress('Fetching sample metadata...');
-  final sampleMetadataMap = await _fetchSampleMetadata(supabase, sampleIds);
+  final sampleMetadataMap = await fetchSampleMetadata(supabase, sampleIds);
   completedSteps++;
 
   // Download sample PCM files and build SampleInfo structs.
@@ -428,7 +428,7 @@ Future<void> _generateAndWriteFiles({
     reportProgress('Fetching patterns...');
     patternQuarters = List<Uint8List?>.filled(patternCount * 4, null);
     for (final slot in patternSlots) {
-      final patternFilePath = await _fetchPatternFilePath(
+      final patternFilePath = await fetchPatternFilePath(
         supabase,
         slot.patternId!,
       );
@@ -502,7 +502,7 @@ Future<void> _generateAndWriteFiles({
   if (hasWavetable) {
     reportProgress('Writing WAVETAB.UF2...');
 
-    final wavetableFilePath = await _fetchWavetableFilePath(
+    final wavetableFilePath = await fetchWavetableFilePath(
       supabase,
       pack.wavetableId!,
     );
@@ -512,65 +512,4 @@ Future<void> _generateAndWriteFiles({
     await writeFileToDirectory(directory, 'WAVETAB.UF2', wavetableBytes);
     completedSteps++;
   }
-}
-
-Future<Map<String, Uint8List>> _fetchPresetData(
-  SupabaseClient supabase,
-  Set<String> presetIds,
-) async {
-  if (presetIds.isEmpty) {
-    return {};
-  }
-  final rows = await supabase
-      .table(Presets.table)
-      .selectOnly([Presets.id, Presets.presetData])
-      .where(Presets.id.inFilter(presetIds.toList()));
-  return {
-    for (final row in rows)
-      row.read(Presets.id): Uint8List.fromList(
-        base64Decode(row.read(Presets.presetData)),
-      ),
-  };
-}
-
-Future<Map<String, PostgrestPartialRow<SamplesRow>>> _fetchSampleMetadata(
-  SupabaseClient supabase,
-  Set<String> sampleIds,
-) async {
-  if (sampleIds.isEmpty) {
-    return {};
-  }
-  final rows = await supabase
-      .table(Samples.table)
-      .selectOnly([
-        Samples.id,
-        Samples.pcmFilePath,
-        Samples.slicePoints,
-        Samples.sliceNotes,
-        Samples.pitched,
-        Samples.loopMode,
-      ])
-      .where(Samples.id.inFilter(sampleIds.toList()));
-  return {for (final row in rows) row.read(Samples.id): row};
-}
-
-Future<String> _fetchWavetableFilePath(
-  SupabaseClient supabase,
-  String id,
-) async {
-  final row = await supabase
-      .table(Wavetables.table)
-      .selectOnly([Wavetables.filePath])
-      .where(Wavetables.id.eq(id))
-      .single();
-  return row.read(Wavetables.filePath);
-}
-
-Future<String> _fetchPatternFilePath(SupabaseClient supabase, String id) async {
-  final row = await supabase
-      .table(Patterns.table)
-      .selectOnly([Patterns.filePath])
-      .where(Patterns.id.eq(id))
-      .single();
-  return row.read(Patterns.filePath);
 }

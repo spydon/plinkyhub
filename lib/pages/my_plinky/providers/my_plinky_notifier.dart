@@ -362,19 +362,10 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
   }
 
   Future<MatchedEntry?> _findWavetableMatch(String hash) async {
-    final rows = await _supabase
-        .table(Wavetables.table)
-        .selectOnly([Wavetables.id, Wavetables.name])
-        .where(Wavetables.contentHash.eq(hash))
-        .limit(1);
-
-    if (rows.isNotEmpty) {
-      final row = rows.first;
-      return MatchedEntry(
-        id: row.read(Wavetables.id),
-        name: row.read(Wavetables.name),
-      );
-    }
-    return null;
+    final matches = await wavetablesTable.findByContentHashes(
+      _supabase,
+      [hash],
+    );
+    return matches[hash];
   }
 }

@@ -88,14 +88,16 @@ Future<List<T>> _fetchItems<T, Row>(
   if (currentUserId != userId) {
     filter = filter & itemTable.isPublic.isTrue();
   }
-  final rows = await supabase
-      .table(itemTable.table)
-      .selectOnly(selection)
-      .where(filter)
-      .order(itemTable.updatedAt.desc());
-  final starredIds = currentUserId == null
-      ? const <String>{}
-      : await starTable.fetchStarredItemIds(supabase, currentUserId);
+  final (rows, starredIds) = await (
+    supabase
+        .table(itemTable.table)
+        .selectOnly(selection)
+        .where(filter)
+        .order(itemTable.updatedAt.desc()),
+    currentUserId == null
+        ? Future.value(const <String>{})
+        : starTable.fetchStarredItemIds(supabase, currentUserId),
+  ).wait;
   return [
     for (final row in rows)
       fromRow(row, isStarred: starredIds.contains(row.read(itemTable.id))),

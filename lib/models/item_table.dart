@@ -38,19 +38,27 @@ class ItemTable<Row> {
       ) &
       PostgrestFilter.raw<Row>(profiles.key, 'not.is.null');
 
-  /// The rows whose content hash is one of [hashes], keyed by content hash.
+  /// Only the rows that are public or owned by [currentUserId].
+  PostgrestFilter<Row> visibleTo(String? currentUserId) => currentUserId == null
+      ? isPublic.isTrue()
+      : isPublic.isTrue() | userId.eq(currentUserId);
+
+  /// The rows whose content hash is one of [hashes], keyed by content hash,
+  /// narrowed to the rows matching [filter] when it is given.
   Future<Map<String, MatchedEntry>> findByContentHashes(
     SupabaseClient supabase,
-    Iterable<String> hashes,
-  ) async {
+    Iterable<String> hashes, {
+    PostgrestFilter<Row>? filter,
+  }) async {
     final uniqueHashes = hashes.toSet().toList();
     if (uniqueHashes.isEmpty) {
       return {};
     }
+    final hashFilter = contentHash.inFilter(uniqueHashes);
     final rows = await supabase
         .table(table)
         .selectOnly([id, name, contentHash])
-        .where(contentHash.inFilter(uniqueHashes));
+        .where(filter == null ? hashFilter : hashFilter & filter);
     return {
       for (final row in rows)
         if (row.read(contentHash) case final hash?)
