@@ -243,6 +243,25 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
     });
   }
 
+  Future<void> _export() async {
+    setState(() => _errorMessage = null);
+    try {
+      final uf2Bytes = generateWavetableUf2FromSamples(_getFinalSamples());
+      final name = _nameController.text.trim().isNotEmpty
+          ? _nameController.text.trim()
+          : 'wavetable';
+      await FilePicker.platform.saveFile(
+        fileName: '$name.uf2',
+        bytes: uf2Bytes,
+      );
+    } on FormatException catch (error) {
+      setState(() => _errorMessage = error.message);
+    } on Exception catch (error) {
+      debugPrint('Failed to export wavetable: $error');
+      setState(() => _errorMessage = error.toString());
+    }
+  }
+
   Future<void> _createAndUpload() async {
     final userId = ref.read(authenticationProvider).user?.id;
     if (userId == null) {
@@ -424,6 +443,12 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
             icon: _isUploading ? Icons.hourglass_empty : buttonIcon,
             label: _isUploading ? 'Uploading...' : buttonLabel,
           ),
+        const SizedBox(height: 8),
+        PlinkyButton(
+          onPressed: _isBusy ? null : _export,
+          icon: Icons.download,
+          label: 'Export',
+        ),
         const SizedBox(height: 16),
         WavetablePlayer(cache: _cache),
       ],
@@ -664,6 +689,12 @@ class _DrawWavetableTabState extends ConsumerState<DrawWavetableTab> {
                       icon: _isUploading ? Icons.hourglass_empty : Icons.upload,
                       label: _isUploading ? 'Uploading...' : 'Create & Upload',
                     ),
+                  const SizedBox(height: 8),
+                  PlinkyButton(
+                    onPressed: _isBusy ? null : _export,
+                    icon: Icons.download,
+                    label: 'Export',
+                  ),
                 ],
               );
             },
