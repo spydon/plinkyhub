@@ -26,7 +26,7 @@ dependencies:
   json_annotation: ^4.11.0
   pointer_interceptor: ^0.10.1+2
   shared_preferences: ^2.5.3
-  supabase_flutter: 3.0.0-dev.11
+  supabase_flutter: 3.0.0-dev.12
   web: ^1.1.1
 
 dev_dependencies:

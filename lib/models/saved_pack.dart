@@ -1,7 +1,6 @@
 // ignore_for_file: experimental_member_use
 
 import 'package:flutter/foundation.dart';
-import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/pack_slot.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
@@ -10,8 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 @immutable
 class SavedPack with Searchable {
   SavedPack(this.row, {this.isStarred = false, int? starCount})
-    : starCount =
-          starCount ?? readStarCount(row, Packs.packStars, packStarsTable);
+    : starCount = starCount ?? row.read(Packs.packStars.count());
 
   final PostgrestPartialRow<PacksRow> row;
 
@@ -72,19 +70,9 @@ class SavedPack with Searchable {
 
   /// The columns and relations the getters read.
   static final selection = <PostgrestSelectable<PacksRow>>[
-    Packs.id,
-    Packs.userId,
-    Packs.name,
-    Packs.createdAt,
-    Packs.updatedAt,
-    Packs.slug,
-    Packs.description,
-    Packs.isPublic,
-    Packs.wavetableId,
-    Packs.youtubeUrl,
-    Packs.contentHash,
+    Packs.table.allColumns,
     Packs.packSlots.select(),
     Packs.profiles(Profiles.username),
-    Packs.packStars(packStarsTable.count),
+    Packs.packStars.count(),
   ];
 }

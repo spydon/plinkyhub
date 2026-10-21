@@ -1,7 +1,6 @@
 // ignore_for_file: experimental_member_use
 
 import 'package:flutter/foundation.dart';
-import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,9 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 @immutable
 class SavedWavetable with Searchable {
   SavedWavetable(this.row, {this.isStarred = false, int? starCount})
-    : starCount =
-          starCount ??
-          readStarCount(row, Wavetables.wavetableStars, wavetableStarsTable);
+    : starCount = starCount ?? row.read(Wavetables.wavetableStars.count());
 
   final PostgrestPartialRow<WavetablesRow> row;
 
@@ -68,18 +65,8 @@ class SavedWavetable with Searchable {
 
   /// The columns and relations the getters read.
   static final selection = <PostgrestSelectable<WavetablesRow>>[
-    Wavetables.id,
-    Wavetables.userId,
-    Wavetables.name,
-    Wavetables.filePath,
-    Wavetables.createdAt,
-    Wavetables.updatedAt,
-    Wavetables.slug,
-    Wavetables.description,
-    Wavetables.isPublic,
-    Wavetables.youtubeUrl,
-    Wavetables.contentHash,
+    Wavetables.table.allColumns,
     Wavetables.profiles(Profiles.username),
-    Wavetables.wavetableStars(wavetableStarsTable.count),
+    Wavetables.wavetableStars.count(),
   ];
 }

@@ -82,10 +82,6 @@ class StarTable<Row, Insert> {
   final Insert Function({required String itemId, required String userId})
   createInsert;
 
-  /// `count` inside an embed of this table, the number of stars PostgREST
-  /// counts even with aggregate functions disabled, unlike `count()`.
-  PostgrestColumn<Row, int> get count => PostgrestColumn<Row, int>('count');
-
   /// The ids of the items [userId] starred.
   Future<Set<String>> fetchStarredItemIds(
     SupabaseClient supabase,
@@ -115,14 +111,6 @@ class StarTable<Row, Insert> {
     return row != null;
   }
 }
-
-/// The number of stars in the embedded rows of [starTable], read through
-/// [relation].
-int readStarCount<Row, StarRow>(
-  PostgrestPartialRow<Row> row,
-  PostgrestToManyRelation<Row, StarRow> relation,
-  StarTable<StarRow, Object?> starTable,
-) => row.read(relation).firstOrNull?.read(starTable.count) ?? 0;
 
 const presetsTable = ItemTable<PresetsRow>(
   table: Presets.table,

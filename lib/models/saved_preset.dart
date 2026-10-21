@@ -1,7 +1,6 @@
 // ignore_for_file: experimental_member_use
 
 import 'package:flutter/foundation.dart';
-import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,9 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 @immutable
 class SavedPreset with Searchable {
   SavedPreset(this.row, {this.isStarred = false, int? starCount})
-    : starCount =
-          starCount ??
-          readStarCount(row, Presets.presetStars, presetStarsTable);
+    : starCount = starCount ?? row.read(Presets.presetStars.count());
 
   final PostgrestPartialRow<PresetsRow> row;
 
@@ -79,20 +76,9 @@ class SavedPreset with Searchable {
 
   /// The columns and relations the getters read.
   static final selection = <PostgrestSelectable<PresetsRow>>[
-    Presets.id,
-    Presets.userId,
-    Presets.name,
-    Presets.category,
-    Presets.presetData,
-    Presets.createdAt,
-    Presets.updatedAt,
-    Presets.slug,
-    Presets.description,
-    Presets.isPublic,
-    Presets.youtubeUrl,
-    Presets.sampleId,
+    Presets.table.allColumns,
     Presets.profiles(Profiles.username),
-    Presets.presetStars(presetStarsTable.count),
+    Presets.presetStars.count(),
     Presets.samples.select([
       Samples.name,
       Samples.slug,

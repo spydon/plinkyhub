@@ -42,16 +42,7 @@ class SavedFirmware {
 
   /// The columns and relations the getters read.
   static final selection = <PostgrestSelectable<FirmwaresRow>>[
-    Firmwares.id,
-    Firmwares.userId,
-    Firmwares.name,
-    Firmwares.version,
-    Firmwares.filePath,
-    Firmwares.createdAt,
-    Firmwares.updatedAt,
-    Firmwares.description,
-    Firmwares.isBeta,
-    Firmwares.isPinned,
+    Firmwares.table.allColumns,
     Firmwares.profiles(Profiles.username),
   ];
 }

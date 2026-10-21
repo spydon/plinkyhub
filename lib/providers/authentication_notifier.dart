@@ -66,8 +66,7 @@ class AuthenticationNotifier extends Notifier<AuthenticationState> {
           .selectOnly([Profiles.username])
           .where(Profiles.id.eq(userId))
           .maybeSingle();
-      final username = profile?.read(Profiles.username);
-      return username;
+      return profile?.read<String>(Profiles.username);
     } on PostgrestException catch (error) {
       debugPrint('$error');
       return null;

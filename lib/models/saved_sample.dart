@@ -1,7 +1,6 @@
 // ignore_for_file: experimental_member_use
 
 import 'package:flutter/foundation.dart';
-import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,9 +14,7 @@ const defaultSliceNotes = [48, 48, 48, 48, 48, 48, 48, 48];
 @immutable
 class SavedSample with Searchable {
   SavedSample(this.row, {this.isStarred = false, int? starCount})
-    : starCount =
-          starCount ??
-          readStarCount(row, Samples.sampleStars, sampleStarsTable);
+    : starCount = starCount ?? row.read(Samples.sampleStars.count());
 
   final PostgrestPartialRow<SamplesRow> row;
 
@@ -86,24 +83,8 @@ class SavedSample with Searchable {
 
   /// The columns and relations the getters read.
   static final selection = <PostgrestSelectable<SamplesRow>>[
-    Samples.id,
-    Samples.userId,
-    Samples.name,
-    Samples.filePath,
-    Samples.pcmFilePath,
-    Samples.createdAt,
-    Samples.updatedAt,
-    Samples.slug,
-    Samples.description,
-    Samples.isPublic,
-    Samples.slicePoints,
-    Samples.baseNote,
-    Samples.fineTune,
-    Samples.pitched,
-    Samples.sliceNotes,
-    Samples.loopMode,
-    Samples.contentHash,
+    Samples.table.allColumns,
     Samples.profiles(Profiles.username),
-    Samples.sampleStars(sampleStarsTable.count),
+    Samples.sampleStars.count(),
   ];
 }

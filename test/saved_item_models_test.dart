@@ -31,9 +31,9 @@ PostgrestPartialRow<Row> _row<Row>(
 ) => PostgrestPartialRow.fromSelections(json, selection);
 
 void main() {
-  // Each test reads every getter of its model. A getter whose column is
-  // missing from the model's selection throws a StateError here instead of
-  // in the UI. Add new getters to these lists.
+  // Each test reads every getter of its model. A getter reading an embed
+  // that is missing from the model's selection throws a StateError here
+  // instead of in the UI. Add new getters to these lists.
   test('SavedPreset getters read selected columns', () {
     final preset = SavedPreset(
       _row(SavedPreset.selection, {
@@ -42,7 +42,7 @@ void main() {
         'preset_data': 'AAAA',
         'youtube_url': '',
         'sample_id': 'sample-id',
-        'preset_stars': [
+        'preset_stars(count)': [
           {'count': 3},
         ],
         'samples': {
@@ -92,7 +92,9 @@ void main() {
         'slice_notes': defaultSliceNotes,
         'loop_mode': 0,
         'content_hash': 'hash',
-        'sample_stars': <Object>[],
+        'sample_stars(count)': [
+          {'count': 0},
+        ],
       }),
     );
     final values = [
@@ -128,7 +130,7 @@ void main() {
         ..._itemColumns(),
         'file_path': 'p.json',
         'content_hash': null,
-        'pattern_stars': [
+        'pattern_stars(count)': [
           {'count': 1},
         ],
       }),
@@ -159,7 +161,7 @@ void main() {
         'file_path': 'w.uf2',
         'youtube_url': '',
         'content_hash': 'hash',
-        'wavetable_stars': [
+        'wavetable_stars(count)': [
           {'count': 2},
         ],
       }),
@@ -201,7 +203,7 @@ void main() {
             'pattern_id': null,
           },
         ],
-        'pack_stars': [
+        'pack_stars(count)': [
           {'count': 4},
         ],
       }),
@@ -276,7 +278,9 @@ void main() {
         ..._itemColumns(),
         'file_path': 'p.json',
         'content_hash': null,
-        'pattern_stars': <Object>[],
+        'pattern_stars(count)': [
+          {'count': 0},
+        ],
       }),
     );
     final first = pattern();

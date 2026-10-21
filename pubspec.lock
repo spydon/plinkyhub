@@ -748,10 +748,10 @@ packages:
     dependency: transitive
     description:
       name: postgrest
-      sha256: f2da801166fa340f5d0daaae59003763e5542e4d410e7f92ceb0bf41533964bb
+      sha256: a97e854f41051013c40f961d356a326c179da7988c83e5d9bf9696c41803ec68
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.11"
+    version: "3.0.0-dev.12"
   pub_semver:
     dependency: transitive
     description:
@@ -953,10 +953,10 @@ packages:
     dependency: transitive
     description:
       name: supabase
-      sha256: dc375584a980046a1c4b902a46bacb5827f301fffb874903676d2b1fa9ceaa54
+      sha256: "223f54bcf1415e4ef3f8222696aaf44d7730850ba78d77357026972de2bf3b63"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.11"
+    version: "3.0.0-dev.12"
   supabase_auth:
     dependency: transitive
     description:
@@ -977,10 +977,10 @@ packages:
     dependency: "direct main"
     description:
       name: supabase_flutter
-      sha256: "6421108b75fe9aa22fc2a8fd0da21a9665c0a9343db3f09864b6f133703de146"
+      sha256: bf2850277566ff7c8e45373c1de1055f7e4dd8821822292ed0683220734cdda4
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.11"
+    version: "3.0.0-dev.12"
   supabase_functions:
     dependency: transitive
     description:
