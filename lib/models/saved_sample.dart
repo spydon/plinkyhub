@@ -1,12 +1,10 @@
 // ignore_for_file: experimental_member_use
 
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-part 'saved_sample.freezed.dart';
 
 const defaultSlicePoints = [0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875];
 
@@ -14,58 +12,79 @@ const defaultSlicePoints = [0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875];
 /// to MIDI note 60).
 const defaultSliceNotes = [48, 48, 48, 48, 48, 48, 48, 48];
 
-@freezed
-abstract class SavedSample with _$SavedSample implements Searchable {
-  const factory SavedSample({
-    required String id,
-    required String userId,
-    required String name,
-    required String filePath,
-    required String pcmFilePath,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    @Default('') String slug,
-    @Default('') String description,
-    @Default(false) bool isPublic,
-    @Default('') String username,
-    @Default(0) int starCount,
-    @Default(false) bool isStarred,
-    @Default(defaultSlicePoints) List<double> slicePoints,
-    @Default(60) int baseNote,
-    @Default(0) int fineTune,
-    @Default(false) bool pitched,
-    @Default(defaultSliceNotes) List<int> sliceNotes,
-    @Default(0) int loopMode,
-    String? contentHash,
-  }) = _SavedSample;
+@immutable
+class SavedSample with Searchable {
+  SavedSample(this.row, {this.isStarred = false, int? starCount})
+    : starCount =
+          starCount ??
+          readStarCount(row, Samples.sampleStars, sampleStarsTable);
 
-  factory SavedSample.fromRow(
-    PostgrestPartialRow<SamplesRow> row, {
-    bool isStarred = false,
-  }) => SavedSample(
-    id: row.read(Samples.id),
-    userId: row.read(Samples.userId),
-    name: row.read(Samples.name),
-    filePath: row.read(Samples.filePath),
-    pcmFilePath: row.read(Samples.pcmFilePath),
-    createdAt: row.read(Samples.createdAt),
-    updatedAt: row.read(Samples.updatedAt),
-    slug: row.read(Samples.slug),
-    description: row.read(Samples.description),
-    isPublic: row.read(Samples.isPublic),
-    username: row.read(Samples.profiles)?.read(Profiles.username) ?? '',
-    starCount: readStarCount(row, Samples.sampleStars, sampleStarsTable),
-    isStarred: isStarred,
-    slicePoints: row.read(Samples.slicePoints),
-    baseNote: row.read(Samples.baseNote),
-    fineTune: row.read(Samples.fineTune),
-    pitched: row.read(Samples.pitched),
-    sliceNotes: row.read(Samples.sliceNotes),
-    loopMode: row.read(Samples.loopMode),
-    contentHash: row.read(Samples.contentHash),
-  );
+  final PostgrestPartialRow<SamplesRow> row;
 
-  /// The columns and relations [SavedSample.fromRow] reads.
+  @override
+  final bool isStarred;
+
+  @override
+  final int starCount;
+
+  @override
+  String get id => row.read(Samples.id);
+
+  @override
+  String get userId => row.read(Samples.userId);
+
+  @override
+  String get name => row.read(Samples.name);
+
+  String get filePath => row.read(Samples.filePath);
+
+  String get pcmFilePath => row.read(Samples.pcmFilePath);
+
+  DateTime get createdAt => row.read(Samples.createdAt);
+
+  @override
+  DateTime get updatedAt => row.read(Samples.updatedAt);
+
+  String get slug => row.read(Samples.slug);
+
+  @override
+  String get description => row.read(Samples.description);
+
+  bool get isPublic => row.read(Samples.isPublic);
+
+  @override
+  String get username =>
+      row.read(Samples.profiles)?.read(Profiles.username) ?? '';
+
+  List<double> get slicePoints => row.read(Samples.slicePoints);
+
+  int get baseNote => row.read(Samples.baseNote);
+
+  int get fineTune => row.read(Samples.fineTune);
+
+  bool get pitched => row.read(Samples.pitched);
+
+  List<int> get sliceNotes => row.read(Samples.sliceNotes);
+
+  int get loopMode => row.read(Samples.loopMode);
+
+  String? get contentHash => row.read(Samples.contentHash);
+
+  SavedSample withStar({required bool isStarred, required int starCount}) =>
+      SavedSample(row, isStarred: isStarred, starCount: starCount);
+
+  @override
+  bool operator ==(Object other) =>
+      other is SavedSample &&
+      other.id == id &&
+      other.updatedAt == updatedAt &&
+      other.isStarred == isStarred &&
+      other.starCount == starCount;
+
+  @override
+  int get hashCode => Object.hash(id, updatedAt, isStarred, starCount);
+
+  /// The columns and relations the getters read.
   static final selection = <PostgrestSelectable<SamplesRow>>[
     Samples.id,
     Samples.userId,

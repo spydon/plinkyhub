@@ -49,7 +49,7 @@ class _CreatePackTabState extends ConsumerState<CreatePackTab> {
     _descriptionController.text = pack.description;
     _youtubeUrlController.text = pack.youtubeUrl;
     _isPublic = pack.isPublic;
-    _wavetableId = pack.wavetableId ?? defaultWavetableId;
+    _wavetableId = pack.wavetableId;
     _patternIds.clear();
     for (var i = 0; i < 32; i++) {
       _slots[i] = (presetId: null, sampleId: null, patternId: null);

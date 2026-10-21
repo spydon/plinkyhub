@@ -4,8 +4,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:plinkyhub/models/pack_slot.dart';
 import 'package:plinkyhub/models/preset.dart';
-import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/providers/plinky_notifier.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/file_system_access.dart';
@@ -17,19 +17,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SaveToPlinkyDialog extends ConsumerWidget {
   const SaveToPlinkyDialog({
-    required this.pack,
+    required this.slots,
+    required this.wavetableId,
     this.clearEmpty = true,
     super.key,
   });
 
-  final SavedPack pack;
+  final List<PackSlotEntry> slots;
+
+  final String? wavetableId;
 
   /// When true (default), unselected slots are cleared on the device. When
   /// false, only the explicitly selected slots are written and the rest are
   /// preserved.
   final bool clearEmpty;
 
-  bool get _hasPatterns => pack.slots.any((slot) => slot.patternId != null);
+  bool get _hasPatterns => slots.any((slot) => slot.patternId != null);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,14 +45,16 @@ class SaveToPlinkyDialog extends ConsumerWidget {
                   'and will be skipped.'
             : null,
         onWebUsbSave: (ref, controller) => _sendPackOverWebUsb(
-          pack: pack,
+          slots: slots,
+          wavetableId: wavetableId,
           ref: ref,
           controller: controller,
           clearEmpty: clearEmpty,
         ),
         onTunnelOfLightsSave: (directory, ref, controller) =>
             _generateAndWriteFiles(
-              pack: pack,
+              slots: slots,
+              wavetableId: wavetableId,
               directory: directory,
               controller: controller,
               clearEmpty: clearEmpty,
@@ -60,14 +65,14 @@ class SaveToPlinkyDialog extends ConsumerWidget {
 }
 
 Future<void> _sendPackOverWebUsb({
-  required SavedPack pack,
+  required List<PackSlotEntry> slots,
+  required String? wavetableId,
   required WidgetRef ref,
   required PlinkyTransferController controller,
   required bool clearEmpty,
 }) async {
   final supabase = Supabase.instance.client;
   final notifier = ref.read(plinkyProvider.notifier);
-  final slots = pack.slots;
 
   // Collect unique IDs.
   final presetIds = <String>{};
@@ -121,7 +126,7 @@ Future<void> _sendPackOverWebUsb({
   // Count total work items for progress.
   final totalSamples = sampleSlotMapping.length + emptySampleSlots.length;
   final totalPresets = filledPresetSlots.length + emptyPresetIndices.length;
-  final wavetableSteps = pack.wavetableId != null ? 1 : 0;
+  final wavetableSteps = wavetableId != null ? 1 : 0;
   final totalSteps = totalSamples + totalPresets + wavetableSteps;
   var completedSteps = 0;
 
@@ -195,12 +200,12 @@ Future<void> _sendPackOverWebUsb({
   // Upload wavetable via WebUSB (cmd=5). Wavetable is global state, not a
   // numbered slot, so the clearEmpty toggle doesn't apply to it: we only
   // overwrite when one is explicitly selected.
-  if (pack.wavetableId != null) {
+  if (wavetableId != null) {
     controller.updateStatus('Sending wavetable...');
 
     final wavetableFilePath = await fetchWavetableFilePath(
       supabase,
-      pack.wavetableId!,
+      wavetableId,
     );
     final uf2Bytes = await supabase.storage
         .from('wavetables')
@@ -268,13 +273,13 @@ Future<void> _sendPackOverWebUsb({
 }
 
 Future<void> _generateAndWriteFiles({
-  required SavedPack pack,
+  required List<PackSlotEntry> slots,
+  required String? wavetableId,
   required FileSystemDirectoryHandle directory,
   required PlinkyTransferController controller,
   required bool clearEmpty,
 }) async {
   final supabase = Supabase.instance.client;
-  final slots = pack.slots;
 
   // Collect unique IDs from the pack slots by range.
   final presetIds = <String>{};
@@ -310,7 +315,7 @@ Future<void> _generateAndWriteFiles({
             slot.slotNumber < sampleSlotStart,
       )
       .toList();
-  final hasWavetable = pack.wavetableId != null;
+  final hasWavetable = wavetableId != null;
   final sampleFilesToWrite = clearEmpty
       ? sampleCount
       : sampleSlotMapping.length;
@@ -504,7 +509,7 @@ Future<void> _generateAndWriteFiles({
 
     final wavetableFilePath = await fetchWavetableFilePath(
       supabase,
-      pack.wavetableId!,
+      wavetableId,
     );
     final wavetableBytes = await supabase.storage
         .from('wavetables')

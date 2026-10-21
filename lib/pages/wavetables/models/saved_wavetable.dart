@@ -1,73 +1,72 @@
 // ignore_for_file: experimental_member_use
 
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-part 'saved_wavetable.freezed.dart';
+@immutable
+class SavedWavetable with Searchable {
+  SavedWavetable(this.row, {this.isStarred = false, int? starCount})
+    : starCount =
+          starCount ??
+          readStarCount(row, Wavetables.wavetableStars, wavetableStarsTable);
 
-@freezed
-abstract class SavedWavetable with _$SavedWavetable implements Searchable {
-  const factory SavedWavetable({
-    required String id,
-    required String userId,
-    required String name,
-    required String filePath,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    @Default('') String slug,
-    @Default('') String description,
-    @Default(false) bool isPublic,
-    @Default('') String username,
-    @Default(0) int starCount,
-    @Default(false) bool isStarred,
-    @Default('') String youtubeUrl,
-    String? contentHash,
-  }) = _SavedWavetable;
+  final PostgrestPartialRow<WavetablesRow> row;
 
-  factory SavedWavetable.fromRow(
-    PostgrestPartialRow<WavetablesRow> row, {
-    bool isStarred = false,
-  }) => SavedWavetable(
-    id: row.read(Wavetables.id),
-    userId: row.read(Wavetables.userId),
-    name: row.read(Wavetables.name),
-    filePath: row.read(Wavetables.filePath),
-    createdAt: row.read(Wavetables.createdAt),
-    updatedAt: row.read(Wavetables.updatedAt),
-    slug: row.read(Wavetables.slug),
-    description: row.read(Wavetables.description),
-    isPublic: row.read(Wavetables.isPublic),
-    username: row.read(Wavetables.profiles)?.read(Profiles.username) ?? '',
-    starCount: readStarCount(
-      row,
-      Wavetables.wavetableStars,
-      wavetableStarsTable,
-    ),
-    isStarred: isStarred,
-    youtubeUrl: row.read(Wavetables.youtubeUrl),
-    contentHash: row.read(Wavetables.contentHash),
-  );
+  @override
+  final bool isStarred;
 
-  /// Reads a full row, such as the one an insert returns. It carries no
-  /// relations, so [username] and [starCount] keep their defaults.
-  factory SavedWavetable.fromFullRow(WavetablesRow row) => SavedWavetable(
-    id: row.id,
-    userId: row.userId,
-    name: row.name,
-    filePath: row.filePath,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-    slug: row.slug,
-    description: row.description,
-    isPublic: row.isPublic,
-    youtubeUrl: row.youtubeUrl,
-    contentHash: row.contentHash,
-  );
+  @override
+  final int starCount;
 
-  /// The columns and relations [SavedWavetable.fromRow] reads.
+  @override
+  String get id => row.read(Wavetables.id);
+
+  @override
+  String get userId => row.read(Wavetables.userId);
+
+  @override
+  String get name => row.read(Wavetables.name);
+
+  String get filePath => row.read(Wavetables.filePath);
+
+  DateTime get createdAt => row.read(Wavetables.createdAt);
+
+  @override
+  DateTime get updatedAt => row.read(Wavetables.updatedAt);
+
+  String get slug => row.read(Wavetables.slug);
+
+  @override
+  String get description => row.read(Wavetables.description);
+
+  bool get isPublic => row.read(Wavetables.isPublic);
+
+  @override
+  String get username =>
+      row.read(Wavetables.profiles)?.read(Profiles.username) ?? '';
+
+  String get youtubeUrl => row.read(Wavetables.youtubeUrl);
+
+  String? get contentHash => row.read(Wavetables.contentHash);
+
+  SavedWavetable withStar({required bool isStarred, required int starCount}) =>
+      SavedWavetable(row, isStarred: isStarred, starCount: starCount);
+
+  @override
+  bool operator ==(Object other) =>
+      other is SavedWavetable &&
+      other.id == id &&
+      other.updatedAt == updatedAt &&
+      other.isStarred == isStarred &&
+      other.starCount == starCount;
+
+  @override
+  int get hashCode => Object.hash(id, updatedAt, isStarred, starCount);
+
+  /// The columns and relations the getters read.
   static final selection = <PostgrestSelectable<WavetablesRow>>[
     Wavetables.id,
     Wavetables.userId,

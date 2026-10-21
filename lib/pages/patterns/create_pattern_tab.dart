@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/pages/patterns/models/pattern_data.dart';
-import 'package:plinkyhub/pages/patterns/models/saved_pattern.dart';
 import 'package:plinkyhub/pages/patterns/pattern_grid_editor.dart';
 import 'package:plinkyhub/pages/patterns/pattern_play_controls.dart';
 import 'package:plinkyhub/pages/patterns/providers/pattern_playback_notifier.dart';
@@ -198,20 +197,15 @@ class _CreatePatternTabState extends ConsumerState<CreatePatternTab> {
       final sanitized = name.replaceAll(RegExp('[^a-zA-Z0-9_-]'), '_');
       final storageName = '${sanitized}_$timestamp.json';
 
-      final pattern = SavedPattern(
-        id: '',
-        userId: userId,
-        name: name,
-        filePath: '$userId/$storageName',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        description: description,
-        isPublic: isPublic,
-      );
-
       await ref
           .read(savedPatternsProvider.notifier)
-          .savePattern(pattern, fileBytes: fileBytes);
+          .savePattern(
+            name: name,
+            filePath: '$userId/$storageName',
+            description: description,
+            isPublic: isPublic,
+            fileBytes: fileBytes,
+          );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

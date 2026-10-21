@@ -64,7 +64,7 @@ class _PresetPageState extends ConsumerState<PresetPage> {
           userId: ref.read(authenticationProvider).user?.id,
         );
         setState(() {
-          _preset = SavedPreset.fromRow(row, isStarred: isStarred);
+          _preset = SavedPreset(row, isStarred: isStarred);
           _isLoading = false;
         });
       } else {

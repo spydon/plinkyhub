@@ -42,15 +42,14 @@ class SavedPresetsNotifier
   String get itemLabel => 'preset';
 
   @override
-  SavedPreset fromRow(PostgrestPartialRow<PresetsRow> row) =>
-      SavedPreset.fromRow(row);
+  SavedPreset fromRow(PostgrestPartialRow<PresetsRow> row) => SavedPreset(row);
 
   @override
   SavedPreset withStarUpdate(
     SavedPreset item, {
     required bool isStarred,
     required int starCount,
-  }) => item.copyWith(isStarred: isStarred, starCount: starCount);
+  }) => item.withStar(isStarred: isStarred, starCount: starCount);
 
   Future<void> savePreset(
     Preset preset, {

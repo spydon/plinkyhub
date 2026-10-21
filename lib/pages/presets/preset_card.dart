@@ -143,7 +143,12 @@ class _PresetCardState extends ConsumerState<PresetCard> {
                     starCount: preset.starCount,
                     onToggle: ({required bool wasStarred}) => ref
                         .read(savedPresetsProvider.notifier)
-                        .toggleStar(preset.copyWith(isStarred: wasStarred)),
+                        .toggleStar(
+                          preset.withStar(
+                            isStarred: wasStarred,
+                            starCount: preset.starCount,
+                          ),
+                        ),
                   ),
                   if (preset.username.isNotEmpty)
                     ShareLinkButton(

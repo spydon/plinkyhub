@@ -63,7 +63,7 @@ class _PackPageState extends ConsumerState<PackPage> {
           userId: ref.read(authenticationProvider).user?.id,
         );
         setState(() {
-          _pack = SavedPack.fromRow(row, isStarred: isStarred);
+          _pack = SavedPack(row, isStarred: isStarred);
           _isLoading = false;
         });
       } else {

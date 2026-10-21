@@ -76,7 +76,7 @@ class _PatternPageState extends ConsumerState<PatternPage> {
         id: row.read(Patterns.id),
         userId: ref.read(authenticationProvider).user?.id,
       );
-      final pattern = SavedPattern.fromRow(row, isStarred: isStarred);
+      final pattern = SavedPattern(row, isStarred: isStarred);
       if (!mounted) {
         return;
       }

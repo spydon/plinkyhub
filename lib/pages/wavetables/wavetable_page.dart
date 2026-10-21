@@ -63,7 +63,7 @@ class _WavetablePageState extends ConsumerState<WavetablePage> {
           userId: ref.read(authenticationProvider).user?.id,
         );
         setState(() {
-          _wavetable = SavedWavetable.fromRow(row, isStarred: isStarred);
+          _wavetable = SavedWavetable(row, isStarred: isStarred);
           _isLoading = false;
         });
       } else {

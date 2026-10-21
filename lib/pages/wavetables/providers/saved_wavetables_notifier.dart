@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/saved_items_state.dart';
 import 'package:plinkyhub/pages/wavetables/models/saved_wavetable.dart';
+import 'package:plinkyhub/providers/authentication_notifier.dart';
 import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/content_hash.dart';
@@ -39,14 +40,14 @@ class SavedWavetablesNotifier
 
   @override
   SavedWavetable fromRow(PostgrestPartialRow<WavetablesRow> row) =>
-      SavedWavetable.fromRow(row);
+      SavedWavetable(row);
 
   @override
   SavedWavetable withStarUpdate(
     SavedWavetable item, {
     required bool isStarred,
     required int starCount,
-  }) => item.copyWith(isStarred: isStarred, starCount: starCount);
+  }) => item.withStar(isStarred: isStarred, starCount: starCount);
 
   @override
   Future<void> deleteItem(String id) async {
@@ -64,16 +65,25 @@ class SavedWavetablesNotifier
     }
   }
 
-  Future<SavedWavetable?> saveWavetable(
-    SavedWavetable wavetable, {
+  Future<SavedWavetable?> saveWavetable({
+    required String name,
+    required String filePath,
+    required String description,
+    required bool isPublic,
+    required String youtubeUrl,
     required Uint8List uf2Bytes,
   }) async {
+    final userId = ref.read(authenticationProvider).user?.id;
+    if (userId == null) {
+      return null;
+    }
+
     setLoading();
     try {
       await supabase.storage
           .from('wavetables')
           .uploadBinary(
-            wavetable.filePath,
+            filePath,
             uf2Bytes,
             fileOptions: const FileOptions(upsert: true),
           );
@@ -82,50 +92,47 @@ class SavedWavetablesNotifier
           .table(Wavetables.table)
           .insert(
             WavetablesInsert(
-              userId: wavetable.userId,
-              name: wavetable.name,
-              filePath: wavetable.filePath,
-              description: wavetable.description,
-              isPublic: wavetable.isPublic,
-              youtubeUrl: wavetable.youtubeUrl,
+              userId: userId,
+              name: name,
+              filePath: filePath,
+              description: description,
+              isPublic: isPublic,
+              youtubeUrl: youtubeUrl,
               contentHash: computeContentHash(uf2Bytes),
             ),
           )
-          .select()
+          .selectOnly(SavedWavetable.selection)
           .single();
 
       await refreshAll();
-      return SavedWavetable.fromFullRow(inserted);
+      return SavedWavetable(inserted);
     } on Exception catch (error) {
       setError(error);
       rethrow;
     }
   }
 
-  Future<void> updateWavetable(SavedWavetable wavetable) async {
+  Future<void> updateWavetable(String id, WavetablesUpdate update) async {
     setLoading();
     try {
       await supabase
           .table(Wavetables.table)
-          .update(
-            WavetablesUpdate(
-              userId: wavetable.userId,
-              name: wavetable.name,
-              filePath: wavetable.filePath,
-              description: wavetable.description,
-              isPublic: wavetable.isPublic,
-              youtubeUrl: wavetable.youtubeUrl,
-            ),
-          )
-          .where(Wavetables.id.eq(wavetable.id));
+          .update(update)
+          .where(Wavetables.id.eq(id));
       await refreshAll();
     } on Exception catch (error) {
       setError(error);
     }
   }
 
+  /// Replaces the file of [wavetable] with [uf2Bytes] and writes the new
+  /// content hash along with the given details.
   Future<void> updateWavetableContent(
     SavedWavetable wavetable, {
+    required String name,
+    required String description,
+    required bool isPublic,
+    required String youtubeUrl,
     required Uint8List uf2Bytes,
   }) async {
     setLoading();
@@ -142,12 +149,10 @@ class SavedWavetablesNotifier
           .table(Wavetables.table)
           .update(
             WavetablesUpdate(
-              userId: wavetable.userId,
-              name: wavetable.name,
-              filePath: wavetable.filePath,
-              description: wavetable.description,
-              isPublic: wavetable.isPublic,
-              youtubeUrl: wavetable.youtubeUrl,
+              name: name,
+              description: description,
+              isPublic: isPublic,
+              youtubeUrl: youtubeUrl,
               contentHash: computeContentHash(uf2Bytes),
             ),
           )

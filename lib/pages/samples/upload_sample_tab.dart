@@ -8,6 +8,7 @@ import 'package:plinkyhub/models/saved_sample.dart';
 import 'package:plinkyhub/pages/samples/providers/saved_samples_notifier.dart';
 import 'package:plinkyhub/pages/samples/sample_metadata_form.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/presets_uf2.dart';
 import 'package:plinkyhub/utils/uf2.dart';
 import 'package:plinkyhub/utils/wav.dart';
@@ -387,49 +388,39 @@ class _UploadSampleTabState extends ConsumerState<UploadSampleTab> {
       final wavStorageName = '${baseName}_$timestamp.wav';
       final pcmStorageName = '${baseName}_$timestamp.pcm';
 
-      final sample =
-          widget.sampleToEdit?.copyWith(
-            name: _nameController.text.trim(),
-            description: _descriptionController.text.trim(),
-            isPublic: _isPublic,
-            slicePoints: _slicePoints,
-            baseNote: _baseNote,
-            fineTune: _fineTune,
-            pitched: _pitched,
-            sliceNotes: _sliceNotes,
-            loopMode: _loopMode.value,
-            updatedAt: DateTime.now(),
-          ) ??
-          SavedSample(
-            id: '',
-            userId: userId,
-            name: _nameController.text.trim(),
-            filePath: '$userId/$wavStorageName',
-            pcmFilePath: '$userId/$pcmStorageName',
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            description: _descriptionController.text.trim(),
-            isPublic: _isPublic,
-            slicePoints: _slicePoints,
-            baseNote: _baseNote,
-            fineTune: _fineTune,
-            pitched: _pitched,
-            sliceNotes: _sliceNotes,
-            loopMode: _loopMode.value,
-          );
-
-      if (widget.sampleToEdit != null) {
-        await ref.read(savedSamplesProvider.notifier).updateSample(sample);
-        // If WAV/PCM bytes changed (new file picked), we might need to
-        // re-upload them, but current updateSample doesn't support
-        // that. For now, assume metadata update only or re-upload if
-        // file changed.
-        // Actually, let's keep it simple for now as per requirements.
+      final sampleToEdit = widget.sampleToEdit;
+      if (sampleToEdit != null) {
+        await ref
+            .read(savedSamplesProvider.notifier)
+            .updateSample(
+              sampleToEdit.id,
+              SamplesUpdate(
+                name: _nameController.text.trim(),
+                description: _descriptionController.text.trim(),
+                isPublic: _isPublic,
+                slicePoints: _slicePoints,
+                baseNote: _baseNote,
+                fineTune: _fineTune,
+                pitched: _pitched,
+                sliceNotes: _sliceNotes,
+                loopMode: _loopMode.value,
+              ),
+            );
       } else {
         await ref
             .read(savedSamplesProvider.notifier)
             .saveSample(
-              sample,
+              name: _nameController.text.trim(),
+              filePath: '$userId/$wavStorageName',
+              pcmFilePath: '$userId/$pcmStorageName',
+              description: _descriptionController.text.trim(),
+              isPublic: _isPublic,
+              slicePoints: _slicePoints,
+              baseNote: _baseNote,
+              fineTune: _fineTune,
+              pitched: _pitched,
+              sliceNotes: _sliceNotes,
+              loopMode: _loopMode.value,
               wavBytes: _wavBytes!,
               pcmBytes: pcmBytes,
             );

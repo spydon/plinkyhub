@@ -1,64 +1,83 @@
 // ignore_for_file: experimental_member_use
 
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:plinkyhub/models/item_table.dart';
 import 'package:plinkyhub/models/searchable.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-part 'saved_preset.freezed.dart';
+@immutable
+class SavedPreset with Searchable {
+  SavedPreset(this.row, {this.isStarred = false, int? starCount})
+    : starCount =
+          starCount ??
+          readStarCount(row, Presets.presetStars, presetStarsTable);
 
-@freezed
-abstract class SavedPreset with _$SavedPreset implements Searchable {
-  const factory SavedPreset({
-    required String id,
-    required String userId,
-    required String name,
-    required String category,
-    required String presetData,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    @Default('') String slug,
-    @Default('') String description,
-    @Default(false) bool isPublic,
-    @Default('') String username,
-    @Default(0) int starCount,
-    @Default(false) bool isStarred,
-    @Default('') String youtubeUrl,
-    String? sampleId,
-    String? sampleName,
-    String? sampleSlug,
-    String? sampleUsername,
-  }) = _SavedPreset;
+  final PostgrestPartialRow<PresetsRow> row;
 
-  factory SavedPreset.fromRow(
-    PostgrestPartialRow<PresetsRow> row, {
-    bool isStarred = false,
-  }) {
-    final sample = row.read(Presets.samples);
-    return SavedPreset(
-      id: row.read(Presets.id),
-      userId: row.read(Presets.userId),
-      name: row.read(Presets.name),
-      category: row.read(Presets.category),
-      presetData: row.read(Presets.presetData),
-      createdAt: row.read(Presets.createdAt),
-      updatedAt: row.read(Presets.updatedAt),
-      slug: row.read(Presets.slug),
-      description: row.read(Presets.description),
-      isPublic: row.read(Presets.isPublic),
-      username: row.read(Presets.profiles)?.read(Profiles.username) ?? '',
-      starCount: readStarCount(row, Presets.presetStars, presetStarsTable),
-      isStarred: isStarred,
-      youtubeUrl: row.read(Presets.youtubeUrl),
-      sampleId: row.read(Presets.sampleId),
-      sampleName: sample?.read(Samples.name),
-      sampleSlug: sample?.read(Samples.slug),
-      sampleUsername: sample?.read(Samples.profiles)?.read(Profiles.username),
-    );
-  }
+  @override
+  final bool isStarred;
 
-  /// The columns and relations [SavedPreset.fromRow] reads.
+  @override
+  final int starCount;
+
+  @override
+  String get id => row.read(Presets.id);
+
+  @override
+  String get userId => row.read(Presets.userId);
+
+  @override
+  String get name => row.read(Presets.name);
+
+  String get category => row.read(Presets.category);
+
+  String get presetData => row.read(Presets.presetData);
+
+  DateTime get createdAt => row.read(Presets.createdAt);
+
+  @override
+  DateTime get updatedAt => row.read(Presets.updatedAt);
+
+  String get slug => row.read(Presets.slug);
+
+  @override
+  String get description => row.read(Presets.description);
+
+  bool get isPublic => row.read(Presets.isPublic);
+
+  @override
+  String get username =>
+      row.read(Presets.profiles)?.read(Profiles.username) ?? '';
+
+  String get youtubeUrl => row.read(Presets.youtubeUrl);
+
+  String? get sampleId => row.read(Presets.sampleId);
+
+  String? get sampleName => row.read(Presets.samples)?.read(Samples.name);
+
+  String? get sampleSlug => row.read(Presets.samples)?.read(Samples.slug);
+
+  String? get sampleUsername => row
+      .read(Presets.samples)
+      ?.read(Samples.profiles)
+      ?.read(Profiles.username);
+
+  SavedPreset withStar({required bool isStarred, required int starCount}) =>
+      SavedPreset(row, isStarred: isStarred, starCount: starCount);
+
+  @override
+  bool operator ==(Object other) =>
+      other is SavedPreset &&
+      other.id == id &&
+      other.updatedAt == updatedAt &&
+      other.isStarred == isStarred &&
+      other.starCount == starCount;
+
+  @override
+  int get hashCode => Object.hash(id, updatedAt, isStarred, starCount);
+
+  /// The columns and relations the getters read.
   static final selection = <PostgrestSelectable<PresetsRow>>[
     Presets.id,
     Presets.userId,

@@ -1,43 +1,46 @@
 // ignore_for_file: experimental_member_use
 
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-part 'saved_firmware.freezed.dart';
+@immutable
+class SavedFirmware {
+  const SavedFirmware(this.row);
 
-@freezed
-abstract class SavedFirmware with _$SavedFirmware {
-  const factory SavedFirmware({
-    required String id,
-    required String userId,
-    required String name,
-    required String version,
-    required String filePath,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    @Default('') String description,
-    @Default(false) bool isBeta,
-    @Default(false) bool isPinned,
-    @Default('') String username,
-  }) = _SavedFirmware;
+  final PostgrestPartialRow<FirmwaresRow> row;
 
-  factory SavedFirmware.fromRow(PostgrestPartialRow<FirmwaresRow> row) =>
-      SavedFirmware(
-        id: row.read(Firmwares.id),
-        userId: row.read(Firmwares.userId),
-        name: row.read(Firmwares.name),
-        version: row.read(Firmwares.version),
-        filePath: row.read(Firmwares.filePath),
-        createdAt: row.read(Firmwares.createdAt),
-        updatedAt: row.read(Firmwares.updatedAt),
-        description: row.read(Firmwares.description),
-        isBeta: row.read(Firmwares.isBeta),
-        isPinned: row.read(Firmwares.isPinned),
-        username: row.read(Firmwares.profiles)?.read(Profiles.username) ?? '',
-      );
+  String get id => row.read(Firmwares.id);
 
-  /// The columns and relations [SavedFirmware.fromRow] reads.
+  String get userId => row.read(Firmwares.userId);
+
+  String get name => row.read(Firmwares.name);
+
+  String get version => row.read(Firmwares.version);
+
+  String get filePath => row.read(Firmwares.filePath);
+
+  DateTime get createdAt => row.read(Firmwares.createdAt);
+
+  DateTime get updatedAt => row.read(Firmwares.updatedAt);
+
+  String get description => row.read(Firmwares.description);
+
+  bool get isBeta => row.read(Firmwares.isBeta);
+
+  bool get isPinned => row.read(Firmwares.isPinned);
+
+  String get username =>
+      row.read(Firmwares.profiles)?.read(Profiles.username) ?? '';
+
+  @override
+  bool operator ==(Object other) =>
+      other is SavedFirmware && other.id == id && other.updatedAt == updatedAt;
+
+  @override
+  int get hashCode => Object.hash(id, updatedAt);
+
+  /// The columns and relations the getters read.
   static final selection = <PostgrestSelectable<FirmwaresRow>>[
     Firmwares.id,
     Firmwares.userId,

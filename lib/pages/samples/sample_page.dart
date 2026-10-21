@@ -63,7 +63,7 @@ class _SamplePageState extends ConsumerState<SamplePage> {
           userId: ref.read(authenticationProvider).user?.id,
         );
         setState(() {
-          _sample = SavedSample.fromRow(row, isStarred: isStarred);
+          _sample = SavedSample(row, isStarred: isStarred);
           _isLoading = false;
         });
       } else {

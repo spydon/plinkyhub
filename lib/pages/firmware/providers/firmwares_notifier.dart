@@ -29,7 +29,7 @@ class FirmwaresNotifier extends Notifier<FirmwaresState> {
           .selectOnly(SavedFirmware.selection)
           .order(Firmwares.isPinned.desc())
           .order(Firmwares.createdAt.desc());
-      final firmwares = rows.map(SavedFirmware.fromRow).toList();
+      final firmwares = rows.map(SavedFirmware.new).toList();
       state = state.copyWith(firmwares: firmwares, isLoading: false);
     } on Exception catch (error) {
       debugPrint('$error');

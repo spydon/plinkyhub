@@ -10,6 +10,7 @@ import 'package:plinkyhub/pages/samples/sample_mode_selector.dart';
 import 'package:plinkyhub/pages/samples/save_sample_to_plinky_dialog.dart';
 import 'package:plinkyhub/pages/samples/slice_points_editor.dart';
 import 'package:plinkyhub/routing/routes.dart';
+import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/note_names.dart';
 import 'package:plinkyhub/utils/wav.dart';
 import 'package:plinkyhub/widgets/confirm_delete_dialog.dart';
@@ -117,7 +118,8 @@ class _SampleCardState extends ConsumerState<SampleCard> {
     await ref
         .read(savedSamplesProvider.notifier)
         .updateSample(
-          widget.sample.copyWith(
+          widget.sample.id,
+          SamplesUpdate(
             slicePoints: _slicePoints,
             pitched: _pitched,
             sliceNotes: _sliceNotes,
@@ -209,7 +211,12 @@ class _SampleCardState extends ConsumerState<SampleCard> {
                     starCount: sample.starCount,
                     onToggle: ({required bool wasStarred}) => ref
                         .read(savedSamplesProvider.notifier)
-                        .toggleStar(sample.copyWith(isStarred: wasStarred)),
+                        .toggleStar(
+                          sample.withStar(
+                            isStarred: wasStarred,
+                            starCount: sample.starCount,
+                          ),
+                        ),
                   ),
                   if (sample.username.isNotEmpty)
                     ShareLinkButton(
@@ -250,9 +257,8 @@ class _SampleCardState extends ConsumerState<SampleCard> {
                         ref
                             .read(savedSamplesProvider.notifier)
                             .updateSample(
-                              sample.copyWith(
-                                isPublic: !sample.isPublic,
-                              ),
+                              sample.id,
+                              SamplesUpdate(isPublic: !sample.isPublic),
                             );
                       },
                     ),

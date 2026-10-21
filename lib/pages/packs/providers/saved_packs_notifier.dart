@@ -2,6 +2,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plinkyhub/models/item_table.dart';
+import 'package:plinkyhub/models/pack_slot.dart';
 import 'package:plinkyhub/models/saved_items_state.dart';
 import 'package:plinkyhub/models/saved_pack.dart';
 import 'package:plinkyhub/providers/authentication_notifier.dart';
@@ -9,14 +10,6 @@ import 'package:plinkyhub/providers/saved_items_notifier.dart';
 import 'package:plinkyhub/supabase_schema.g.dart';
 import 'package:plinkyhub/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-/// A slot entry for creating or updating a pack.
-typedef PackSlotEntry = ({
-  int slotNumber,
-  String? presetId,
-  String? sampleId,
-  String? patternId,
-});
 
 final savedPacksProvider =
     NotifierProvider<SavedPacksNotifier, SavedItemsState<SavedPack>>(
@@ -39,15 +32,14 @@ class SavedPacksNotifier
   String get itemLabel => 'pack';
 
   @override
-  SavedPack fromRow(PostgrestPartialRow<PacksRow> row) =>
-      SavedPack.fromRow(row);
+  SavedPack fromRow(PostgrestPartialRow<PacksRow> row) => SavedPack(row);
 
   @override
   SavedPack withStarUpdate(
     SavedPack item, {
     required bool isStarred,
     required int starCount,
-  }) => item.copyWith(isStarred: isStarred, starCount: starCount);
+  }) => item.withStar(isStarred: isStarred, starCount: starCount);
 
   void startEditing(SavedPack pack) {
     state = state.copyWith(editingItem: () => pack);

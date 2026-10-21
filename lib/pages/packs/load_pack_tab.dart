@@ -531,7 +531,7 @@ class _LoadPackTabState extends ConsumerState<LoadPackTab> {
         .limit(1);
 
     if (rows.isNotEmpty) {
-      return SavedPack.fromRow(rows.first);
+      return SavedPack(rows.first);
     }
 
     return null;

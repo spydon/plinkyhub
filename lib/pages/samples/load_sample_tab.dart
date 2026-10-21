@@ -178,28 +178,20 @@ class _LoadSampleTabState extends ConsumerState<LoadSampleTab> {
       final wavStorageName = '${baseName}_$timestamp.wav';
       final pcmStorageName = '${baseName}_$timestamp.pcm';
 
-      final sample = SavedSample(
-        id: '',
-        userId: userId,
-        name: _nameController.text.trim(),
-        filePath: '$userId/$wavStorageName',
-        pcmFilePath: '$userId/$pcmStorageName',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        description: _descriptionController.text.trim(),
-        isPublic: _isPublic,
-        slicePoints: _slicePoints,
-        baseNote: _baseNote,
-        fineTune: _fineTune,
-        pitched: _pitched,
-        sliceNotes: _sliceNotes,
-        loopMode: _loopMode.value,
-      );
-
       await ref
           .read(savedSamplesProvider.notifier)
           .saveSample(
-            sample,
+            name: _nameController.text.trim(),
+            filePath: '$userId/$wavStorageName',
+            pcmFilePath: '$userId/$pcmStorageName',
+            description: _descriptionController.text.trim(),
+            isPublic: _isPublic,
+            slicePoints: _slicePoints,
+            baseNote: _baseNote,
+            fineTune: _fineTune,
+            pitched: _pitched,
+            sliceNotes: _sliceNotes,
+            loopMode: _loopMode.value,
             wavBytes: _wavBytes!,
             pcmBytes: _pcmBytes!,
           );

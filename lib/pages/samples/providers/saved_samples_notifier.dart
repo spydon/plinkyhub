@@ -38,18 +38,27 @@ class SavedSamplesNotifier
   String get itemLabel => 'sample';
 
   @override
-  SavedSample fromRow(PostgrestPartialRow<SamplesRow> row) =>
-      SavedSample.fromRow(row);
+  SavedSample fromRow(PostgrestPartialRow<SamplesRow> row) => SavedSample(row);
 
   @override
   SavedSample withStarUpdate(
     SavedSample item, {
     required bool isStarred,
     required int starCount,
-  }) => item.copyWith(isStarred: isStarred, starCount: starCount);
+  }) => item.withStar(isStarred: isStarred, starCount: starCount);
 
-  Future<void> saveSample(
-    SavedSample sample, {
+  Future<void> saveSample({
+    required String name,
+    required String filePath,
+    required String pcmFilePath,
+    required String description,
+    required bool isPublic,
+    required List<double> slicePoints,
+    required int baseNote,
+    required int fineTune,
+    required bool pitched,
+    required List<int> sliceNotes,
+    required int loopMode,
     required Uint8List wavBytes,
     required Uint8List pcmBytes,
   }) async {
@@ -63,14 +72,14 @@ class SavedSamplesNotifier
       await supabase.storage
           .from('samples')
           .uploadBinary(
-            sample.filePath,
+            filePath,
             wavBytes,
             fileOptions: const FileOptions(upsert: true),
           );
       await supabase.storage
           .from('samples')
           .uploadBinary(
-            sample.pcmFilePath,
+            pcmFilePath,
             pcmBytes,
             fileOptions: const FileOptions(upsert: true),
           );
@@ -79,18 +88,18 @@ class SavedSamplesNotifier
           .table(Samples.table)
           .insert(
             SamplesInsert(
-              userId: sample.userId,
-              name: sample.name,
-              filePath: sample.filePath,
-              pcmFilePath: sample.pcmFilePath,
-              description: sample.description,
-              isPublic: sample.isPublic,
-              slicePoints: sample.slicePoints,
-              baseNote: sample.baseNote,
-              fineTune: sample.fineTune,
-              pitched: sample.pitched,
-              sliceNotes: sample.sliceNotes,
-              loopMode: sample.loopMode,
+              userId: userId,
+              name: name,
+              filePath: filePath,
+              pcmFilePath: pcmFilePath,
+              description: description,
+              isPublic: isPublic,
+              slicePoints: slicePoints,
+              baseNote: baseNote,
+              fineTune: fineTune,
+              pitched: pitched,
+              sliceNotes: sliceNotes,
+              loopMode: loopMode,
               contentHash: computeContentHash(pcmBytes),
             ),
           );
@@ -102,28 +111,13 @@ class SavedSamplesNotifier
     }
   }
 
-  Future<void> updateSample(SavedSample sample) async {
+  Future<void> updateSample(String id, SamplesUpdate update) async {
     setLoading();
     try {
       await supabase
           .table(Samples.table)
-          .update(
-            SamplesUpdate(
-              userId: sample.userId,
-              name: sample.name,
-              filePath: sample.filePath,
-              pcmFilePath: sample.pcmFilePath,
-              description: sample.description,
-              isPublic: sample.isPublic,
-              slicePoints: sample.slicePoints,
-              baseNote: sample.baseNote,
-              fineTune: sample.fineTune,
-              pitched: sample.pitched,
-              sliceNotes: sample.sliceNotes,
-              loopMode: sample.loopMode,
-            ),
-          )
-          .where(Samples.id.eq(sample.id));
+          .update(update)
+          .where(Samples.id.eq(id));
       await refreshAll();
     } on Exception catch (error) {
       setError(error);

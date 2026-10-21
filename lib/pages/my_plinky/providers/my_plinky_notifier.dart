@@ -334,7 +334,7 @@ class MyPlinkyNotifier extends Notifier<MyPlinkyState> {
         .limit(1);
 
     if (rows.isNotEmpty) {
-      return SavedPack.fromRow(rows.first);
+      return SavedPack(rows.first);
     }
     return null;
   }

@@ -51,7 +51,7 @@ class _FirmwareDetailPageState extends ConsumerState<FirmwareDetailPage> {
 
       if (row != null) {
         setState(() {
-          _firmware = SavedFirmware.fromRow(row);
+          _firmware = SavedFirmware(row);
           _isLoading = false;
         });
       } else {
