@@ -28,13 +28,13 @@ class SavedSample with Searchable {
   final int starCount;
 
   @override
-  String get id => row.read(Samples.id);
+  late final String id = row.read(Samples.id);
 
   @override
   String get userId => row.read(Samples.userId);
 
   @override
-  String get name => row.read(Samples.name);
+  late final String name = row.read(Samples.name);
 
   String get filePath => row.read(Samples.filePath);
 
@@ -43,7 +43,7 @@ class SavedSample with Searchable {
   DateTime get createdAt => row.read(Samples.createdAt);
 
   @override
-  DateTime get updatedAt => row.read(Samples.updatedAt);
+  late final DateTime updatedAt = row.read(Samples.updatedAt);
 
   String get slug => row.read(Samples.slug);
 

@@ -22,18 +22,18 @@ class SavedPack with Searchable {
   final int starCount;
 
   @override
-  String get id => row.read(Packs.id);
+  late final String id = row.read(Packs.id);
 
   @override
   String get userId => row.read(Packs.userId);
 
   @override
-  String get name => row.read(Packs.name);
+  late final String name = row.read(Packs.name);
 
   DateTime get createdAt => row.read(Packs.createdAt);
 
   @override
-  DateTime get updatedAt => row.read(Packs.updatedAt);
+  late final DateTime updatedAt = row.read(Packs.updatedAt);
 
   String get slug => row.read(Packs.slug);
 
@@ -46,9 +46,9 @@ class SavedPack with Searchable {
   String get username =>
       row.read(Packs.profiles)?.read(Profiles.username) ?? '';
 
-  List<PackSlot> get slots => [
+  late final List<PackSlot> slots = List.unmodifiable([
     for (final slot in row.read(Packs.packSlots)) PackSlot(slot),
-  ];
+  ]);
 
   String get wavetableId => row.read(Packs.wavetableId);
 

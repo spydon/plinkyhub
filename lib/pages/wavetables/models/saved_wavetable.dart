@@ -22,20 +22,20 @@ class SavedWavetable with Searchable {
   final int starCount;
 
   @override
-  String get id => row.read(Wavetables.id);
+  late final String id = row.read(Wavetables.id);
 
   @override
   String get userId => row.read(Wavetables.userId);
 
   @override
-  String get name => row.read(Wavetables.name);
+  late final String name = row.read(Wavetables.name);
 
   String get filePath => row.read(Wavetables.filePath);
 
   DateTime get createdAt => row.read(Wavetables.createdAt);
 
   @override
-  DateTime get updatedAt => row.read(Wavetables.updatedAt);
+  late final DateTime updatedAt = row.read(Wavetables.updatedAt);
 
   String get slug => row.read(Wavetables.slug);
 

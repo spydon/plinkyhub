@@ -22,20 +22,20 @@ class SavedPattern with Searchable {
   final int starCount;
 
   @override
-  String get id => row.read(Patterns.id);
+  late final String id = row.read(Patterns.id);
 
   @override
   String get userId => row.read(Patterns.userId);
 
   @override
-  String get name => row.read(Patterns.name);
+  late final String name = row.read(Patterns.name);
 
   String get filePath => row.read(Patterns.filePath);
 
   DateTime get createdAt => row.read(Patterns.createdAt);
 
   @override
-  DateTime get updatedAt => row.read(Patterns.updatedAt);
+  late final DateTime updatedAt = row.read(Patterns.updatedAt);
 
   String get slug => row.read(Patterns.slug);
 

@@ -6,15 +6,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 @immutable
 class SavedFirmware {
-  const SavedFirmware(this.row);
+  SavedFirmware(this.row);
 
   final PostgrestPartialRow<FirmwaresRow> row;
 
-  String get id => row.read(Firmwares.id);
+  late final String id = row.read(Firmwares.id);
 
   String get userId => row.read(Firmwares.userId);
 
-  String get name => row.read(Firmwares.name);
+  late final String name = row.read(Firmwares.name);
 
   String get version => row.read(Firmwares.version);
 
@@ -22,7 +22,7 @@ class SavedFirmware {
 
   DateTime get createdAt => row.read(Firmwares.createdAt);
 
-  DateTime get updatedAt => row.read(Firmwares.updatedAt);
+  late final DateTime updatedAt = row.read(Firmwares.updatedAt);
 
   String get description => row.read(Firmwares.description);
 

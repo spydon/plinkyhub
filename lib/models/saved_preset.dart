@@ -22,13 +22,13 @@ class SavedPreset with Searchable {
   final int starCount;
 
   @override
-  String get id => row.read(Presets.id);
+  late final String id = row.read(Presets.id);
 
   @override
   String get userId => row.read(Presets.userId);
 
   @override
-  String get name => row.read(Presets.name);
+  late final String name = row.read(Presets.name);
 
   String get category => row.read(Presets.category);
 
@@ -37,7 +37,7 @@ class SavedPreset with Searchable {
   DateTime get createdAt => row.read(Presets.createdAt);
 
   @override
-  DateTime get updatedAt => row.read(Presets.updatedAt);
+  late final DateTime updatedAt = row.read(Presets.updatedAt);
 
   String get slug => row.read(Presets.slug);
 
