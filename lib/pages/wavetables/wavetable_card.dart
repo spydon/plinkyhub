@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,12 +19,14 @@ class WavetableCard extends ConsumerStatefulWidget {
     required this.wavetable,
     required this.isOwned,
     this.onDeleted,
+    this.showExportButton = false,
     super.key,
   });
 
   final SavedWavetable wavetable;
   final bool isOwned;
   final VoidCallback? onDeleted;
+  final bool showExportButton;
 
   @override
   ConsumerState<WavetableCard> createState() => _WavetableCardState();
@@ -80,6 +83,14 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
                     icon: Icons.upload,
                     label: 'Upload to Plinky',
                   ),
+                  if (widget.showExportButton) ...[
+                    const SizedBox(width: 8),
+                    PlinkyButton(
+                      onPressed: _export,
+                      icon: Icons.download,
+                      label: 'Export',
+                    ),
+                  ],
                   const SizedBox(width: 8),
                   StarButton(
                     isStarred: wavetable.isStarred,
@@ -148,6 +159,27 @@ class _WavetableCardState extends ConsumerState<WavetableCard> {
       builder: (context) =>
           SaveWavetableToPlinkyDialog(wavetable: widget.wavetable),
     );
+  }
+
+  Future<void> _export() async {
+    final wavetable = widget.wavetable;
+    try {
+      final uf2Bytes = await ref
+          .read(savedWavetablesProvider.notifier)
+          .downloadUf2(wavetable.filePath);
+      final name = wavetable.name.isNotEmpty ? wavetable.name : 'wavetable';
+      await FilePicker.platform.saveFile(
+        fileName: '$name.uf2',
+        bytes: uf2Bytes,
+      );
+    } on Exception catch (error) {
+      debugPrint('Failed to export wavetable: $error');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to export wavetable: $error')),
+        );
+      }
+    }
   }
 
   Future<void> _confirmDelete(BuildContext context) async {

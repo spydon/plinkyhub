@@ -111,6 +111,7 @@ class _WavetablePageState extends ConsumerState<WavetablePage> {
               WavetableCard(
                 wavetable: _wavetable!,
                 isOwned: isOwned,
+                showExportButton: true,
                 onDeleted: () => context.go(AppRoute.wavetables.path),
               ),
             ],
