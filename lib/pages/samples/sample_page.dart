@@ -48,9 +48,10 @@ class _SamplePageState extends ConsumerState<SamplePage> {
       final row = await Supabase.instance.client
           .table(Samples.table)
           .selectOnly(SavedSample.selection)
-          .where(
-            Samples.slug.eq(widget.sampleSlug) &
-                samplesTable.ownedByUsername(widget.username),
+          .where(Samples.slug.eq(widget.sampleSlug))
+          .requiring(
+            Samples.profiles,
+            (profiles) => profiles.where(Profiles.username.eq(widget.username)),
           )
           .order(Samples.updatedAt.desc())
           .limit(1)

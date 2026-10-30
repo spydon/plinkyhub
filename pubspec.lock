@@ -476,10 +476,10 @@ packages:
     dependency: transitive
     description:
       name: iceberg
-      sha256: b4324b513361cc9da5eceec3962c044ad9f2dff180aa2c5684dbe373b3ba1308
+      sha256: "50d4d160d7814258baaa98d3d742d4d1c2d9ec0b8b06e0bbbf18ef0cb8318086"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.1"
+    version: "0.3.1"
   io:
     dependency: transitive
     description:
@@ -748,10 +748,10 @@ packages:
     dependency: transitive
     description:
       name: postgrest
-      sha256: a97e854f41051013c40f961d356a326c179da7988c83e5d9bf9696c41803ec68
+      sha256: "737caed6c6cd84f5382e47b700fe1a818d81c16d6110890ecbdb507997c2ce69"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.12"
+    version: "3.0.0-dev.15"
   pub_semver:
     dependency: transitive
     description:
@@ -953,66 +953,66 @@ packages:
     dependency: transitive
     description:
       name: supabase
-      sha256: "223f54bcf1415e4ef3f8222696aaf44d7730850ba78d77357026972de2bf3b63"
+      sha256: "94c435a6894a17cb48f802543056a6dade3b4cc9eb76bb6231a7ebd014eaca65"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.12"
+    version: "3.0.0-dev.15"
   supabase_auth:
     dependency: transitive
     description:
       name: supabase_auth
-      sha256: bd9f2bef996590867cc9e2966671112ab7eea7a92f56eea01484b41a7fa1dd4e
+      sha256: "4b8253718ffe0a4515894e92bf580d9b18d66fd700428d15207ad1949ab0e88e"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.10"
+    version: "3.0.0-dev.13"
   supabase_common:
     dependency: transitive
     description:
       name: supabase_common
-      sha256: "0aa94b7a6fc9bc73e228d1447131b11391f97523492a7c900e5ca04842c21331"
+      sha256: "3bc11c43886e52eabdd9fe51de6194132ac70236bbb365f9bc11569549f00b6b"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.8"
+    version: "3.0.0-dev.10"
   supabase_flutter:
     dependency: "direct main"
     description:
       name: supabase_flutter
-      sha256: bf2850277566ff7c8e45373c1de1055f7e4dd8821822292ed0683220734cdda4
+      sha256: "2ae47c77ee0506049575605c6d3b23786ff38459e65cf63479d94e26b37b8a45"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.12"
+    version: "3.0.0-dev.15"
   supabase_functions:
     dependency: transitive
     description:
       name: supabase_functions
-      sha256: "782acc875b3909c03d6df1a1004e6462801b63bee216120793bb325f7b50b9c0"
+      sha256: "7be1d39d4da399f768457a5bf2f9186104482cd96cdcc06bd6471c4b31ee5efe"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.9"
+    version: "3.0.0-dev.11"
   supabase_realtime:
     dependency: transitive
     description:
       name: supabase_realtime
-      sha256: "5a44379374da7d034254b622c3cdcd69bebca4effa7cbd5afa3212b98d55f650"
+      sha256: "51a6c191370f325b212cc0e1ea6f4bd4af7540716377c265e0e99d04f8fa14b2"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.10"
+    version: "3.0.0-dev.13"
   supabase_storage:
     dependency: transitive
     description:
       name: supabase_storage
-      sha256: "484287aee438ccf40f432133c6f45402011ebe8b4bd3a5058221dbd3a86c6d23"
+      sha256: "7a64e9aed4713f63071850c53401d3b1fdd4c5c2df2d2931f947b147dffc6231"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.9"
+    version: "3.0.0-dev.12"
   supabase_typegen:
     dependency: "direct dev"
     description:
       name: supabase_typegen
-      sha256: f0dab463a79807ada8c3f21dcd4a4e3c6690b4d35c8b7587c258a9eba7ad9113
+      sha256: c1730317c559639ca7b9e9480558194117bbc31abdbe48d212c775d004176195
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.0"
+    version: "0.8.1"
   term_glyph:
     dependency: transitive
     description:
@@ -1209,10 +1209,10 @@ packages:
     dependency: transitive
     description:
       name: yet_another_json_isolate
-      sha256: "5f3812a1b0950408f199e62101db86fe852db08122b4eba4739569fb09c9d7e6"
+      sha256: "30ff78a9722b44cd48a92864ae5b7a357e67d963b19b126803ae515ac2ca28dd"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-dev.2"
+    version: "3.0.0-dev.3"
 sdks:
   dart: ">=3.11.1 <4.0.0"
   flutter: ">=3.41.0"

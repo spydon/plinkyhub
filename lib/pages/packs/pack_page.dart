@@ -48,9 +48,10 @@ class _PackPageState extends ConsumerState<PackPage> {
       final row = await Supabase.instance.client
           .table(Packs.table)
           .selectOnly(SavedPack.selection)
-          .where(
-            Packs.slug.eq(widget.packSlug) &
-                packsTable.ownedByUsername(widget.username),
+          .where(Packs.slug.eq(widget.packSlug))
+          .requiring(
+            Packs.profiles,
+            (profiles) => profiles.where(Profiles.username.eq(widget.username)),
           )
           .order(Packs.updatedAt.desc())
           .limit(1)

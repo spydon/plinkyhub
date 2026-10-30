@@ -55,9 +55,10 @@ class _PatternPageState extends ConsumerState<PatternPage> {
       final row = await Supabase.instance.client
           .table(Patterns.table)
           .selectOnly(SavedPattern.selection)
-          .where(
-            Patterns.slug.eq(widget.patternSlug) &
-                patternsTable.ownedByUsername(widget.username),
+          .where(Patterns.slug.eq(widget.patternSlug))
+          .requiring(
+            Patterns.profiles,
+            (profiles) => profiles.where(Profiles.username.eq(widget.username)),
           )
           .order(Patterns.updatedAt.desc())
           .limit(1)

@@ -49,9 +49,10 @@ class _PresetPageState extends ConsumerState<PresetPage> {
       final row = await Supabase.instance.client
           .table(Presets.table)
           .selectOnly(SavedPreset.selection)
-          .where(
-            Presets.slug.eq(widget.presetSlug) &
-                presetsTable.ownedByUsername(widget.username),
+          .where(Presets.slug.eq(widget.presetSlug))
+          .requiring(
+            Presets.profiles,
+            (profiles) => profiles.where(Profiles.username.eq(widget.username)),
           )
           .order(Presets.updatedAt.desc())
           .limit(1)

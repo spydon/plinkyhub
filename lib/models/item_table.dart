@@ -16,7 +16,6 @@ class ItemTable<Row> {
     required this.isPublic,
     required this.updatedAt,
     required this.contentHash,
-    required this.profiles,
   });
 
   final PostgrestTable<Row, Object?, Object?> table;
@@ -27,16 +26,6 @@ class ItemTable<Row> {
   final PostgrestColumn<Row, bool> isPublic;
   final PostgrestColumn<Row, DateTime> updatedAt;
   final PostgrestNullableColumn<Row, String> contentHash;
-  final PostgrestToOneRelation<Row, ProfilesRow> profiles;
-
-  /// Only the rows owned by the user called [username], for a query that
-  /// selects [profiles].
-  PostgrestFilter<Row> ownedByUsername(String username) =>
-      PostgrestFilter.raw<Row>(
-        profiles(Profiles.username).embeddedFilterName,
-        'eq.$username',
-      ) &
-      PostgrestFilter.raw<Row>(profiles.key, 'not.is.null');
 
   /// Only the rows that are public or owned by [currentUserId].
   PostgrestFilter<Row> visibleTo(String? currentUserId) => currentUserId == null
@@ -121,7 +110,6 @@ const presetsTable = ItemTable<PresetsRow>(
   isPublic: Presets.isPublic,
   updatedAt: Presets.updatedAt,
   contentHash: Presets.contentHash,
-  profiles: Presets.profiles,
 );
 
 const samplesTable = ItemTable<SamplesRow>(
@@ -133,7 +121,6 @@ const samplesTable = ItemTable<SamplesRow>(
   isPublic: Samples.isPublic,
   updatedAt: Samples.updatedAt,
   contentHash: Samples.contentHash,
-  profiles: Samples.profiles,
 );
 
 const patternsTable = ItemTable<PatternsRow>(
@@ -145,7 +132,6 @@ const patternsTable = ItemTable<PatternsRow>(
   isPublic: Patterns.isPublic,
   updatedAt: Patterns.updatedAt,
   contentHash: Patterns.contentHash,
-  profiles: Patterns.profiles,
 );
 
 const wavetablesTable = ItemTable<WavetablesRow>(
@@ -157,7 +143,6 @@ const wavetablesTable = ItemTable<WavetablesRow>(
   isPublic: Wavetables.isPublic,
   updatedAt: Wavetables.updatedAt,
   contentHash: Wavetables.contentHash,
-  profiles: Wavetables.profiles,
 );
 
 const packsTable = ItemTable<PacksRow>(
@@ -169,7 +154,6 @@ const packsTable = ItemTable<PacksRow>(
   isPublic: Packs.isPublic,
   updatedAt: Packs.updatedAt,
   contentHash: Packs.contentHash,
-  profiles: Packs.profiles,
 );
 
 const presetStarsTable = StarTable<PresetStarsRow, PresetStarsInsert>(

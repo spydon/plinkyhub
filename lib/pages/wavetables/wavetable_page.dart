@@ -48,9 +48,10 @@ class _WavetablePageState extends ConsumerState<WavetablePage> {
       final row = await Supabase.instance.client
           .table(Wavetables.table)
           .selectOnly(SavedWavetable.selection)
-          .where(
-            Wavetables.slug.eq(widget.wavetableSlug) &
-                wavetablesTable.ownedByUsername(widget.username),
+          .where(Wavetables.slug.eq(widget.wavetableSlug))
+          .requiring(
+            Wavetables.profiles,
+            (profiles) => profiles.where(Profiles.username.eq(widget.username)),
           )
           .order(Wavetables.updatedAt.desc())
           .limit(1)
